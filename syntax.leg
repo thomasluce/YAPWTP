@@ -14,9 +14,21 @@ int current_numbered_list_level;
 int start_of_line = 1;
 char protocol[5];
 
+char *trim(char *s) {
+  int i = 1;
+  size_t size = strlen(s);
+  while(s[size-i] == ' ') {
+    s[size-i++] = 0;
+  }
+  return s;
+}
+
 char *space_to_underscore(char *s, size_t size) {
   char *temp = (char *)malloc(size);
-  for(int i = 0; i < size; i++) {
+  int i;
+  trim(s);
+  size = strlen(s);
+  for(i = 0; i < size; i++) {
     if(s[i] == ' ' && i != size-1) {
       temp[i] = '_';
     } else {
@@ -49,7 +61,10 @@ void close_tag(char *tag) {
 }
 
 void append_to_tag_content(char *c, size_t s) {
-  if(!in_tag) return;
+  if(!in_tag) {
+    printf("%s", c);
+    return;
+  }
   if(s + tag_content_length > tag_content_size) {
     tag_content_size *= 2;
     tag_content = realloc(tag_content, tag_content_size);
@@ -77,13 +92,17 @@ heading = heading_marker {
     char tag[4];
     sprintf(tag, "h%d", current_header_level);
     open_tag(tag, NULL);
-  } space* heading_text heading_marker {
+  } space* heading_text heading_marker space* ( eol | eof ) 
+  {
+    printf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", space_to_underscore(tag_content, tag_content_length));
+    printf("%s</span>", trim(tag_content));
     char tag[4];
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
     current_header_level = 0;
-  } space* ( eol | eof )
-heading_text = < ( !heading_marker ( formatting | anything_else ) )* > { printf("<a name=\"%s\" />", space_to_underscore(tag_content, tag_content_length)); }
+    printf("<a name=\"%s\" />", space_to_underscore(tag_content, tag_content_length));
+  }
+heading_text = < ( !heading_marker ( formatting | anything_else ) )* > 
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = yyleng - 1; }
 
 # Paragraph
@@ -185,7 +204,7 @@ table_header = { printf("<tr>"); } table_heading+ { printf("</tr>"); }
 table_heading = { printf("<th"); }'!' ' '+ < ( !' |' . )* > { printf(" %s>", yytext); } ' |' space* < ( !eol . )* > eol {printf("%s</th>", yytext); }
 
 # Other shit
-anything_else = < !eol . > { start_of_line = 0; printf("%s", yytext); if(in_tag) { append_to_tag_content(yytext, yyleng); } }
+anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext, yyleng); }
 
 
 %%

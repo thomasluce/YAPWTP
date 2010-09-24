@@ -2,6 +2,11 @@
 require 'open3'
 
 describe "Wikitext parser" do
+  before :all do
+    dir = File.join(File.dirname(__FILE__), '..')
+    `cd #{dir} && make`
+  end
+
   def parse(wikitext)
     parser = File.join(File.dirname(__FILE__), '..', 'bin', 'parser')
     result = ""
@@ -19,9 +24,13 @@ describe "Wikitext parser" do
   end
 
   describe "headings" do
+    it "should create the markup like mediawiki" do
+      parse("===heading ===").strip.should == '<h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h2><a name="heading" />'
+    end
+
     it "should be able to make a heading" do
-      parse("== heading ==").strip.should =~ /<h1>heading/
-      parse("== heading ==\n").strip.should =~ /<h1>heading/
+      parse("== heading ==").strip.should =~ /<span class="mw-headline" id="heading">heading<\/span>/
+      parse("== heading ==\n").strip.should =~ /<span class="mw-headline" id="heading">heading<\/span>/
     end
     
     it "should make an anchor with the heading" do
@@ -37,7 +46,7 @@ describe "Wikitext parser" do
     end
 
     it "should allow white-space after the closing heading marker" do
-      parse("== heading ==    ").strip.should =~ /<h1>heading/
+      parse("== heading ==    ").strip.should =~ /<span class="mw-headline" id="heading">heading<\/span>/
     end
 
     it "should let you close a heading with unballanced tags" do

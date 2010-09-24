@@ -1,0 +1,53 @@
+<div style="float: right; padding: 3px;"> <span class="plainlinks"><a href="http://www.aboutus.org/SpotlightArticles" class="external text" title="http://www.aboutus.org/SpotlightArticles"><img src="http://www.aboutus.org/Special/image/full/Spotlighted.png" alt="Spotlighted.png"></a></span></div>
+<a name="Flowers_make_the_perfect_gift_for_any_occasion"></a><h2><span class="editsectionHeading">Flowers make the perfect gift for any occasion</span> <span class="editsection"><a href="/index.php?title=FlowerPetal.com&amp;action=edit&amp;section=1" class="edit-widget" title="Edit and Update"><span class="editsectionText">edit</span></a></span> <span class="spinner"></span></h2>
+<div class="floatright"><span><a href="/Image:Screen_shot_2010-05-20_at_5.13.43_PM.png" class="image" title=""><img alt="" longdesc="/Image:Screen_shot_2010-05-20_at_5.13.43_PM.png" src="/Special/image/thumb/711110ff2f483ac138202f6230551969.png" width="120" height="121"></a></span></div>
+<p>Nothing pleases like the gift of flowers. Whether it's a birthday, anniversary, graduation, Mother's Day, professional accomplishment, condolence -- or just because -- flowers lift the spirits and warm the heart. Flowers make a milestone occasion last for days.
+</p><p><a href="http://www.flowerpetal.com" class="external text" title="http://www.flowerpetal.com">FlowerPetal.com</a> is the easy way to send flowers online. The site guarantees secure online transactions with Hacker Safe® and Verisign®. <i>All</i> your personal information is protected under FlowerPetal.com's <a href="http://www.flowerpetal.com/index.jsp?info=7" class="external text" title="http://www.flowerpetal.com/index.jsp?info=7">privacy policy</a>.
+</p>
+<a name="Your_gift_of_flowers_delivered_quickly_and_conveniently"></a><h2><span class="editsectionHeading">Your gift of flowers delivered quickly and conveniently</span> <span class="editsection"><a href="/index.php?title=FlowerPetal.com&amp;action=edit&amp;section=2" class="edit-widget" title="Edit and Update"><span class="editsectionText">edit</span></a></span> <span class="spinner"></span></h2>
+<div class="floatleft"><span><a href="/Image:Romance.png" class="image" title=""><img alt="" longdesc="/Image:Romance.png" src="/Special/image/thumb/62e65ab814ae505200c7a8ed4df9b6ce.png" width="200" height="65"></a></span></div>
+<p>We've all been there: The hustle and bustle of life gets in the way of remembering a special someone's birthday, anniversary or promotion. Now your memory lapse doesn't have to be a total disaster. With the help of FlowerPetal.com, flowers ordered before 2 p.m. can be delivered the same day -- feelings spared, reputation saved. Now that's something to celebrate!
+</p>
+<a name="Safe.2C_same-day_flower_and_gift_delivery_to_most_locations_in_the_U.S._.26_Canada"></a><h2><span class="editsectionHeading">Safe, same-day flower and gift delivery to most locations in the U.S. &amp; Canada</span> <span class="editsection"><a href="/index.php?title=FlowerPetal.com&amp;action=edit&amp;section=3" class="edit-widget" title="Edit and Update"><span class="editsectionText">edit</span></a></span> <span class="spinner"></span></h2>
+<div class="floatright"><span><a href="/Image:blowoutrose.png" class="image" title=""><img alt="" longdesc="/Image:blowoutrose.png" src="/Special/image/thumb/0c875ce4d3f3671c0dea6208ef67a898.png" width="100" height="111"></a></span></div>
+<p>Flower arrangements and gift items are available for same-day delivery when ordered prior to 2 p.m. (noon on Saturdays) in the recipient's time zone. On rare occasions, same-day delivery is not available due to bad weather, inventory restrictions or other unforeseen circumstances. It is FlowerPetal.com's mission to deliver the freshest selection of flowers and gifts anywhere on the web, <a href="http://www.flowerpetal.com/index.jsp?info=8" class="external text" title="http://www.flowerpetal.com/index.jsp?info=8">guaranteed!</a>
+</p>
+<div class="floatleft"><span><a href="/Image:NewBaby.png" class="image" title=""><img alt="" longdesc="/Image:NewBaby.png" src="/Special/image/thumb/2b680903079928e0eb6f6ae24ed624ea.png" width="100" height="111"></a></span></div>
+<p>Verisign security guarantees safe online transactions. FlowerPetal.com uses 128-bit encryption technology to ensure that no outside parties can intercept or view your credit card number, name, address or phone number.
+</p>
+<div class="floatright"><span><a href="/Image:FruitBasket.png" class="image" title=""><img alt="" longdesc="/Image:FruitBasket.png" src="/Special/image/thumb/199db779c2c8125c28fe085cc06df9ea.png" width="100" height="112"></a></span></div>
+<p>If you make an online purchase with FlowerPetal.com and someone uses your credit card to make an unauthorized purchase, FlowerPetal.com will reimburse you for the fraudulent charge, up to $50. FlowerPetal.com's <a href="http://www.flowerpetal.com/index.jsp?info=8" class="external text" title="http://www.flowerpetal.com/index.jsp?info=8">security guarantee</a> means you can shop for flowers and gifts on a secure and hassle-free site.
+</p>
+<a name="The_flower_and_gift_choices_are_endless"></a><h2><span class="editsectionHeading">The flower and gift choices are endless</span> <span class="editsection"><a href="/index.php?title=FlowerPetal.com&amp;action=edit&amp;section=4" class="edit-widget" title="Edit and Update"><span class="editsectionText">edit</span></a></span> <span class="spinner"></span></h2>
+<p>Superior customer service and a secure purchase guarantee make sending flowers with FlowerPetal.com a snap. The vast selection of gifts on FlowerPetal.com make shopping enjoyable:
+</p>
+<div class="floatright"><span><a href="/Image:pinkbouquet.png" class="image" title=""><img alt="" longdesc="/Image:pinkbouquet.png" src="/Special/image/thumb/f09d4ecb011d64c703c1c4dee5d3a699.png" width="100" height="115"></a></span></div>
+<div class="floatright"><span><a href="/Image:vasebloom.png" class="image" title=""><img alt="" longdesc="/Image:vasebloom.png" src="/Special/image/thumb/96ec288b962420091b22313379b29a47.png" width="100" height="111"></a></span></div>
+<dl><dd><ul><li><a href="http://www.flowerpetal.com/index.jsp?cid=18&amp;load=false" class="external text" title="http://www.flowerpetal.com/index.jsp?cid=18&amp;load=false">Roses</a>
+</li><li><a href="http://www.flowerpetal.com/index.jsp?cid=40" class="external text" title="http://www.flowerpetal.com/index.jsp?cid=40">Plants</a>
+</li><li><a href="http://www.flowerpetal.com/index.jsp?cid=50&amp;load=false" class="external text" title="http://www.flowerpetal.com/index.jsp?cid=50&amp;load=false">Lilies</a>
+</li><li><a href="http://www.flowerpetal.com/index.jsp?cid=39&amp;load=false" class="external text" title="http://www.flowerpetal.com/index.jsp?cid=39&amp;load=false">Orchids</a>
+</li><li><a href="http://www.flowerpetal.com/index.jsp?cid=53&amp;load=false" class="external text" title="http://www.flowerpetal.com/index.jsp?cid=53&amp;load=false">Tulips</a>
+</li><li><a href="http://www.flowerpetal.com/index.jsp?cid=48&amp;load=false" class="external text" title="http://www.flowerpetal.com/index.jsp?cid=48&amp;load=false">Gift Baskets</a>
+</li></ul>
+</dd></dl>
+<p><br>
+</p>
+<table style="background-color:inherit; border-collapse:collapse; border-style:none; margin: .5em .75em;">
+<tbody><tr>
+<td width="20" valign="top" style="color:#B2B7F2;font-size:40px;font-family:'Times New Roman',serif;font-weight:bold;text-align:left;padding:2 2px;padding-top: 4px"> “
+</td><td valign="top" align="left" style="padding:0 10px;"> <b>Our mission is to make sure each flower arrangement, plant and gift is delivered on time, exactly the way it was requested. While FlowerPetal.com can't guarantee specific delivery times, the company makes every effort to accommodate your special delivery requests. The delivery staff is held to the highest standards. FlowerPetal.com also conducts spot checks and mystery shops. They stand behind their customer satisfaction, offering a seven-day freshness guarantee.</b>
+</td><td width="20" valign="bottom" style="color:#B2B7F2;font-size:40px;font-family:'Times New Roman',serif;font-weight:bold;text-align:right;padding:2 2px;padding: 4px;"> ”
+</td></tr>
+<tr>
+<td colspan="3" style="padding-top: 10px"> <p style="font-size:smaller;line-height:1em;text-align: right"><cite style="font-style:normal; line-height:120%;">—<b>FlowerPetal.com</b></cite></p>
+</td></tr></tbody></table>
+<a name="What_makes_a_gift_of_beautiful_flowers_even_better.3F"></a><h2><span class="editsectionHeading">What makes a gift of beautiful flowers even better?</span> <span class="editsection"><a href="/index.php?title=FlowerPetal.com&amp;action=edit&amp;section=5" class="edit-widget" title="Edit and Update"><span class="editsectionText">edit</span></a></span> <span class="spinner"></span></h2>
+<p>Offsetting its carbon footprint, that's what!
+</p><p>The conscientious creators of FlowerPetal.com minimize the impact of flower delivery by using a network of exceptional local florists. The company also offsets the carbon emissions created by importing flowers and other materials by partnering with  <a href="/CarbonFund.org" title="CarbonFund.org">CarbonFund.org</a>, a nonprofit organization that invests in renewable energy and other projects that address global climate change.
+</p><p>FlowerPetal.com also offers nonprofits an opportunity to create revenue while selling beautiful flowers: 12 percent of profits, in fact. FlowerPetal.com will build an online storefront free of charge to mirror the look and feel of the host organization’s website. The <a href="http://chicagoredcross.flowerpetal.com" class="external text" title="http://chicagoredcross.flowerpetal.com">online flower store</a> that FlowerPetal.com designed for <a href="/ChicagoRedCross.org" title="ChicagoRedCross.org">The American Red Cross of Greater Chicago</a> earns money while promoting the nonprofit's brand.
+</p>
+<a name="External_Links"></a><h2><span class="editsectionHeading">External Links</span> <span class="editsection"><a href="/index.php?title=FlowerPetal.com&amp;action=edit&amp;section=6" class="edit-widget" title="Edit and Update"><span class="editsectionText">edit</span></a></span> <span class="spinner"></span></h2>
+<ul><li> <a href="http://www.alexa.com/data/details/main?url=flowerpetal.com" class="external text" title="http://www.alexa.com/data/details/main?url=flowerpetal.com">Alexa for</a> FlowerPetal.com
+</li><li> <a href="http://whois.domaintools.com/flowerpetal.com" class="external text" title="http://whois.domaintools.com/flowerpetal.com">Whois for</a> FlowerPetal.com
+</li></ul>
