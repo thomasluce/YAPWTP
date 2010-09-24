@@ -1,0 +1,195 @@
+%{
+#include <stdio.h>
+#include <signal.h>
+#include <time.h>
+#include <stdarg.h>
+
+#define YY_noDEBUG 1
+#define KBYTE 1024
+#define MBYTE KBYTE * 1024
+
+int current_header_level;
+int current_bullet_list_level;
+int current_numbered_list_level;
+int start_of_line = 1;
+char protocol[5];
+
+char *space_to_underscore(char *s, size_t size) {
+	char *temp = (char *)malloc(size);
+	for(int i = 0; i < size; i++) {
+		if(s[i] == ' ' && i != size-1) {
+			temp[i] = '_';
+		} else {
+			temp[i] = s[i];
+		}
+	}
+	return temp;
+}
+
+int in_tag = 0;
+char *tag_content;
+unsigned int tag_content_length = 0;
+unsigned int tag_content_size = 2 * MBYTE;
+
+void open_tag(char *tag, char *args) {
+	if(args) {
+		printf("<%s %s>", tag, args);
+	} else {
+		printf("<%s>", tag);
+	}
+	
+	in_tag = 1;
+	free(tag_content);
+	tag_content = malloc(tag_content_size);
+}
+
+void close_tag(char *tag) {
+	printf("</%s>", tag);
+	in_tag = 0;
+}
+
+void append_to_tag_content(char *c, size_t s) {
+	if(!in_tag) return;
+	if(s + tag_content_length > tag_content_size) {
+		tag_content_size *= 2;
+		tag_content = realloc(tag_content, tag_content_size);
+	}
+	
+	memcpy(tag_content + tag_content_length, c, s);
+	tag_content_length += s;
+	tag_content[tag_content_length] = 0;
+}
+
+%}
+
+# High-level
+page =  pre_block | wikitext_line | wikitext
+wikitext_line = paragraph | horizontal_line
+wikitext = heading | indentation | list | formatting | image | link | table | anything_else | eol
+
+# Generally useful rules
+eol = '\n' { start_of_line = 1; }
+
+# Headings
+heading = heading_marker {
+		char tag[4];
+		sprintf(tag, "h%d", current_header_level);
+		open_tag(tag, NULL);
+	} ' '* heading_text heading_marker {
+		char tag[4];
+		sprintf(tag, "h%d", current_header_level);
+		close_tag(tag);
+	} ' '* ( eol | !. )
+heading_text = < ( !heading_marker ( formatting | anything_else ) )* > { printf("<a name=\"%s\" />", space_to_underscore(tag_content, tag_content_length)); }
+heading_marker = < '=' '='+ > { current_header_level = yyleng - 1; }
+
+# Paragraph
+paragraph = { printf("<p>"); }
+	wikitext eol eol
+	{ printf("</p>"); }
+horizontal_line = "----" ( eol | !. )	{ printf("<hr/>"); }
+
+# Indentation
+indentation = &{ start_of_line } ':' { printf("&nbsp;&nbsp;"); } wikitext
+
+# Lists
+list = bullet_list | numbered_list
+
+# Bullet list
+bullet_list = { printf("<ul>"); } bullet_list_entry+ { while(current_bullet_list_level--) { printf("</ul>"); } }
+bullet_list_entry = bullet ' '* ( !eol wikitext )* ( eol | !. ) { printf("</li>"); }
+bullet = < '*'+ > {
+	start_of_line = 0;
+	if(current_bullet_list_level < yyleng && current_bullet_list_level != 0) {
+		printf("<ul>");
+	} else if(current_bullet_list_level > yyleng) {
+		printf("</ul>");
+	}
+	current_bullet_list_level = yyleng; 
+	printf("<li>"); 
+}
+
+# Numbered list
+numbered_list = { printf("<ol>"); } numbered_list_entry+ { while(current_numbered_list_level--) { printf("</ol>"); } }
+numbered_list_entry = numbered ' '* ( !eol wikitext )* eol? { printf("</li>"); }
+numbered = < '#'+ > {
+	start_of_line = 0;
+	if(current_numbered_list_level < yyleng && current_numbered_list_level != 0) {
+		printf("<ol>");
+	} else if(current_numbered_list_level > yyleng) {
+		printf("</ol>");
+	}
+	current_numbered_list_level = yyleng; 
+	printf("<li>"); 
+}
+
+# Formatting
+formatting = bold_italic | bold | italic
+bold_italic = "'''''" {printf("<b><i>");}( !"'''''" wikitext )* "'''''" {printf("</i></b>");}
+bold = "'''" {printf("<b>");}( !"'''" wikitext )* "'''" {printf("</b>");}
+italic = "''" {printf("<i>");}( !"''" wikitext )* "''" {printf("</i>");}
+
+# pre-formatted blocks
+pre_block = &{ start_of_line } { printf("<pre>"); } pre_line+ { printf("</pre>"); }
+pre_line = ' ' < ( !eol . )* ( eol | !. ) > { printf("%s", yytext); }
+
+# Links
+link = renamed_link | simple_link | external_link
+simple_link = '[[' ':'? < ( !']]' . )* > {
+	char *path = space_to_underscore(yytext, yyleng);
+	printf("<a href=\"/%s\">%s", path, yytext);
+	free(path);
+	} ']]' < ( !' ' !eol . )* > { printf("%s</a>", yytext); }
+	
+renamed_link = '[[' < ( !'|' . )* > { 
+	char *path = space_to_underscore(yytext, yyleng);
+	printf("<a href=\"/%s\">", path);
+	free(path);
+	} '|' < ( !']]' . )* > { printf("%s</a>", yytext); } ']]'
+	
+external_link = named_link | unnamed_link | url
+named_link = '[' {printf("<a href=\""); } link_url {printf("\">");} ' '+ link_name + ' '* ']' {printf("</a>");}
+link_url = < ( !' ' . )+ >  { printf("%s", yytext); }
+link_name = < ( !']' . )+ > { printf("%s", yytext); }
+unnamed_link = '[' < ( !']' . )* > ']' { printf("<a href=\"%s\">%s</a>", yytext, yytext);}
+url = < ( 'http' | 'https' | 'ftp' ) > { strcpy(protocol, yytext); } '://' < ( !eol !' ' . )* > { printf("<a href=\"%s://%s\">%s://%s</a>", protocol, yytext, protocol, yytext); }
+
+# Images
+image = image_with_alt | plain_image
+plain_image = '[[' ' '* 'File:' < ( !']]' . )* > ' '* ']]'  { printf("<img src=\"%s\" />", yytext); }
+image_with_alt = '[[' ' '* 'File:' < ( !'|' . )* >
+	{ printf("<img src=\"%s\"", yytext ); }
+	'|alt=' < ( !']]' . )* >
+	{ printf(" alt=\"%s\" />", yytext); }
+	']]'
+	
+# Tables
+table = '{|' 
+	{ printf("<table>"); }
+	eol table_body '|}' ( eol | !. )
+	{ printf("</table>"); }
+table_body = table_caption? table_header? table_row+
+table_caption = '|+' ' '+ < ( !eol . )* > eol { printf("<caption>%s</caption>", yytext); }
+table_row = '|-'
+	{ printf("<tr>"); }
+	' '* eol table_heading* table_cell*
+	{ printf("</tr>"); }
+table_cell = '|'?
+	{ printf("<td>"); }
+	' '+ < ( !'||' !eol . )* > ( eol | '||' )
+	{ printf("%s</td>", yytext); }
+table_header = { printf("<tr>"); } table_heading+ { printf("</tr>"); }
+table_heading = { printf("<th"); }'!' ' '+ < ( !' |' . )* > { printf(" %s>", yytext); } ' |' ' '* < ( !eol . )* > eol {printf("%s</th>", yytext); }
+
+# Other shit
+anything_else = < !eol . > { start_of_line = 0; printf("%s", yytext); if(in_tag) { append_to_tag_content(yytext, yyleng); } }
+
+
+%%
+
+int main() {
+	tag_content = (char *)malloc(2 * MBYTE);
+	while(yyparse()) {}
+	
+	return 0;
+}
