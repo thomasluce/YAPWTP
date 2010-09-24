@@ -39,6 +39,12 @@ describe "Wikitext parser" do
     it "should allow white-space after the closing heading marker" do
       parse("== heading ==    ").strip.should =~ /<h1>heading/
     end
+
+    it "should let you close a heading with unballanced tags" do
+      result = parse("=== heading ==").strip
+      result.should include '<h2>'
+      result.should include '</h2>'
+    end
   end
 
   describe "paragraphs" do
