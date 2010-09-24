@@ -25,7 +25,7 @@ describe "Wikitext parser" do
 
   describe "headings" do
     it "should create the markup like mediawiki" do
-      parse("===heading ===").strip.should == '<h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h2><a name="heading" />'
+      parse("===heading ===").strip.should == '<p><h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h2><a name="heading" /></p>'
     end
 
     it "should be able to make a heading" do
@@ -58,66 +58,70 @@ describe "Wikitext parser" do
 
   describe "paragraphs" do
     it "should be able to notice paragraph breaks" do
-      parse(".\n\n.").strip.should == "<p>.</p>."
+      parse(".\n\n.").strip.should == "<p>.</p><p>.</p>"
     end
 
     it "should be able to make a horizontal line" do
-      parse("----").strip.should == "<hr/>"
+      parse("----").strip.should =~ /<hr\/>/
     end
 
     it "should be able to indent lines" do
-      parse(":text").strip.should == "&nbsp;&nbsp;text"
+      parse(":text").strip.should include "&nbsp;&nbsp;text"
+    end
+
+    it "should not make shitty paragraphs" do
+      parse("paragraph 1\n\nparagraph 2").should == "<p>paragraph 1</p><p>paragraph 2</p>"
     end
   end
 
   describe "lists" do
     it "should be able to make a list" do
-      parse('* test').should == '<ul><li>test</li></ul>'
-      parse("* test\n").should == '<ul><li>test</li></ul>'
-      parse("* test\n*test2").should == '<ul><li>test</li><li>test2</li></ul>'
+      parse('* test').should == '<p><ul><li>test</li></ul></p>'
+      parse("* test\n").should == '<p><ul><li>test</li></ul></p>'
+      parse("* test\n*test2").should == '<p><ul><li>test</li><li>test2</li></ul></p>'
     end
 
     it "should be able to make nested lists" do
-      parse("* test\n*test2\n** nested").should == '<ul><li>test</li><li>test2</li><ul><li>nested</li></ul></ul>'
+      parse("* test\n*test2\n** nested").should == '<p><ul><li>test</li><li>test2</li><ul><li>nested</li></ul></ul></p>'
     end
 
     it "should be able to make numbered lists" do
-      parse('# test').should == '<ol><li>test</li></ol>'
-      parse("# test\n").should == '<ol><li>test</li></ol>'
-      parse("# test\n#test2").should == '<ol><li>test</li><li>test2</li></ol>'
+      parse('# test').should == '<p><ol><li>test</li></ol></p>'
+      parse("# test\n").should == '<p><ol><li>test</li></ol></p>'
+      parse("# test\n#test2").should == '<p><ol><li>test</li><li>test2</li></ol></p>'
     end
 
     it "should be able to nest numbered lists" do
-      parse("# test\n#test2\n## nested").should == '<ol><li>test</li><li>test2</li><ol><li>nested</li></ol></ol>'
+      parse("# test\n#test2\n## nested").should == '<p><ol><li>test</li><li>test2</li><ol><li>nested</li></ol></ol></p>'
     end
   end
 
   describe "text formatting" do
     it "should be able to make things italic" do
-      parse("''italic''").should == '<i>italic</i>'
+      parse("''italic''").should == '<p><i>italic</i></p>'
     end
 
     it "should be able to make things bold" do
-      parse("'''bold'''").should == '<b>bold</b>'
+      parse("'''bold'''").should == '<p><b>bold</b></p>'
     end
 
     it "should be able to make things bold and italic" do
-      parse("'''''bold-italic'''''").should == '<b><i>bold-italic</i></b>'
+      parse("'''''bold-italic'''''").should == '<p><b><i>bold-italic</i></b></p>'
     end
-    
+
     it "should wrap things in leading spaces with pre tags" do
-      parse(" thing one\n  thing two").should == "<pre>thing one\n thing two</pre>"
+      parse(" thing one\n  thing two").should == "<p><pre>thing one\n thing two</pre></p>"
     end
     # TODO: <nowiki>tags
   end
 
   describe "links" do
     it "should be able to make a simple link" do
-      parse("[[someplace else]]").should == '<a href="/someplace_else">someplace else</a>'
+      parse("[[someplace else]]").should == '<p><a href="/someplace_else">someplace else</a></p>'
     end
 
     it "should be able to make a named link" do
-      parse("[[path|display]]").should == '<a href="/path">display</a>'
+      parse("[[path|display]]").should == '<p><a href="/path">display</a></p>'
     end
     # TODO: I need to hide things in parenthesis. Eg: [[test (first)]] should produce <a href="/test_(first)">test</a>
     # TODO: hide namespaces. Eg: [[Namespace:test]] should produce <a href="/Namespace:test">test</a>
@@ -126,30 +130,30 @@ describe "Wikitext parser" do
 
     # blended links
     it "should be able to make blended links" do
-      parse("[[path]]s").should == '<a href="/path">paths</a>'
+      parse("[[path]]s").should == '<p><a href="/path">paths</a></p>'
     end
 
     it "should be able to do external links" do
-      parse("[http://www.google.com google]").should == '<a href="http://www.google.com">google</a>'
-      parse("[http://www.google.com]").should == '<a href="http://www.google.com">http://www.google.com</a>'
+      parse("[http://www.google.com google]").should == '<p><a href="http://www.google.com">google</a></p>'
+      parse("[http://www.google.com]").should == '<p><a href="http://www.google.com">http://www.google.com</a></p>'
     end
 
     it "should be able to make full urls into links" do
-      parse("http://www.google.com").should == '<a href="http://www.google.com">http://www.google.com</a>'
+      parse("http://www.google.com").should == '<p><a href="http://www.google.com">http://www.google.com</a></p>'
     end
   end
 
   describe "images" do
     it "should be able to make an image" do
-      parse("[[File:image.png]]").should == '<img src="image.png" />'
+      parse("[[File:image.png]]").should == '<p><img src="image.png" /></p>'
     end
 
     it "should be able to apply alt-text to an image" do
-      parse("[[File:image.png|alt=alt text]]").should == '<img src="image.png" alt="alt text" />'
+      parse("[[File:image.png|alt=alt text]]").should == '<p><img src="image.png" alt="alt text" /></p>'
     end
 
     it "should be able to link to the file instead of display it" do
-      parse("[[:File:image.png]]").should == '<a href="/File:image.png">File:image.png</a>'
+      parse("[[:File:image.png]]").should == '<p><a href="/File:image.png">File:image.png</a></p>'
       # TODO: "Media:" links that you can title
     end
 
@@ -163,21 +167,21 @@ describe "Wikitext parser" do
       parse("{|
 |+ caption
 |-
-|}").should == "<table><caption>caption</caption><tr></tr></table>"
+|}").should == "<p><table><caption>caption</caption><tr></tr></table></p>"
     end
 
     it "should be able to do simple rows" do
       parse("{|
 |-
 | cell one
-|}").should == "<table><tr><td>cell one</td></tr></table>"
+|}").should == "<p><table><tr><td>cell one</td></tr></table></p>"
     end
 
     it "should be able to do single-line rows" do
       parse("{|
 |-
 | Cell one || Cell two
-|}").should == "<table><tr><td>Cell one </td><td>Cell two</td></tr></table>"
+|}").should == "<p><table><tr><td>Cell one </td><td>Cell two</td></tr></table></p>"
     end
 
     it "should be able to do a few rows" do
@@ -188,7 +192,7 @@ describe "Wikitext parser" do
 |-
 | cell
 | cell
-|}").should == "<table><caption>Caption</caption><tr><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table>"
+|}").should == "<p><table><caption>Caption</caption><tr><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
     end
     
     describe "headers" do
@@ -202,7 +206,7 @@ describe "Wikitext parser" do
 |-
 | cell
 | cell
-|}").should == "<table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table>"
+|}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
       end
       
       it "should be able to do headers part-way down as well" do
@@ -216,7 +220,7 @@ describe "Wikitext parser" do
 |-
 | cell
 | cell
-|}").should == "<table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><th scope=\"row\">row heading</th><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table>"
+|}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><th scope=\"row\">row heading</th><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
       end
     end
     

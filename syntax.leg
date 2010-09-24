@@ -106,9 +106,7 @@ heading_text = < ( !heading_marker ( formatting | anything_else ) )* >
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = yyleng - 1; }
 
 # Paragraph
-paragraph = { printf("<p>"); }
-  wikitext eol eol
-  { printf("</p>"); }
+paragraph = wikitext eol eol { printf("</p><p>"); }
 horizontal_line = "----" ( eol | eof )  { printf("<hr/>"); }
 
 # Indentation
@@ -211,7 +209,9 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext, yy
 
 int main() {
   tag_content = (char *)malloc(2 * MBYTE);
+  printf("<p>");
   while(yyparse()) {}
-  
+  printf("</p>");
+
   return 0;
 }
