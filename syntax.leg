@@ -89,7 +89,7 @@ void strappend(char *target, char *s) {
 %}
 
 # High-level
-page =  pre_block | wikitext_line | wikitext
+page =  nowiki | pre_block | wikitext_line | wikitext
 wikitext_line = paragraph | horizontal_line
 wikitext = template | heading | indentation | list | formatting | image | link | table | anything_else | eol
 
@@ -164,6 +164,7 @@ italic = "''" {printf("<i>");}( !"''" wikitext )* "''" {printf("</i>");}
 # pre-formatted blocks
 pre_block = &{ start_of_line } { printf("<pre>"); } pre_line+ { printf("</pre>"); }
 pre_line = ' ' < ( !eol . )* ( eol | eof ) > { printf("%s", yytext); }
+nowiki = '<nowiki>' ( !'</nowiki>' anything_else )* '</nowiki>'
 
 # Links
 link = renamed_link | simple_link | external_link

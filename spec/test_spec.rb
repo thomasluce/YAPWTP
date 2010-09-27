@@ -124,7 +124,10 @@ describe "Wikitext parser" do
     it "should wrap things in leading spaces with pre tags" do
       parse(" thing one\n  thing two").should == "<p><pre>thing one\n thing two</pre></p>"
     end
-    # TODO: <nowiki>tags
+
+    it "should pass through anything that is inside of <nowiki> tags" do
+      parse("<nowiki>'''format'''</nowiki> '''format'''").should == "<p>'''format''' <b>format</b></p>"
+    end
   end
 
   describe "links" do
