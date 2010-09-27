@@ -1,0 +1,87 @@
+[[Image:AboutUsLogoNewSmaller.png|left]]
+
+<big>'''AboutUs''' is a [[WikiWiki|wiki]] for and about businesses, organizations, blogs, forums, and really anything or anyone that has a website.
+
+''Think of us as the guide to [[DomainPage|websites]] (that you can also help build).''</big>
+
+'''AboutUs''' aims to provide you with both an introduction to sites in the areas you care about as well as a way to share your knowledge of those websites.
+
+AboutUs [[DomainPage|domain pages]] include a [[summary]] of the website as well as more text about it, relevant [[tags]], its contact information, [[ImageHelp|photos or logos]], connections with [[RelatedDomains|related websites]] and more... all while linking directly to the website.{{PullQuote|right|AboutUs dynamically creates pages from publicly accessible information on Web sites, like meta tags and [[whois]] information. Once built, the pages - like any [[WikiWiki|wiki]] - are available to be edited by the company, users, or anyone who visits the site.|[[NYTimes.com|NY Times]] [http://www.nytimes.com/external/readwriteweb/2009/01/09/09readwriteweb-aboutus_wiki_five_million_series_a.html?dbk article about AboutUs.org]}}
+
+As a [[WikiWiki|wiki]], information on AboutUs pages can be added to and changed by clicking the <big>'''[[edit]] pencil'''</big> button... ''and we encourage you to do so.''
+
+'''Finding information''' - If you'd like to see what information we have on a given [[DomainPage|website]] or share your knowledge of it, simply search for the URL (like Example.com) at the top right.
+
+'''Sharing your knowledge''' - AboutUs is what it is today thanks to the people who edit and improve it. Please feel free to help build this guide to websites by clicking one of the many edit pencil icons. [[Image:EditPencilSnapshot.png]]
+
+__TOC__
+
+===Our Commitment===
+
+{{PullQuote|right|If you would like to know more about a company behind a domain name AboutUs.org is the place where you should have a look...|Andres of [[XavierMedia.com]] on [http://blog.xaviermedia.com/2008/05/20/how-to-create-your-own-aboutusorg-page/ AboutUs.org]|May 2008}}
+
+In order to protect the integrity of the resource and to engage with fellow editors, '''AboutUs''' is committed to reviewing [http://www.aboutus.org/recent_changes every edit made] to each of its pages.
+
+We also want to be a place where you feel encouraged to contribute and find it easy to do so or [[Help|learn how]]. For this reason we have numerous [[Help|help pages]] and ways to be [[Contacting AboutUs.org|contacted]].
+
+===Our Technology===
+
+* AboutUs was [[AboutUsBot|pre-populated]] with information about many different [[DomainPage|websites]].
+* The [[thumbnail]] images are provided by [[DomainTools.com|Name Intelligence]]'s proprietary [[thumbnail]] service and provide a link to the referred-to site.
+* Our [[CamelCasing]] of domain names is to help make domain names more readable. If you notice that the [[CamelCasing]] is wrong, [[Fix Capitalization of an Article|you can correct it]].
+* The map in the "Website Information" box is from [[GoogleMaps.com|Google Maps]]' service.
+* We developed the [[Recent Contributors]] box (to the right of each page) to make the edits each page receives more [[transparency|transparent]].
+* We created [[tags]] as a more user-friendly interface replacement for [[categories]].
+* Our [[Online Visibility Audit]] is a tool to help website operators improve their site by seeing it through the eyes of search engines and their visitors.
+
+===Our Policies===
+AboutUs works to create [[AboutUs Guidelines|policies and guidelines]] that provide a clear explanation of not only the legal aspects of creating a resource based on the [[collaborating_to_build_the_commons|information commons]], but also on the values that help promote the [[WikiWay]]. Check out the [[AboutUs Guidelines]] page for more information.
+
+===What's happening at AboutUs===
+{{PullQuote|right|You guys have a user-friendly system that makes it easy to optimize listings. AboutUs is a really helpful resource and I've enjoyed learning more about the little tricks that make a page pop out at viewers.|[[User:Jon Barilone|Jon Barilone]] of [[SEOP.com]]|17 October 2008 <small>('''[[AboutUsTestimonials|view more testimonials]]''')</small>}}
+* [[AboutUs LiveChat|Live Chat]] - Come chat with us
+* [[Community]]
+* [http://www.aboutus.org/recent_changes Recent Changes] - Edits to the [[WikiWiki|wiki]]
+* [[PeopleAt.AboutUs.org]] - Some of our [[real people]]
+* [[AboutUs Testimonials]] - Pats on the back
+* [[How you can help]] - Ways you can contribute and help build AboutUs
+* [[AboutUs.org/Jobs|Jobs]] - check out our available positions
+{{WikiIndexMember|right}} {{PortlandTechMember|right}} {{LahoreTechMember|right}}
+==Related Domains==
+* [[Ray King]], [[John Stanton]] and [[Brandon Sanders]] started [[ICANNwiki.org]]
+* [[MarkDilley]], [[John Stanton]], [[Ray King]] and [[TedErnst]] started [[WikiIndex.org]]
+* [[DomainTools.com]] supports [[AboutUs.org]]
+* [[AboutUs.org]] uses [[AddThumbnail|thumbnails]] from [[DomainTools.com]]
+* [[Ward Cunningham]] started the first [[WikiWiki|wiki]] at [[C2.com]]
+* [[AboutUs.org|AboutUs]] acquired [[Jyte.com]] in January 2010
+* AboutUs has a weblog at [http://blog.AboutUs.org Blog.AboutUs.org]
+* We originally used [[MediaWiki.org]] software, and have since migrated much of our code to [[List:RubyOnRails|Ruby on Rails]].
+
+==Contact AboutUs.org==
+[[Image:AboutUs107SEWashington.png|right|thumb|The AboutUs office at in Portland, OR, USA ([[:Category:AboutUsPortland|people]])]]
+
+:''(Have you checked the FAQs on our '''[[Help|Help page]]'''?)''
+: AboutUs, Inc.
+: [http://blog.aboutus.org/2009/12/14/chat-with-aboutus/ AboutUs LiveChat] <small>(9:30-5:30 [http://www.greenwichmeantime.com/time-zone/usa/pacific-time/ PST])</small>
+: <email>c6c307f6afe031cc95e0cde29e613670</email>
+: 1.800.AboutUs or +1 503.488.5763 <small>(9:30-5:30 [http://www.greenwichmeantime.com/time-zone/usa/pacific-time/ PST])</small>
+
+==Address==
+: 107 SE Washington Street, Suite 520
+: Portland, OR 97214
+: USA
+
+==Social Media==
+<div style="float:right;"> {{ExtClickPic|http://is.gd/5gsPg|http://www.aboutus.org/Special/image/full/bbbseal1.gif}}</div>
+* '''{{WikipediaLink|AboutUs|AboutUs article on Wikipedia}}''' <small>''(Edit us?)''</small>
+* {{YouTube|url=http://www.youtube.com/user/AboutUsWiki}}
+* '''{{Facebook|url=http://www.facebook.com/AboutUs.org/}}''':  <small>''(Like?)''</small>
+* {{MySpace|url=http://www.myspace.com/AboutUsWiki}} <small>''(Be our friend?)''</small>
+* {{Flickr|url=http://flickr.com/photos/aboutuswiki}}
+* '''{{Twitter|AboutUs}}''' <small>''(Follow us?)''</small>
+* '''[http://blog.aboutus.org/ AboutUs Weblog]''': {{Rss|url=http://feeds.feedburner.com/AboutUsWikiWeblog}} <small>''(Subscribe or comment?)''</small>
+* '''[[TweepML.org]]''' [http://tweepml.org/AboutUs-Twitterers AboutUs Twitterers]
+* [http://bit.ly/AboutUsNews Sign up for our '''email newsletter''']
+
+[[Category:PortlandTech]]
+[[Category:Web 2.0]]

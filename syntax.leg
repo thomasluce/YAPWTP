@@ -114,7 +114,7 @@ heading = heading_marker {
     printf("<a name=\"%s\" />", space_to_underscore(tag_content, tag_content_length));
     tag_content_length = 0;
   }
-heading_text = < ( !heading_marker ( formatting | anything_else ) )* > 
+heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = yyleng; }
 
 # Paragraph
@@ -167,18 +167,16 @@ pre_line = ' ' < ( !eol . )* ( eol | eof ) > { printf("%s", yytext); }
 
 # Links
 link = renamed_link | simple_link | external_link
-simple_link = '[[' ':'? < ( !']]' . )* > {
-  char *path = space_to_underscore(yytext, yyleng);
-  printf("<a href=\"/%s\">%s", path, yytext);
-  free(path);
-  } ']]' < ( !' ' !eol . )* > { printf("%s</a>", yytext); }
-  
 renamed_link = '[[' < ( !'|' !']]' . )* > { 
   char *path = space_to_underscore(yytext, yyleng);
   printf("<a href=\"/%s\">", path);
   free(path);
   } '|' < ( !']]' . )* > { printf("%s</a>", yytext); } ']]'
-  
+simple_link = '[[' ':'? < ( !']]' . )* > {
+  char *path = space_to_underscore(yytext, yyleng);
+  printf("<a href=\"/%s\">%s", path, yytext);
+  free(path);
+  } ']]' < ( !' ' !( '=' '='+ ) !eol !eof . )* > { printf("%s</a>", yytext); }
 external_link = named_link | unnamed_link | url
 named_link = '[' {printf("<a href=\""); } link_url {printf("\">");} ' '+ link_name + space* ']' {printf("</a>");}
 link_url = < ( !' ' . )+ >  { printf("%s", yytext); }

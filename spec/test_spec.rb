@@ -28,6 +28,10 @@ describe "Wikitext parser" do
       parse("===heading===\n===heading===").should_not include 'headingheading'
     end
 
+    it "should be able to do links inside of headings" do
+      parse("===[[heading]] ===").should_not include '[['
+    end
+
     it "should create the markup like mediawiki" do
       parse("===heading ===").strip.should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h3><a name="heading" /></p>'
     end
