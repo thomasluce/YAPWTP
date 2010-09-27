@@ -112,6 +112,7 @@ heading = heading_marker {
     close_tag(tag);
     current_header_level = 0;
     printf("<a name=\"%s\" />", space_to_underscore(tag_content, tag_content_length));
+    tag_content_length = 0;
   }
 heading_text = < ( !heading_marker ( formatting | anything_else ) )* > 
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = yyleng; }

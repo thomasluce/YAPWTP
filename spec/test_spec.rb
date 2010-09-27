@@ -24,6 +24,10 @@ describe "Wikitext parser" do
   end
 
   describe "headings" do
+    it "should not freak out when there are multiple headings" do
+      parse("===heading===\n===heading===").should_not include 'headingheading'
+    end
+
     it "should create the markup like mediawiki" do
       parse("===heading ===").strip.should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h3><a name="heading" /></p>'
     end
