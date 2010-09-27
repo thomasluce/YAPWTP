@@ -25,7 +25,7 @@ describe "Wikitext parser" do
 
   describe "headings" do
     it "should create the markup like mediawiki" do
-      parse("===heading ===").strip.should == '<p><h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h2><a name="heading" /></p>'
+      parse("===heading ===").strip.should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h3><a name="heading" /></p>'
     end
 
     it "should be able to make a heading" do
@@ -51,8 +51,8 @@ describe "Wikitext parser" do
 
     it "should let you close a heading with unballanced tags" do
       result = parse("=== heading ==").strip
-      result.should include '<h2>'
-      result.should include '</h2>'
+      result.should include '<h3>'
+      result.should include '</h3>'
     end
   end
 
@@ -145,11 +145,15 @@ describe "Wikitext parser" do
 
   describe "images" do
     it "should be able to make an image" do
-      parse("[[File:image.png]]").should == '<p><img src="image.png" /></p>'
+      parse("[[File:image.png]]").should == '<p><a href="File:image.png" class="image"><img src="image.png" /></a></p>'
+    end
+
+    it "should be able to use the alternate, 'Image:' indicator" do
+      parse("[[Image:image.png]]").should == '<p><a href="File:image.png" class="image"><img src="image.png" /></a></p>'
     end
 
     it "should be able to apply alt-text to an image" do
-      parse("[[File:image.png|alt=alt text]]").should == '<p><img src="image.png" alt="alt text" /></p>'
+      parse("[[File:image.png|alt=alt text]]").should include 'alt="alt text"'
     end
 
     it "should be able to link to the file instead of display it" do
@@ -157,8 +161,28 @@ describe "Wikitext parser" do
       # TODO: "Media:" links that you can title
     end
 
+    it "should be able to float the image left, right, center, or not at all" do
+      parse("[[File:image.png|left]]").should include 'class="floatleft"'
+    end
+
+    describe "thumbnail" do
+      # TODO: if a filename is given as the value to 'thumb=', use that without the width, and height.
+      it "should scale the image down" do
+        parse("[[File:image.png|thumb]]").should include 'width="220" height="30" class="thumbimage"'
+      end
+
+      it "should scale the image down" do
+        parse("[[File:image.png|thumbnail]]").should include 'width="220" height="30" class="thumbimage"'
+      end
+    end
+
+    describe "frame" do
+      it "should attach the thumbimage class but not actually size it down" do
+        parse("[[File:image.png|frame]]").should include 'class="thumbimage"'
+      end
+    end
+
     # TODO: frame and thumb attributes
-    # TODO: right and left floats
     # TODO: sizing
   end
 
@@ -227,6 +251,12 @@ describe "Wikitext parser" do
     # TODO: single-pipe separaters for a format modifier
   end
 
+  describe "templates" do
+    it "should just swallow templates at the moment" do
+      parse('{{template}}').should == '<p></p>'
+    end
+  end
+
 
   # TODO: categories
   # TODO: redirects
@@ -235,5 +265,4 @@ describe "Wikitext parser" do
   # TODO: links directly into edit mode
   # TODO: book sources "ISBN" links
   # TODO: RFC links
-  # TODO: templates and transclusions
 end

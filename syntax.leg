@@ -7,12 +7,18 @@
 #define YY_noDEBUG 1
 #define KBYTE 1024
 #define MBYTE KBYTE * 1024
+#define IMAGE_FRAME 1
+#define IMAGE_THUMB ( 1 << 1 )
+#define STR_BUFFER_LEN 1024 
 
 int current_header_level = 0;
 int current_bullet_list_level;
 int current_numbered_list_level;
 int start_of_line = 1;
 char protocol[5];
+int image_attributes = 0;
+char image_url[STR_BUFFER_LEN];
+char image_variables[STR_BUFFER_LEN];
 
 char *trim(char *s) {
   int i = 1;
@@ -75,12 +81,17 @@ void append_to_tag_content(char *c, size_t s) {
   tag_content[tag_content_length] = 0;
 }
 
+void strappend(char *target, char *s) {
+  int len = strlen(target);
+  strncpy(target + len, s, STR_BUFFER_LEN - len);
+}
+
 %}
 
 # High-level
 page =  pre_block | wikitext_line | wikitext
 wikitext_line = paragraph | horizontal_line
-wikitext = heading | indentation | list | formatting | image | link | table | anything_else | eol
+wikitext = template | heading | indentation | list | formatting | image | link | table | anything_else | eol
 
 # Generally useful rules
 eol = '\n' { start_of_line = 1; }
@@ -103,7 +114,7 @@ heading = heading_marker {
     printf("<a name=\"%s\" />", space_to_underscore(tag_content, tag_content_length));
   }
 heading_text = < ( !heading_marker ( formatting | anything_else ) )* > 
-heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = yyleng - 1; }
+heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = yyleng; }
 
 # Paragraph
 paragraph = wikitext eol eol { printf("</p><p>"); }
@@ -175,14 +186,36 @@ unnamed_link = '[' < ( !']' . )* > ']' { printf("<a href=\"%s\">%s</a>", yytext,
 url = < ( 'http' | 'https' | 'ftp' ) > { strcpy(protocol, yytext); } '://' < ( !eol !' ' . )* > { printf("<a href=\"%s://%s\">%s://%s</a>", protocol, yytext, protocol, yytext); }
 
 # Images
-image = image_with_alt | plain_image
-plain_image = '[[' space* 'File:' < ( !']]' . )* > space* ']]'  { printf("<img src=\"%s\" />", yytext); }
-image_with_alt = '[[' space* 'File:' < ( !'|' . )* >
-  { printf("<img src=\"%s\"", yytext ); }
-  '|alt=' < ( !']]' . )* >
-  { printf(" alt=\"%s\" />", yytext); }
-  ']]'
-  
+image = open_image  file_indicator arguments? close_image {
+  if(image_attributes & IMAGE_FRAME) {
+    printf("<div class=\"thumb tright\"><div class=\"thumbinner\">");
+  }
+
+  if(image_attributes & IMAGE_THUMB) {
+    printf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/></a>", image_url, image_url);
+  } else if(image_attributes & IMAGE_FRAME) {
+    printf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" class=\"thumbimage\"/></a>", image_url, image_url);
+  } else {
+    printf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" %s/></a>", image_url, image_url, image_variables);
+  }
+
+  if(image_attributes & IMAGE_FRAME) {
+    printf("<div class=\"thumbcaption\"></div></div>");
+  }
+}
+open_image = '[[' space*
+close_image = space* ']]'
+file_indicator = ( 'File:' | 'Image:' ) < ( !'|' !close_image . )* > { strncpy(image_url, yytext, STR_BUFFER_LEN); }
+arguments = '|' variable value? arguments?
+variable = special_image_variables | generic_variable
+special_image_variables = image_type | float
+image_type = frame | thumb
+frame = 'frame' { image_attributes |= IMAGE_FRAME; }
+thumb = ( 'thumbnail' | 'thumb' ) { image_attributes |= IMAGE_THUMB; }
+float = < ( 'left' | 'right' | 'center' ) > { char temp[STR_BUFFER_LEN]; snprintf(temp, STR_BUFFER_LEN, " class=\"float%s\"", yytext); strappend(image_variables, temp); } | 'none'
+generic_variable = < ( !'|' !'=' !close_image . )* > { strappend(image_variables, yytext); }
+value = '=' < ( !'|' !close_image . )* > { char temp[STR_BUFFER_LEN]; snprintf(temp, STR_BUFFER_LEN, "=\"%s\"", yytext); strappend(image_variables, temp); }
+
 # Tables
 table = '{|' 
   { printf("<table>"); }
@@ -200,6 +233,9 @@ table_cell = '|'?
   { printf("%s</td>", yytext); }
 table_header = { printf("<tr>"); } table_heading+ { printf("</tr>"); }
 table_heading = { printf("<th"); }'!' ' '+ < ( !' |' . )* > { printf(" %s>", yytext); } ' |' space* < ( !eol . )* > eol {printf("%s</th>", yytext); }
+
+# Templates
+template = '{{' space* ( !'}}' . )* '}}'
 
 # Other shit
 anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext, yyleng); }
