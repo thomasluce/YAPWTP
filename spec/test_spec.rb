@@ -98,6 +98,10 @@ describe "Wikitext parser" do
     it "should be able to nest numbered lists" do
       parse("# test\n#test2\n## nested").should == '<p><ol><li>test</li><li>test2</li><ol><li>nested</li></ol></ol></p>'
     end
+
+    it "should process other wiki text inside of list items" do
+      parse("* [[link]]").should == '<p><ul><li><a href="/link">link</a></li></ul></p>'
+    end
   end
 
   describe "text formatting" do
@@ -126,6 +130,11 @@ describe "Wikitext parser" do
 
     it "should be able to make a named link" do
       parse("[[path|display]]").should == '<p><a href="/path">display</a></p>'
+    end
+
+    it "should be able to have multiple named and un-named links on a line" do
+      result = parse("check out the [[thumbnail]] tool from [[domaintools|Domain Tools]]")
+      result.should == "<p>check out the <a href=\"/thumbnail\">thumbnail</a> tool from <a href=\"/domaintools\">Domain Tools</a></p>"
     end
     # TODO: I need to hide things in parenthesis. Eg: [[test (first)]] should produce <a href="/test_(first)">test</a>
     # TODO: hide namespaces. Eg: [[Namespace:test]] should produce <a href="/Namespace:test">test</a>

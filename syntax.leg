@@ -173,7 +173,7 @@ simple_link = '[[' ':'? < ( !']]' . )* > {
   free(path);
   } ']]' < ( !' ' !eol . )* > { printf("%s</a>", yytext); }
   
-renamed_link = '[[' < ( !'|' . )* > { 
+renamed_link = '[[' < ( !'|' !']]' . )* > { 
   char *path = space_to_underscore(yytext, yyleng);
   printf("<a href=\"/%s\">", path);
   free(path);
