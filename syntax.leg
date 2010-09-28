@@ -111,7 +111,7 @@ heading = heading_marker {
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
     current_header_level = 0;
-    printf("<a name=\"%s\" />", space_to_underscore(tag_content, tag_content_length));
+    printf("<a name=\"%s\" />\n", space_to_underscore(tag_content, tag_content_length));
     tag_content_length = 0;
   }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
@@ -128,7 +128,11 @@ indentation = &{ start_of_line } ':' { printf("&nbsp;&nbsp;"); } wikitext
 list = bullet_list | numbered_list
 
 # Bullet list
-bullet_list = { printf("<ul>"); } bullet_list_entry+ { while(current_bullet_list_level--) { printf("</ul>"); } }
+bullet_list = { printf("<ul>"); } bullet_list_entry+ { 
+  while((current_bullet_list_level > 0) && current_bullet_list_level--) { 
+    printf("</ul>"); 
+  }
+}
 bullet_list_entry = bullet space* ( !eol wikitext )* ( eol | eof ) { printf("</li>"); }
 bullet = < '*'+ > {
   start_of_line = 0;
