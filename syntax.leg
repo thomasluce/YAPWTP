@@ -21,10 +21,16 @@ char image_url[STR_BUFFER_LEN];
 char image_variables[STR_BUFFER_LEN];
 
 char *trim(char *s) {
-  int i = 1;
-  size_t size = strlen(s);
-  while(s[size-i] == ' ') {
-    s[size-i++] = 0;
+  size_t size;
+
+  for(size = strlen(s) - 1; size >= 0; size--) {
+    // Make sure we stop when we hit something we care about (e.g. normal non-utf characters)
+    if(s[size] > 0x20 && s[size] < 0x7F) {
+        break;
+    }
+    if(s[size] == ' ') {
+      s[size] = 0;
+    }
   }
   return s;
 }
