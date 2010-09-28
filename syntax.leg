@@ -60,7 +60,9 @@ void open_tag(char *tag, char *args) {
   }
   
   in_tag = 1;
-  free(tag_content);
+  if(tag_content) {
+    free(tag_content);
+  }
   tag_content = malloc(tag_content_size);
 }
 
@@ -211,8 +213,12 @@ image_type = frame | thumb
 frame = 'frame' { image_attributes |= IMAGE_FRAME; }
 thumb = ( 'thumbnail' | 'thumb' ) { image_attributes |= IMAGE_THUMB; }
 float = < ( 'left' | 'right' | 'center' ) > { char temp[STR_BUFFER_LEN]; snprintf(temp, STR_BUFFER_LEN, " class=\"float%s\"", yytext); strncat(image_variables, temp, STR_BUFFER_LEN - strlen(image_variables)); } | 'none'
-generic_variable = < ( !'|' !'=' !close_image . )* > { strncat(image_variables, yytext, STR_BUFFER_LEN - yyleng); }
-value = '=' < ( !'|' !close_image . )* > { char temp[STR_BUFFER_LEN]; snprintf(temp, STR_BUFFER_LEN, "=\"%s\"", yytext); strncat(image_variables, temp, STR_BUFFER_LEN - strlen(image_variables)); }
+generic_variable = < ( !'|' !'=' !close_image . )* > { strncat(image_variables, yytext, STR_BUFFER_LEN - yyleng - strlen(image_variables)); }
+value = '=' < ( !'|' !close_image . )* > { 
+  char temp[STR_BUFFER_LEN];
+  snprintf(temp, STR_BUFFER_LEN, "=\"%s\"", yytext);
+  strncat(image_variables, temp, STR_BUFFER_LEN - strlen(image_variables)); 
+}
 
 # Tables
 table = '{|' 
