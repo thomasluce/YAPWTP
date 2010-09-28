@@ -25,7 +25,7 @@ char *trim(char *s) {
 
   for(size = strlen(s) - 1; size >= 0; size--) {
     // Make sure we stop when we hit something we care about (e.g. normal non-utf characters)
-    if(s[size] > 0x20 && s[size] < 0x7F) {
+    if((s[size] > 0x20) && (s[size] < 0x7F)) {
         break;
     }
     if(s[size] == ' ') {
@@ -36,15 +36,12 @@ char *trim(char *s) {
 }
 
 char *space_to_underscore(char *s, size_t size) {
-  char *temp = (char *)malloc(size);
   int i;
-  trim(s);
-  size = strlen(s);
-  for(i = 0; i < size; i++) {
-    if(s[i] == ' ' && i != size-1) {
+
+  char *temp = trim(strdup(s));
+  for(i = strlen(temp) - 1; i >= 0 ; i--) {
+    if(temp[i] == ' ') {
       temp[i] = '_';
-    } else {
-      temp[i] = s[i];
     }
   }
   return temp;
