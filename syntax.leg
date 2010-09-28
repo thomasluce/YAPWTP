@@ -203,7 +203,7 @@ simple_link = '[[' ':'? < ( !']]' . )* > {
   printf("<a href=\"/%s\">%s", path, name);
   free(path);
   free(name);
-  } ']]' < ( !' ' !( '=' '='+ ) !eol !eof . )* > { printf("%s</a>", yytext); }
+  } ']]' < ( !space !( '=' '='+ ) !eol !eof . )* > { printf("%s</a>", yytext); }
 external_link = named_link | unnamed_link | url
 named_link = '[' {printf("<a href=\""); } link_url {printf("\">");} ' '+ link_name + space* ']' {printf("</a>");}
 link_url = < ( !' ' . )+ >  { printf("%s", yytext); }
