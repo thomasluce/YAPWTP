@@ -18,11 +18,6 @@ describe "Wikitext parser" do
     return result
   end
 
-  def assert(&block)
-    result = yield
-    raise "Assertion failed: #{result}" unless yield
-  end
-
   describe "headings" do
     it "should not freak out when there are multiple headings" do
       parse("===heading===\n===heading===").should_not include 'headingheading'
@@ -40,11 +35,11 @@ describe "Wikitext parser" do
       parse("== heading ==").strip.should =~ /<span class="mw-headline" id="heading">heading<\/span>/
       parse("== heading ==\n").strip.should =~ /<span class="mw-headline" id="heading">heading<\/span>/
     end
-    
+
     it "should make an anchor with the heading" do
       parse("==heading==").strip.should =~ /<a name="heading"/
     end
-    
+
     it "should filter headings content for the anchor name" do
       parse("==heading ''with formatting''==").strip.should =~/<a name="heading_with_formatting"/
     end
@@ -143,7 +138,10 @@ describe "Wikitext parser" do
       result = parse("check out the [[thumbnail]] tool from [[domaintools|Domain Tools]]")
       result.should == "<p>check out the <a href=\"/thumbnail\">thumbnail</a> tool from <a href=\"/domaintools\">Domain Tools</a></p>"
     end
-    # TODO: I need to hide things in parenthesis. Eg: [[test (first)]] should produce <a href="/test_(first)">test</a>
+
+    it "should hide parentheticals in the link text" do
+      parse("[[link (test)]]").should == '<p><a href="/link_(test)">link</a></p>'
+    end
     # TODO: hide namespaces. Eg: [[Namespace:test]] should produce <a href="/Namespace:test">test</a>
       # These two things together as well.
     # TODO: interwiki links.
@@ -164,6 +162,8 @@ describe "Wikitext parser" do
   end
 
   describe "images" do
+    # TODO: link= and caption attributes
+    # TODO: size and border attributes
     it "should be able to make an image" do
       parse("[[File:image.png]]").should == '<p><a href="File:image.png" class="image"><img src="image.png" /></a></p>'
     end
@@ -201,9 +201,6 @@ describe "Wikitext parser" do
         parse("[[File:image.png|frame]]").should include 'class="thumbimage"'
       end
     end
-
-    # TODO: frame and thumb attributes
-    # TODO: sizing
   end
 
   describe "tables -- oh boy..." do
@@ -238,7 +235,7 @@ describe "Wikitext parser" do
 | cell
 |}").should == "<p><table><caption>Caption</caption><tr><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
     end
-    
+
     describe "headers" do
       it "should be able to make headers" do
         parse("{|
@@ -252,7 +249,7 @@ describe "Wikitext parser" do
 | cell
 |}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
       end
-      
+
       it "should be able to do headers part-way down as well" do
         parse("{|
 |+ Caption
@@ -267,7 +264,7 @@ describe "Wikitext parser" do
 |}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><th scope=\"row\">row heading</th><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
       end
     end
-    
+
     # TODO: single-pipe separaters for a format modifier
   end
 
