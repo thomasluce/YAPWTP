@@ -111,14 +111,14 @@ heading = heading_marker {
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
     current_header_level = 0;
-    printf("<a name=\"%s\" />\n", space_to_underscore(tag_content, tag_content_length));
+    printf("<a name=\"%s\" />", space_to_underscore(tag_content, tag_content_length));
     tag_content_length = 0;
   }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
 
 # Paragraph
-paragraph = wikitext eol eol { printf("</p>\n<p>"); }
+paragraph = wikitext eol eol { printf("</p><p>"); }
 horizontal_line = "----" ( eol | eof )  { printf("<hr/>"); }
 
 # Indentation
@@ -255,7 +255,7 @@ int main() {
   tag_content = (char *)malloc(2 * MBYTE);
   printf("<p>");
   while(yyparse()) {}
-  printf("</p>\n");
+  printf("</p>");
 
   return 0;
 }
