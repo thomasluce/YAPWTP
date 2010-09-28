@@ -115,7 +115,7 @@ heading = heading_marker {
     tag_content_length = 0;
   }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
-heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = yyleng; }
+heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
 
 # Paragraph
 paragraph = wikitext eol eol { printf("</p>\n<p>"); }
