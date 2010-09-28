@@ -22,9 +22,7 @@ describe "Wikitext parser" do
     result = yield
     raise "Assertion failed: #{result}" unless yield
   end
-
-  describe "headings" do
-    it "should not freak out when there are multiple headings" do
+describe "headings" do it "should not freak out when there are multiple headings" do
       parse("===heading===\n===heading===").should_not include 'headingheading'
     end
 
@@ -62,6 +60,12 @@ describe "Wikitext parser" do
       result.should include '<h3>'
       result.should include '</h3>'
     end
+
+	it "should not output bogus h tags" do
+      result = parse("========== heading ==").strip
+	  result.should_not include "<h10>"
+	  result.should include "<h5>"
+	end
   end
 
   describe "paragraphs" do
