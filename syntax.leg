@@ -110,7 +110,7 @@ void append_to_tag_content(char *c, size_t s) {
 
 # High-level
 page =  nowiki | pre_block | wikitext_line | wikitext
-wikitext_line = paragraph | horizontal_line
+wikitext_line = paragraph | horizontal_line | notoc
 wikitext = template | heading | indentation | list | formatting | image | link | table | anything_else | eol
 
 # Generally useful rules
@@ -266,6 +266,9 @@ table_heading = { printf("<th"); }'!' ' '+ < ( !' |' . )* > { printf(" %s>", yyt
 
 # Templates
 template = '{{' space* ( !'}}' . )* '}}'
+
+# __NOTOC__
+notoc = '__NOTOC__'
 
 # Other shit
 anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext, yyleng); }
