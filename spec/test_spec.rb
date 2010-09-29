@@ -27,6 +27,11 @@ describe "Wikitext parser" do
       parse("===[[heading]] ===").should_not include '[['
     end
 
+    it "should be able to do multiple links in one heading" do
+	  pending
+      parse("===[[User_talk:Mr Big/FOO.com|Mr Big's Comments]] on [[FOO.com]]===").should be('<p><h3><span class="mw-headline" id="_on"> <a href="/User_talk:Mr_Big/FOO.com">Mr Big\'s Comments</a> on <a href="/FOO.com">FOO.com</a><span class="editsection">[<a href="edit">edit</a>]</span></span></h3><a name="" /></p>')
+	end
+
     it "should create the markup like mediawiki" do
       parse("===heading ===").strip.should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h3><a name="heading" /></p>'
     end
@@ -165,6 +170,19 @@ describe "Wikitext parser" do
     it "should be able to make full urls into links" do
       parse("http://www.google.com").should == '<p><a href="http://www.google.com">http://www.google.com</a></p>'
     end
+
+	it "should handle links back to back" do
+      parse("[[FooFoo]][[BarBar]]").should_not include "[["
+	end
+
+    it "should handle more than one link on a line" do
+      parse("[[FooFoo]] in [[BarBar]]").should_not include "[["
+    end
+
+	it "should handle at least a renamed link and a simple link on a line" do
+      parse("[[User_talk:Mr Big/FOO.com|Mr Big's Comments]] on [[FOO.com]]").should 
+	     be("<p><a href=\"/User_talk:Mr_Big/FOO.com\">Mr Big's Comments</a> on <a href=\"/FOO.com\">FOO.com</a></p>")
+	end
   end
 
   describe "images" do
@@ -278,6 +296,12 @@ describe "Wikitext parser" do
     it "should just swallow templates at the moment" do
       parse('{{template}}').should == '<p></p>'
     end
+  end
+
+  describe "notoc" do
+    it "should swallow __NOTOC__" do
+      parse("__NOTOC__").should == '<p></p>'
+	end
   end
 
 

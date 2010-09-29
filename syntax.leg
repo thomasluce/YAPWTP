@@ -196,16 +196,22 @@ renamed_link = '[[' < ( !'|' !']]' . )* > {
   char *path = space_to_underscore(yytext, yyleng);
   printf("<a href=\"/%s\">", path);
   free(path);
-  } '|' < ( !']]' . )* > { printf("%s</a>", yytext); } ']]'
+  } '|' < ( !']]' . )* > { 
+    printf("%s</a>", yytext); 
+	start_of_line = 0; // prevent <pre> block from starting due to the next space
+  } ']]'
 simple_link = '[[' ':'? < ( !']]' . )* > {
   char *path = space_to_underscore(yytext, yyleng);
   char *name = remove_parentheticals(yytext, yyleng);
   printf("<a href=\"/%s\">%s", path, name);
   free(path);
   free(name);
-  } ']]' < ( !space !( '=' '='+ ) !eol !eof . )* > { printf("%s</a>", yytext); }
+  } ']]' < ( !space !( '=' '='+  ) !'[[' !eol !eof . )* > { 
+      printf("%s</a>", yytext); 
+	  start_of_line = 0; // prevent <pre> block from starting due to the next space 
+  }
 external_link = named_link | unnamed_link | url
-named_link = '[' {printf("<a href=\""); } link_url {printf("\">");} ' '+ link_name + space* ']' {printf("</a>");}
+named_link = '[' { printf("<a href=\""); } link_url { printf("\">");} ' '+ link_name + space* ']' {printf("</a>"); }
 link_url = < ( !' ' . )+ >  { printf("%s", yytext); }
 link_name = < ( !']' . )+ > { printf("%s", yytext); }
 unnamed_link = '[' < ( !']' . )* > ']' { printf("<a href=\"%s\">%s</a>", yytext, yytext);}
