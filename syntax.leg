@@ -74,7 +74,7 @@ char *strip_tags(char *s) {
   return temp;
 }
 
-char *space_to_underscore(char *s, size_t size) {
+char *space_to_underscore(char *s) {
   int i;
 
   char *temp = trim(strdup(s));
@@ -152,13 +152,13 @@ heading = heading_marker {
     open_tag(tag, NULL);
   } space* heading_text heading_marker space* ( eol | eof ) 
   {
-    printf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", space_to_underscore(tag_content, tag_content_length));
+    printf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", space_to_underscore(tag_content));
     printf("%s</span>", trim(tag_content));
     char tag[4];
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
     current_header_level = 0;
-    printf("<a name=\"%s\" />", space_to_underscore(tag_content, tag_content_length));
+    printf("<a name=\"%s\" />", space_to_underscore(tag_content));
     tag_content_length = 0;
   }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
@@ -220,7 +220,7 @@ nowiki = '<nowiki>' ( !'</nowiki>' anything_else )* '</nowiki>'
 # Links
 link = renamed_link | simple_link | external_link
 renamed_link = '[[' < ( !'|' !']]' . )* > { 
-  char *path = space_to_underscore(yytext, yyleng);
+  char *path = space_to_underscore(yytext);
   append_to_tag_content("<a href=\"/%s\">", path);
   free(path);
   } '|' < ( !']]' . )* > { 
@@ -228,7 +228,7 @@ renamed_link = '[[' < ( !'|' !']]' . )* > {
   start_of_line = 0; // prevent <pre> block from starting due to the next space
   } ']]'
 simple_link = '[[' ':'? < ( !']]' . )* > {
-  char *path = space_to_underscore(yytext, yyleng);
+  char *path = space_to_underscore(yytext);
   char *name = remove_parentheticals(yytext, yyleng);
   append_to_tag_content("<a href=\"/%s\">%s", path, name);
   free(path);
