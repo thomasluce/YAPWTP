@@ -28,9 +28,8 @@ describe "Wikitext parser" do
     end
 
     it "should be able to do multiple links in one heading" do
-	  pending
-      parse("===[[User_talk:Mr Big/FOO.com|Mr Big's Comments]] on [[FOO.com]]===").should be('<p><h3><span class="mw-headline" id="_on"> <a href="/User_talk:Mr_Big/FOO.com">Mr Big\'s Comments</a> on <a href="/FOO.com">FOO.com</a><span class="editsection">[<a href="edit">edit</a>]</span></span></h3><a name="" /></p>')
-	end
+      parse("===[[link]] on [[FOO.com]]===").should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="link_on_FOO.com"><a href="/link">link</a> on <a href="/FOO.com">FOO.com</a></span></h3><a name="link_on_FOO.com" /></p>'
+    end
 
     it "should create the markup like mediawiki" do
       parse("===heading ===").strip.should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h3><a name="heading" /></p>'
@@ -63,11 +62,11 @@ describe "Wikitext parser" do
       result.should include '</h3>'
     end
 
-	it "should not output bogus h tags" do
+  it "should not output bogus h tags" do
       result = parse("========== heading ==").strip
-	  result.should_not include "<h10>"
-	  result.should include "<h5>"
-	end
+    result.should_not include "<h10>"
+    result.should include "<h5>"
+  end
   end
 
   describe "paragraphs" do
@@ -171,18 +170,18 @@ describe "Wikitext parser" do
       parse("http://www.google.com").should == '<p><a href="http://www.google.com">http://www.google.com</a></p>'
     end
 
-	it "should handle links back to back" do
+  it "should handle links back to back" do
       parse("[[FooFoo]][[BarBar]]").should_not include "[["
-	end
+  end
 
     it "should handle more than one link on a line" do
       parse("[[FooFoo]] in [[BarBar]]").should_not include "[["
     end
 
-	it "should handle at least a renamed link and a simple link on a line" do
+  it "should handle at least a renamed link and a simple link on a line" do
       parse("[[User_talk:Mr Big/FOO.com|Mr Big's Comments]] on [[FOO.com]]").should 
-	     be("<p><a href=\"/User_talk:Mr_Big/FOO.com\">Mr Big's Comments</a> on <a href=\"/FOO.com\">FOO.com</a></p>")
-	end
+       be("<p><a href=\"/User_talk:Mr_Big/FOO.com\">Mr Big's Comments</a> on <a href=\"/FOO.com\">FOO.com</a></p>")
+  end
   end
 
   describe "images" do
@@ -301,7 +300,7 @@ describe "Wikitext parser" do
   describe "notoc" do
     it "should swallow __NOTOC__" do
       parse("__NOTOC__").should == '<p></p>'
-	end
+  end
   end
 
 

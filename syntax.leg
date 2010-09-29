@@ -55,6 +55,25 @@ char *remove_parentheticals(char *s, size_t size) {
   return temp;
 }
 
+char *strip_tags(char *s) {
+  size_t size = strlen(s);
+  char *temp = (char *)malloc(size);
+
+  int i, index = 0;
+  int in_tag = 0;
+  for(i = 0; i < size; i++) {
+    if(s[i] == '<') {
+      in_tag = 1;
+      continue;
+    } else if(s[i] == '>') {
+      in_tag = 0;
+      continue;
+    }
+    if(!in_tag) temp[index++] = s[i];
+  }
+  return temp;
+}
+
 char *space_to_underscore(char *s, size_t size) {
   int i;
 
@@ -64,7 +83,7 @@ char *space_to_underscore(char *s, size_t size) {
       temp[i] = '_';
     }
   }
-  return temp;
+  return strip_tags(temp);
 }
 
 int in_tag = 0;
@@ -78,7 +97,7 @@ void open_tag(char *tag, char *args) {
   } else {
     printf("<%s>", tag);
   }
-  
+
   in_tag = 1;
   if(tag_content) {
     free(tag_content);
@@ -91,18 +110,26 @@ void close_tag(char *tag) {
   in_tag = 0;
 }
 
-void append_to_tag_content(char *c, size_t s) {
+void append_to_tag_content(char *c, ...) {
+  va_list argp;
+
+  char buffer[1024];
+  va_start(argp, c);
+  vsnprintf(buffer, 1024, c, argp);
+  va_end(argp);
+
   if(!in_tag) {
-    printf("%s", c);
+    printf("%s", buffer);
     return;
   }
-  if(s + tag_content_length > tag_content_size) {
+  size_t size = strlen(buffer);
+  if(size + tag_content_length > tag_content_size) {
     tag_content_size *= 2;
     tag_content = realloc(tag_content, tag_content_size);
   }
-  
-  memcpy(tag_content + tag_content_length, c, s);
-  tag_content_length += s;
+
+  memcpy(tag_content + tag_content_length, buffer, size);
+  tag_content_length += size;
   tag_content[tag_content_length] = 0;
 }
 
@@ -181,9 +208,9 @@ numbered = < '#'+ > {
 
 # Formatting
 formatting = bold_italic | bold | italic
-bold_italic = "'''''" {printf("<b><i>");}( !"'''''" wikitext )* "'''''" {printf("</i></b>");}
-bold = "'''" {printf("<b>");}( !"'''" wikitext )* "'''" {printf("</b>");}
-italic = "''" {printf("<i>");}( !"''" wikitext )* "''" {printf("</i>");}
+bold_italic = "'''''" {append_to_tag_content("<b><i>");}( !"'''''" wikitext )* "'''''" {append_to_tag_content("</i></b>");}
+bold = "'''" {append_to_tag_content("<b>");}( !"'''" wikitext )* "'''" {append_to_tag_content("</b>");}
+italic = "''" {append_to_tag_content("<i>");}( !"''" wikitext )* "''" {append_to_tag_content("</i>");}
 
 # pre-formatted blocks
 pre_block = &{ start_of_line } { printf("<pre>"); } pre_line+ { printf("</pre>"); }
@@ -194,28 +221,28 @@ nowiki = '<nowiki>' ( !'</nowiki>' anything_else )* '</nowiki>'
 link = renamed_link | simple_link | external_link
 renamed_link = '[[' < ( !'|' !']]' . )* > { 
   char *path = space_to_underscore(yytext, yyleng);
-  printf("<a href=\"/%s\">", path);
+  append_to_tag_content("<a href=\"/%s\">", path);
   free(path);
   } '|' < ( !']]' . )* > { 
-    printf("%s</a>", yytext); 
-	start_of_line = 0; // prevent <pre> block from starting due to the next space
+    append_to_tag_content("%s</a>", yytext); 
+  start_of_line = 0; // prevent <pre> block from starting due to the next space
   } ']]'
 simple_link = '[[' ':'? < ( !']]' . )* > {
   char *path = space_to_underscore(yytext, yyleng);
   char *name = remove_parentheticals(yytext, yyleng);
-  printf("<a href=\"/%s\">%s", path, name);
+  append_to_tag_content("<a href=\"/%s\">%s", path, name);
   free(path);
   free(name);
   } ']]' < ( !space !( '=' '='+  ) !'[[' !eol !eof . )* > { 
-      printf("%s</a>", yytext); 
-	  start_of_line = 0; // prevent <pre> block from starting due to the next space 
+      append_to_tag_content("%s</a>", yytext); 
+    start_of_line = 0; // prevent <pre> block from starting due to the next space 
   }
 external_link = named_link | unnamed_link | url
-named_link = '[' { printf("<a href=\""); } link_url { printf("\">");} ' '+ link_name + space* ']' {printf("</a>"); }
-link_url = < ( !' ' . )+ >  { printf("%s", yytext); }
-link_name = < ( !']' . )+ > { printf("%s", yytext); }
-unnamed_link = '[' < ( !']' . )* > ']' { printf("<a href=\"%s\">%s</a>", yytext, yytext);}
-url = < ( 'http' | 'https' | 'ftp' ) > { strcpy(protocol, yytext); } '://' < ( !eol !' ' . )* > { printf("<a href=\"%s://%s\">%s://%s</a>", protocol, yytext, protocol, yytext); }
+named_link = '[' { append_to_tag_content("<a href=\""); } link_url { append_to_tag_content("\">");} ' '+ link_name + space* ']' {append_to_tag_content("</a>"); }
+link_url = < ( !' ' . )+ >  { append_to_tag_content(yytext); }
+link_name = < ( !']' . )+ > { append_to_tag_content(yytext); }
+unnamed_link = '[' < ( !']' . )* > ']' { append_to_tag_content("<a href=\"%s\">%s</a>", yytext, yytext);}
+url = < ( 'http' | 'https' | 'ftp' ) > { strcpy(protocol, yytext); } '://' < ( !eol !' ' . )* > { append_to_tag_content("<a href=\"%s://%s\">%s://%s</a>", protocol, yytext, protocol, yytext); }
 
 # Images
 image = open_image  file_indicator arguments? close_image {
@@ -277,7 +304,7 @@ template = '{{' space* ( !'}}' . )* '}}'
 notoc = '__NOTOC__'
 
 # Other shit
-anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext, yyleng); }
+anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 
 
 %%
