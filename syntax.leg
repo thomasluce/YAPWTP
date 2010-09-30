@@ -109,21 +109,17 @@ void close_tag(char *tag) {
   in_tag = 0;
 }
 
-void append_to_tag_content(char *c, ...) {
-  va_list argp;
-
-  char buffer[1024];
-  va_start(argp, c);
-  vsnprintf(buffer, 1024, c, argp);
-  va_end(argp);
-
+void append_to_tag_content(char *fmt, ...) {
   if(!in_tag) {
-    printf("%s", buffer);
+    va_list argp;
+	va_start(argp, fmt);
+    vprintf(fmt, argp);
+	va_end(argp);
     return;
   }
-  bstring bbuf = bfromcstr(buffer);
-  bconcat(tag_content, bbuf);
-  bdestroy(bbuf);
+
+  int ret;
+  bvformata(ret, tag_content, fmt, fmt);
 }
 
 %}

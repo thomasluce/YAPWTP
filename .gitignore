@@ -1,2 +1,5 @@
 bin/*
 syntax.leg.c
+*.swp
+*.swo
+*.o
