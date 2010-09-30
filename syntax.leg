@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <time.h>
 #include <stdarg.h>
+#include "bstrlib.h"
 
 #define YY_noDEBUG 1
 #define KBYTE 1024
@@ -87,8 +88,7 @@ char *space_to_underscore(char *s) {
 }
 
 int in_tag = 0;
-char *tag_content;
-unsigned int tag_content_length = 0;
+bstring tag_content;
 unsigned int tag_content_size = 2 * MBYTE;
 
 void open_tag(char *tag, char *args) {
@@ -100,9 +100,8 @@ void open_tag(char *tag, char *args) {
 
   in_tag = 1;
   if(tag_content) {
-    free(tag_content);
+    btrunc(tag_content,0 );
   }
-  tag_content = malloc(tag_content_size);
 }
 
 void close_tag(char *tag) {
@@ -122,15 +121,9 @@ void append_to_tag_content(char *c, ...) {
     printf("%s", buffer);
     return;
   }
-  size_t size = strlen(buffer);
-  if(size + tag_content_length > tag_content_size) {
-    tag_content_size *= 2;
-    tag_content = realloc(tag_content, tag_content_size);
-  }
-
-  memcpy(tag_content + tag_content_length, buffer, size);
-  tag_content_length += size;
-  tag_content[tag_content_length] = 0;
+  bstring bbuf = bfromcstr(buffer);
+  bconcat(tag_content, bbuf);
+  bdestroy(bbuf);
 }
 
 %}
@@ -152,14 +145,15 @@ heading = heading_marker {
     open_tag(tag, NULL);
   } space* heading_text heading_marker space* ( eol | eof ) 
   {
-    printf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", space_to_underscore(tag_content));
-    printf("%s</span>", trim(tag_content));
+    printf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", space_to_underscore(tag_content->data));
+	brtrimws(tag_content);
+    printf("%s</span>", tag_content->data);
     char tag[4];
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
     current_header_level = 0;
-    printf("<a name=\"%s\" />", space_to_underscore(tag_content));
-    tag_content_length = 0;
+    printf("<a name=\"%s\" />", space_to_underscore(tag_content->data));
+	btrunc(tag_content, 0);
   }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
@@ -310,7 +304,8 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 %%
 
 int main() {
-  tag_content = (char *)malloc(2 * MBYTE);
+  tag_content = bfromcstr("");
+  ballocmin(tag_content, tag_content_size);
   printf("<p>");
   while(yyparse()) {}
   printf("</p>");

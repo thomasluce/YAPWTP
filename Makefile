@@ -5,7 +5,9 @@ all : $(EXAMPLES)
 
 syntax : .FORCE
 	`which leg` -o syntax.leg.c syntax.leg
-	$(CC) $(CFLAGS) -o bin/parser syntax.leg.c
+	$(CC) $(CFLAGS) -c bstrlib.c
+	$(CC) $(CFLAGS) -c syntax.leg.c
+	$(CC) $(CFLAGS) -o bin/parser syntax.leg.o bstrlib.o
 
 
 clean : .FORCE
