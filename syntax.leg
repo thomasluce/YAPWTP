@@ -108,7 +108,7 @@ void append_to_tag_content(char *fmt, ...) {
   int ret;
 
   if(!in_tag) {
-	bvformata(ret, output_buffer, fmt, fmt);
+    bvformata(ret, output_buffer, fmt, fmt);
     return;
   }
 
@@ -146,7 +146,7 @@ heading = heading_marker {
     close_tag(tag);
     current_header_level = 0;
 
-      tmp = bstrcpy(tag_content);
+    tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
     bprintf("<a name=\"%s\" />", bdata(tmp));
     bdestroy(tmp);
@@ -267,21 +267,13 @@ image_type = frame | thumb
 frame = 'frame' { image_attributes |= IMAGE_FRAME; }
 thumb = ( 'thumbnail' | 'thumb' ) { image_attributes |= IMAGE_THUMB; }
 float = < ( 'left' | 'right' | 'center' ) > { 
-  bstring temp = bformat(" class=\"float%s\"", yytext); 
-  // TODO: use this instead
-  //bformata(image_variables, " class=\"float%s\"", yytext);
-  bconcat(image_variables, temp);
-  bdestroy(temp);
+  bformata(image_variables, " class=\"float%s\"", yytext);
 } | 'none'
 generic_variable = < ( !'|' !'=' !close_image . )* > { 
-  bstring temp = bfromcstr(yytext);
-  bconcat(image_variables, temp);
-  bdestroy(temp);
+  bformata(image_variables, "%s", yytext);
 }
 value = '=' < ( !'|' !close_image . )* > { 
-  bstring temp = bformat("=\"%s\"", yytext);
-  bconcat(image_variables, temp);
-  bdestroy(temp);
+  bformata(image_variables, "=\"%s\"", yytext);
 }
 
 # Tables
