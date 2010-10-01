@@ -286,7 +286,7 @@ table_header = { printf("<tr>"); } table_heading+ { printf("</tr>"); }
 table_heading = { printf("<th"); }'!' ' '+ < ( !' |' . )* > { printf(" %s>", yytext); } ' |' space* < ( !eol . )* > eol {printf("%s</th>", yytext); }
 
 # Templates
-template = '{{' space* ( !'}}' . )* '}}'
+template = '{{' space* ( !'}}' . )* '}}' { start_of_line = 0; }
 
 # __NOTOC__
 notoc = '__NOTOC__'
