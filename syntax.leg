@@ -76,12 +76,53 @@ void strip_tags(bstring str) {
   bcstrfree(temp);
 }
 
+void urlencode(bstring b) {
+  char *p;
+  int c, e;
+  bstring target = bfromcstr("");
+
+  int whitelist[] = {
+    /* reserved characters */
+    [36] '$',
+    [38] '&',
+    [43] '+',
+    [44] ',',
+	[46] '.',
+    [47] '/',
+    [58] ':',
+    [59] ';',
+    [61] '=',
+    [63] '?',
+    [64] '@',
+	[95] '_'
+  };
+
+  p = bdata(b);
+  while (c = *p++) {
+    /* [0-9A-Za-z] */
+    if (('0' <= c && c <= '9') ||
+        ('A' <= c && c <= 'Z') ||
+        ('a' <= c && c <= 'z')) {
+      bformata(target, "%c", c);
+      continue;
+    }
+    e = whitelist[c];
+    if (e) {
+      bformata(target, "%c", c);
+      continue;
+    }
+    bformata(target, "%%%02x", c);
+  }
+  bassign(b, target);
+}
+
 void strip_html_markup(bstring str) {
   strip_tags(str);
   brtrimws(str);
   bstring find = bfromcstr(" ");
   bstring replace = bfromcstr("_");
   bfindreplace(str, find, replace, 0);
+  urlencode(str);
   bdestroy(find);
   bdestroy(replace);
 }

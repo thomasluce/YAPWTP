@@ -149,8 +149,8 @@ describe "Wikitext parser" do
       result.should == "<p>check out the <a href=\"/thumbnail\">thumbnail</a> tool from <a href=\"/domaintools\">Domain Tools</a></p>"
     end
 
-    it "should hide parentheticals in the link text" do
-      parse("[[link (test)]]").should == '<p><a href="/link_(test)">link</a></p>'
+    it "should hide parentheticals in the link text and urlencode them in the href" do
+      parse("[[link (test)]]").should == "<p><a href=\"/link_%28test%29\">link</a></p>"
     end
     # TODO: hide namespaces. Eg: [[Namespace:test]] should produce <a href="/Namespace:test">test</a>
       # These two things together as well.
