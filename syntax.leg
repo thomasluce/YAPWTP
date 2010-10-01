@@ -98,9 +98,9 @@ void close_tag(char *tag) {
 void append_to_tag_content(char *fmt, ...) {
   if(!in_tag) {
     va_list argp;
-	va_start(argp, fmt);
+  va_start(argp, fmt);
     vprintf(fmt, argp);
-	va_end(argp);
+  va_end(argp);
     return;
   }
 
@@ -127,11 +127,11 @@ heading = heading_marker {
     open_tag(tag, NULL);
   } space* heading_text heading_marker space* ( eol | eof ) 
   {
-	brtrimws(tag_content);
-  	bstring tmp = bstrcpy(tag_content);
-	strip_html_markup(tmp);
+  brtrimws(tag_content);
+    bstring tmp = bstrcpy(tag_content);
+  strip_html_markup(tmp);
     printf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", bdata(tmp));
-	bdestroy(tmp);
+  bdestroy(tmp);
 
     printf("%s</span>", bdata(tag_content));
     char tag[4];
@@ -139,11 +139,11 @@ heading = heading_marker {
     close_tag(tag);
     current_header_level = 0;
 
-  	tmp = bstrcpy(tag_content);
-	strip_html_markup(tmp);
+    tmp = bstrcpy(tag_content);
+  strip_html_markup(tmp);
     printf("<a name=\"%s\" />", bdata(tmp));
-	bdestroy(tmp);
-	btrunc(tag_content, 0);
+  bdestroy(tmp);
+  btrunc(tag_content, 0);
   }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
@@ -217,7 +217,7 @@ simple_link = '[[' ':'? < ( !']]' . )* > {
     strip_html_markup(path);
     bstring name = bfromcstr(yytext);
     remove_parentheticals(name);
-	brtrimws(name);
+    brtrimws(name);
     append_to_tag_content("<a href=\"/%s\">%s", bdata(path), bdata(name));
     bdestroy(path);
     bdestroy(name);
