@@ -21,58 +21,25 @@ int image_attributes = 0;
 char image_url[STR_BUFFER_LEN];
 char image_variables[STR_BUFFER_LEN];
 
-char *trim(char *s) {
-  size_t size;
-
-  for(size = strlen(s) - 1; size >= 0; size--) {
-    // Make sure we stop when we hit something we care about (e.g. normal non-utf characters)
-    if((s[size] > 0x20) && (s[size] < 0x7F)) {
-        break;
-    }
-    if(s[size] == ' ') {
-      s[size] = 0;
-    }
-  }
-  return s;
-}
-
-char *remove_parentheticals(char *s, size_t size) {
-  char *temp = (char *)malloc(size);
-  int i;
-  int n = 0;
-  int in_paren = 0;
-  for(i = 0; i < size; i++) {
-    if(s[i] == '(') {
-      in_paren = 1;
-      continue;
-    } else if(s[i] == ')') {
-      in_paren = 0;
-      continue;
-    }
-    if(in_paren) continue;
-    temp[n++] = s[i];
-  }
-  trim(temp);
-  return temp;
-}
-
-char *old_strip_tags(char *s) {
-  size_t size = strlen(s);
-  char *temp = (char *)malloc(size);
+void remove_parentheticals(bstring str) {
+  char *temp = bstr2cstr(str, '\0');
 
   int i, index = 0;
   int in_tag = 0;
-  for(i = 0; i < size; i++) {
-    if(s[i] == '<') {
+  for(i = 0; i < blength(str); i++) {
+    if((bdata(str))[i] == '(') {
       in_tag = 1;
       continue;
-    } else if(s[i] == '>') {
+    } else if((bdata(str))[i] == ')') {
       in_tag = 0;
       continue;
     }
-    if(!in_tag) temp[index++] = s[i];
+    if(!in_tag) temp[index++] = (bdata(str))[i];
   }
-  return temp;
+  temp[index] = '\0';
+  bdestroy(str);
+  str = bfromcstr(temp);
+  bcstrfree(temp);
 }
 
 void strip_tags(bstring str) {
@@ -94,18 +61,6 @@ void strip_tags(bstring str) {
   bdestroy(str);
   str = bfromcstr(temp);
   bcstrfree(temp);
-}
-
-char *old_space_to_underscore(char *s) {
-  int i;
-
-  char *temp = trim(strdup(s));
-  for(i = strlen(temp) - 1; i >= 0 ; i--) {
-    if(temp[i] == ' ') {
-      temp[i] = '_';
-    }
-  }
-  return old_strip_tags(temp);
 }
 
 void strip_html_markup(bstring str) {
@@ -249,21 +204,25 @@ nowiki = '<nowiki>' ( !'</nowiki>' anything_else )* '</nowiki>'
 # Links
 link = renamed_link | simple_link | external_link
 renamed_link = '[[' < ( !'|' !']]' . )* > { 
-  char *path = old_space_to_underscore(yytext);
-  append_to_tag_content("<a href=\"/%s\">", path);
-  free(path);
+    bstring path = bfromcstr(yytext);
+    strip_html_markup(path);
+    append_to_tag_content("<a href=\"/%s\">", bdata(path));
+    bdestroy(path);
   } '|' < ( !']]' . )* > { 
     append_to_tag_content("%s</a>", yytext); 
-  start_of_line = 0; // prevent <pre> block from starting due to the next space
+    start_of_line = 0; // prevent <pre> block from starting due to the next space
   } ']]'
 simple_link = '[[' ':'? < ( !']]' . )* > {
-  char *path = old_space_to_underscore(yytext);
-  char *name = remove_parentheticals(yytext, yyleng);
-  append_to_tag_content("<a href=\"/%s\">%s", path, name);
-  free(path);
-  free(name);
+    bstring path = bfromcstr(yytext);
+    strip_html_markup(path);
+    bstring name = bfromcstr(yytext);
+    remove_parentheticals(name);
+	brtrimws(name);
+    append_to_tag_content("<a href=\"/%s\">%s", bdata(path), bdata(name));
+    bdestroy(path);
+    bdestroy(name);
   } ']]' < ( !space !( '=' '='+  ) !'[[' !eol !eof . )* > { 
-      append_to_tag_content("%s</a>", yytext); 
+    append_to_tag_content("%s</a>", yytext); 
     start_of_line = 0; // prevent <pre> block from starting due to the next space 
   }
 external_link = named_link | unnamed_link | url
@@ -344,6 +303,7 @@ int main() {
   printf("<p>");
   while(yyparse()) {}
   printf("</p>");
+  bdestroy(tag_content);
 
   return 0;
 }
