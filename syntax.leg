@@ -15,11 +15,24 @@
 int current_header_level = 0;
 int current_bullet_list_level;
 int current_numbered_list_level;
+
 int start_of_line = 1;
 char protocol[5];
+
 int image_attributes = 0;
 char image_url[STR_BUFFER_LEN];
 bstring image_variables;
+
+int in_tag = 0;
+bstring tag_content;
+unsigned int tag_content_size = 2 * MBYTE;
+
+bstring output_buffer;
+
+void bprintf(const char *fmt, ...) {
+  int ret;
+  bvformata(ret, output_buffer, fmt, fmt);
+}
 
 void remove_parentheticals(bstring str) {
   char *temp = bstr2cstr(str, '\0');
@@ -73,15 +86,11 @@ void strip_html_markup(bstring str) {
   bdestroy(replace);
 }
 
-int in_tag = 0;
-bstring tag_content;
-unsigned int tag_content_size = 2 * MBYTE;
-
 void open_tag(char *tag, char *args) {
   if(args) {
-    printf("<%s %s>", tag, args);
+    bprintf("<%s %s>", tag, args);
   } else {
-    printf("<%s>", tag);
+    bprintf("<%s>", tag);
   }
 
   in_tag = 1;
@@ -91,20 +100,18 @@ void open_tag(char *tag, char *args) {
 }
 
 void close_tag(char *tag) {
-  printf("</%s>", tag);
+  bprintf("</%s>", tag);
   in_tag = 0;
 }
 
 void append_to_tag_content(char *fmt, ...) {
+  int ret;
+
   if(!in_tag) {
-    va_list argp;
-	va_start(argp, fmt);
-    vprintf(fmt, argp);
-	va_end(argp);
+	bvformata(ret, output_buffer, fmt, fmt);
     return;
   }
 
-  int ret;
   bvformata(ret, tag_content, fmt, fmt);
 }
 
@@ -127,67 +134,67 @@ heading = heading_marker {
     open_tag(tag, NULL);
   } space* heading_text heading_marker space* ( eol | eof ) 
   {
-	brtrimws(tag_content);
-  	bstring tmp = bstrcpy(tag_content);
-	strip_html_markup(tmp);
-    printf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", bdata(tmp));
-	bdestroy(tmp);
+    brtrimws(tag_content);
+      bstring tmp = bstrcpy(tag_content);
+    strip_html_markup(tmp);
+    bprintf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", bdata(tmp));
+    bdestroy(tmp);
 
-    printf("%s</span>", bdata(tag_content));
+    bprintf("%s</span>", bdata(tag_content));
     char tag[4];
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
     current_header_level = 0;
 
-  	tmp = bstrcpy(tag_content);
-	strip_html_markup(tmp);
-    printf("<a name=\"%s\" />", bdata(tmp));
-	bdestroy(tmp);
-	btrunc(tag_content, 0);
+      tmp = bstrcpy(tag_content);
+    strip_html_markup(tmp);
+    bprintf("<a name=\"%s\" />", bdata(tmp));
+    bdestroy(tmp);
+    btrunc(tag_content, 0);
   }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
 
 # Paragraph
-paragraph = wikitext eol eol { printf("</p><p>"); }
-horizontal_line = "----" ( eol | eof )  { printf("<hr/>"); }
+paragraph = wikitext eol eol { bprintf("</p><p>"); }
+horizontal_line = "----" ( eol | eof )  { bprintf("<hr/>"); }
 
 # Indentation
-indentation = &{ start_of_line } ':' { printf("&nbsp;&nbsp;"); } wikitext
+indentation = &{ start_of_line } ':' { bprintf("&nbsp;&nbsp;"); } wikitext
 
 # Lists
 list = bullet_list | numbered_list
 
 # Bullet list
-bullet_list = { printf("<ul>"); } bullet_list_entry+ { 
+bullet_list = { bprintf("<ul>"); } bullet_list_entry+ { 
   while((current_bullet_list_level > 0) && current_bullet_list_level--) { 
-    printf("</ul>"); 
+    bprintf("</ul>"); 
   }
 }
-bullet_list_entry = bullet space* ( !eol wikitext )* ( eol | eof ) { printf("</li>"); }
+bullet_list_entry = bullet space* ( !eol wikitext )* ( eol | eof ) { bprintf("</li>"); }
 bullet = < '*'+ > {
   start_of_line = 0;
   if(current_bullet_list_level < yyleng && current_bullet_list_level != 0) {
-    printf("<ul>");
+    bprintf("<ul>");
   } else if(current_bullet_list_level > yyleng) {
-    printf("</ul>");
+    bprintf("</ul>");
   }
   current_bullet_list_level = yyleng; 
-  printf("<li>"); 
+  bprintf("<li>"); 
 }
 
 # Numbered list
-numbered_list = { printf("<ol>"); } numbered_list_entry+ { while(current_numbered_list_level--) { printf("</ol>"); } }
-numbered_list_entry = numbered space* ( !eol wikitext )* eol? { printf("</li>"); }
+numbered_list = { bprintf("<ol>"); } numbered_list_entry+ { while(current_numbered_list_level--) { bprintf("</ol>"); } }
+numbered_list_entry = numbered space* ( !eol wikitext )* eol? { bprintf("</li>"); }
 numbered = < '#'+ > {
   start_of_line = 0;
   if(current_numbered_list_level < yyleng && current_numbered_list_level != 0) {
-    printf("<ol>");
+    bprintf("<ol>");
   } else if(current_numbered_list_level > yyleng) {
-    printf("</ol>");
+    bprintf("</ol>");
   }
   current_numbered_list_level = yyleng; 
-  printf("<li>"); 
+  bprintf("<li>"); 
 }
 
 # Formatting
@@ -197,8 +204,8 @@ bold = "'''" {append_to_tag_content("<b>");}( !"'''" wikitext )* "'''" {append_t
 italic = "''" {append_to_tag_content("<i>");}( !"''" wikitext )* "''" {append_to_tag_content("</i>");}
 
 # pre-formatted blocks
-pre_block = &{ start_of_line } { printf("<pre>"); } pre_line+ { printf("</pre>"); }
-pre_line = ' ' < ( !eol . )* ( eol | eof ) > { printf("%s", yytext); }
+pre_block = &{ start_of_line } { bprintf("<pre>"); } pre_line+ { bprintf("</pre>"); }
+pre_line = ' ' < ( !eol . )* ( eol | eof ) > { bprintf("%s", yytext); }
 nowiki = '<nowiki>' ( !'</nowiki>' anything_else )* '</nowiki>'
 
 # Links
@@ -217,7 +224,7 @@ simple_link = '[[' ':'? < ( !']]' . )* > {
     strip_html_markup(path);
     bstring name = bfromcstr(yytext);
     remove_parentheticals(name);
-	brtrimws(name);
+    brtrimws(name);
     append_to_tag_content("<a href=\"/%s\">%s", bdata(path), bdata(name));
     bdestroy(path);
     bdestroy(name);
@@ -235,19 +242,19 @@ url = < ( 'http' | 'https' | 'ftp' ) > { strcpy(protocol, yytext); } '://' < ( !
 # Images
 image = open_image { btrunc(image_variables, 0); } file_indicator arguments? close_image {
   if(image_attributes & IMAGE_FRAME) {
-    printf("<div class=\"thumb tright\"><div class=\"thumbinner\">");
+    bprintf("<div class=\"thumb tright\"><div class=\"thumbinner\">");
   }
 
   if(image_attributes & IMAGE_THUMB) {
-    printf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/></a>", image_url, image_url);
+    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/></a>", image_url, image_url);
   } else if(image_attributes & IMAGE_FRAME) {
-    printf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" class=\"thumbimage\"/></a>", image_url, image_url);
+    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" class=\"thumbimage\"/></a>", image_url, image_url);
   } else {
-    printf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" %s/></a>", image_url, image_url, bdata(image_variables));
+    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" %s/></a>", image_url, image_url, bdata(image_variables));
   }
 
   if(image_attributes & IMAGE_FRAME) {
-    printf("<div class=\"thumbcaption\"></div></div>");
+    bprintf("<div class=\"thumbcaption\"></div></div>");
   }
 } 
 open_image = '[[' space*
@@ -261,6 +268,8 @@ frame = 'frame' { image_attributes |= IMAGE_FRAME; }
 thumb = ( 'thumbnail' | 'thumb' ) { image_attributes |= IMAGE_THUMB; }
 float = < ( 'left' | 'right' | 'center' ) > { 
   bstring temp = bformat(" class=\"float%s\"", yytext); 
+  // TODO: use this instead
+  //bformata(image_variables, " class=\"float%s\"", yytext);
   bconcat(image_variables, temp);
   bdestroy(temp);
 } | 'none'
@@ -277,21 +286,21 @@ value = '=' < ( !'|' !close_image . )* > {
 
 # Tables
 table = '{|' 
-  { printf("<table>"); }
+  { bprintf("<table>"); }
   eol table_body '|}' ( eol | eof )
-  { printf("</table>"); }
+  { bprintf("</table>"); }
 table_body = table_caption? table_header? table_row+
-table_caption = '|+' ' '+ < ( !eol . )* > eol { printf("<caption>%s</caption>", yytext); }
+table_caption = '|+' ' '+ < ( !eol . )* > eol { bprintf("<caption>%s</caption>", yytext); }
 table_row = '|-'
-  { printf("<tr>"); }
+  { bprintf("<tr>"); }
   space* eol table_heading* table_cell*
-  { printf("</tr>"); }
+  { bprintf("</tr>"); }
 table_cell = '|'?
-  { printf("<td>"); }
+  { bprintf("<td>"); }
   ' '+ < ( !'||' !eol . )* > ( eol | '||' )
-  { printf("%s</td>", yytext); }
-table_header = { printf("<tr>"); } table_heading+ { printf("</tr>"); }
-table_heading = { printf("<th"); }'!' ' '+ < ( !' |' . )* > { printf(" %s>", yytext); } ' |' space* < ( !eol . )* > eol {printf("%s</th>", yytext); }
+  { bprintf("%s</td>", yytext); }
+table_header = { bprintf("<tr>"); } table_heading+ { bprintf("</tr>"); }
+table_heading = { bprintf("<th"); }'!' ' '+ < ( !' |' . )* > { bprintf(" %s>", yytext); } ' |' space* < ( !eol . )* > eol {bprintf("%s</th>", yytext); }
 
 # Templates
 template = '{{' space* ( !'}}' . )* '}}' { start_of_line = 0; }
@@ -311,10 +320,17 @@ int main() {
 
   image_variables = bfromcstr("");
 
-  printf("<p>");
+  output_buffer = bfromcstr("");
+  ballocmin(output_buffer, 1 * MBYTE);
+
+  bprintf("<p>");
   while(yyparse()) {}
-  printf("</p>");
+  bprintf("</p>");
   bdestroy(tag_content);
+  bdestroy(image_variables);
+
+  printf("%s", bdata(output_buffer));
+  bdestroy(output_buffer);
 
   return 0;
 }
