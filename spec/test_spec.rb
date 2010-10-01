@@ -171,7 +171,7 @@ describe "Wikitext parser" do
     end
 
     it "should handle links back to back" do
-      parse("[[FooFoo]][[BarBar]]").should_not include "[["
+      parse("[[FooFoo]][http://BarBar.com/]").should_not include "["
     end
 
     it "should handle more than one link on a line" do

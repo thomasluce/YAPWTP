@@ -221,7 +221,7 @@ simple_link = '[[' ':'? < ( !']]' . )* > {
     append_to_tag_content("<a href=\"/%s\">%s", bdata(path), bdata(name));
     bdestroy(path);
     bdestroy(name);
-  } ']]' < ( !space !( '=' '='+  ) !'[[' !eol !eof . )* > { 
+  } ']]' < ( !space !( '=' '='+  ) !'[' !eol !eof . )* > { 
     append_to_tag_content("%s</a>", yytext); 
     start_of_line = 0; // prevent <pre> block from starting due to the next space 
   }
@@ -249,7 +249,7 @@ image = open_image  file_indicator arguments? close_image {
   if(image_attributes & IMAGE_FRAME) {
     printf("<div class=\"thumbcaption\"></div></div>");
   }
-}
+} 
 open_image = '[[' space*
 close_image = space* ']]'
 file_indicator = ( 'File:' | 'Image:' ) < ( !'|' !close_image . )* > { strncpy(image_url, yytext, STR_BUFFER_LEN); }
