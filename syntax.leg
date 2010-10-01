@@ -4,13 +4,14 @@
 #include <time.h>
 #include <stdarg.h>
 #include "bstrlib.h"
+#include "tree.h"
 
 #define YY_noDEBUG 1
 #define KBYTE 1024
 #define MBYTE KBYTE * 1024
 #define IMAGE_FRAME 1
 #define IMAGE_THUMB ( 1 << 1 )
-#define STR_BUFFER_LEN 1024 
+#define STR_BUFFER_LEN 1024
 
 int current_header_level = 0;
 int current_bullet_list_level;
@@ -135,7 +136,7 @@ heading = heading_marker {
   } space* heading_text heading_marker space* ( eol | eof ) 
   {
     brtrimws(tag_content);
-      bstring tmp = bstrcpy(tag_content);
+    bstring tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
     bprintf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", bdata(tmp));
     bdestroy(tmp);
