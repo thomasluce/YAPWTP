@@ -202,7 +202,7 @@ pre_line = ' ' < ( !eol . )* ( eol | eof ) > { printf("%s", yytext); }
 nowiki = '<nowiki>' ( !'</nowiki>' anything_else )* '</nowiki>'
 
 # Links
-link = renamed_link | simple_link | external_link
+link = renamed_link | simple_link | external_link { start_of_line = 0; }
 renamed_link = '[[' < ( !'|' !']]' . )* > { 
     bstring path = bfromcstr(yytext);
     strip_html_markup(path);

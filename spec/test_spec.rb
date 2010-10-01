@@ -170,18 +170,23 @@ describe "Wikitext parser" do
       parse("http://www.google.com").should == '<p><a href="http://www.google.com">http://www.google.com</a></p>'
     end
 
-  it "should handle links back to back" do
+    it "should handle links back to back" do
       parse("[[FooFoo]][[BarBar]]").should_not include "[["
-  end
+    end
 
     it "should handle more than one link on a line" do
       parse("[[FooFoo]] in [[BarBar]]").should_not include "[["
     end
 
-  it "should handle at least a renamed link and a simple link on a line" do
+    it "should handle at least a renamed link and a simple link on a line" do
       parse("[[User_talk:Mr Big/FOO.com|Mr Big's Comments]] on [[FOO.com]]").should 
-       be("<p><a href=\"/User_talk:Mr_Big/FOO.com\">Mr Big's Comments</a> on <a href=\"/FOO.com\">FOO.com</a></p>")
-  end
+        be("<p><a href=\"/User_talk:Mr_Big/FOO.com\">Mr Big's Comments</a> on <a href=\"/FOO.com\">FOO.com</a></p>")
+    end
+
+	it "should not add pre tags when the link is followed by a space" do
+      parse("[http://www.flowerpetal.com FlowerPetal.com] is the easy way to send flowers online").should_not
+	    include "<pre>";
+	end
   end
 
   describe "images" do
