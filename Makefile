@@ -4,6 +4,7 @@ CFLAGS = -g -O3 -std=gnu99
 all : $(EXAMPLES)
 
 syntax : .FORCE
+	mkdir -p bin
 	`which leg` -o syntax.leg.c syntax.leg
 	$(CC) $(CFLAGS) -c bstrlib.c
 	$(CC) $(CFLAGS) -c syntax.leg.c
