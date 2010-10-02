@@ -2,7 +2,7 @@
 require 'open3'
 
 describe "Wikitext parser" do
-  before :all do
+  before :suite do
     dir = File.join(File.dirname(__FILE__), '..')
     `cd #{dir} && make`
   end
