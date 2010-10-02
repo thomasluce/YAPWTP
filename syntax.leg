@@ -37,6 +37,20 @@ void bprintf(const char *fmt, ...) {
   bvformata(ret, output_buffer, fmt, fmt);
 }
 
+int list_li_print(struct node *item) {
+  if(!item) {
+    return 0;
+  }
+  printf("<li><a href=\"#%s\">%s</a>\n", bdata(item->name), bdata(item->content));
+  return 1;
+}
+
+void print_toc() {
+  printf("<ol>");
+  list_iterate(list.head->next, list_li_print);
+  printf("</ol>");
+}
+
 void remove_parentheticals(bstring str) {
   char *temp = bstr2cstr(str, '\0');
 
@@ -189,14 +203,22 @@ heading = heading_marker {
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
 
+	struct node *current = list_get_new_tail(&list);
+
     tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
 	urlencode(tmp);
     bprintf("<a name=\"%s\" />", bdata(tmp));
-	struct node *current = get_new_tail(&list);
 	bassign(current->name, tmp);
+
+	bstring human_name = bstrcpy(tag_content);
+	strip_tags(human_name);
+	brtrimws(human_name);
+	bassign(current->content, human_name);
 	current->level = current_header_level;
+
     bdestroy(tmp);
+	bdestroy(human_name);
 
     btrunc(tag_content, 0);
     current_header_level = 0;
@@ -358,7 +380,7 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 %%
 
 int main() {
-  init_list(&list);
+  list_init(&list);
 
   tag_content = bfromcstr("");
   ballocmin(tag_content, tag_content_size);
@@ -374,10 +396,9 @@ int main() {
   bdestroy(tag_content);
   bdestroy(image_variables);
 
+  print_toc();
   printf("%s", bdata(output_buffer));
   bdestroy(output_buffer);
-  printf("\n----------------------------------------------\n");
-  print_list(&list);
   list_free(&list);
 
   return 0;

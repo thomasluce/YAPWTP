@@ -14,9 +14,9 @@ testlist: .FORCE
 	$(CC) $(CFLAGS) -c bstrlib.c
 	$(CC) $(CFLAGS) -c list.c
 	$(CC) $(CFLAGS) -c testlist.c
-	$(CC) $(CFLAGS) -o testlist testlist.o bstrlib.o list.o
+	$(CC) $(CFLAGS) -o bin/testlist testlist.o bstrlib.o list.o
 
 clean : .FORCE
-	rm -f *~ *.o *.[pl]eg.[cd] $(EXAMPLES)
+	rm -rf bin/* *~ *.o *.[pl]eg.[cd] $(EXAMPLES)
 
 .FORCE :

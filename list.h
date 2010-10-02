@@ -1,5 +1,6 @@
 struct node {
   bstring name;
+  bstring content;
   int level;
   struct node *next;
 };
@@ -9,9 +10,10 @@ struct list {
   struct node *head;
 };
 
-void init_list(struct list *list);
+void list_init(struct list *list);
 struct node *node_alloc();
-struct node *get_new_tail(struct list *list);
-void node_free(struct node *item);
+struct node *list_get_new_tail(struct list *list);
+int node_free(struct node *item);
+int list_iterate(struct node *item, int (*listfunc)(struct node *));
 void list_free(struct list *list);
-void print_list(struct list *list);
+void list_print(struct list *list);

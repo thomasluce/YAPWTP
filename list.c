@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void init_list(struct list *list) {
+void list_init(struct list *list) {
   if(list == NULL) {
     return;
   }
@@ -14,11 +14,12 @@ void init_list(struct list *list) {
 struct node *node_alloc() {
   struct node *item = (struct node *)malloc(sizeof(struct node));
   item->name = bfromcstr("");
+  item->content = bfromcstr("");
   item->next = NULL;
   return item;
 }
 
-struct node *get_new_tail(struct list *list) {
+struct node *list_get_new_tail(struct list *list) {
   if(list == NULL) {
     return NULL;
   }
@@ -29,34 +30,44 @@ struct node *get_new_tail(struct list *list) {
   return list->tail;
 }
 
-void node_free(struct node *item) {
+int node_free(struct node *item) {
   if(item == NULL) {
-    return;
+    return 0;
   }
   bdestroy(item->name);
+  bdestroy(item->content);
   free(item);
+  return 1;
+}
+
+int list_iterate(struct node *item, int (*listfunc)(struct node *)) {
+  struct node *next;
+  while(item != NULL) {
+    next = item->next;
+    if(listfunc(item) != 1) {
+	  return 0;
+	}
+    item = next;
+  }
+  return 1;
 }
 
 void list_free(struct list *list) {
   if(list == NULL) {
     return;
   }
-  struct node *i = list->head->next;
-  struct node *next;
-  while(i != NULL) {
-	next = i->next;
-    node_free(i);
-	i = next;
-  }
+  list_iterate(list->head->next, node_free);
   node_free(list->head);
 }
 
-void print_list(struct list *list) {
-  struct node *i = list->head->next;
-  struct node *next;
-  while(i != NULL) {
-	next = i->next;
-	printf("%s: %d\n", bdata(i->name), i->level);
-	i = next;
+int node_print(struct node *item) {
+  printf("%s: %s, %d\n", bdata(item->name), bdata(item->content), item->level);
+  return 1;
+}
+
+void list_print(struct list *list) {
+  if(list == NULL) {
+    return;
   }
+  list_iterate(list->head->next, node_print);
 }
