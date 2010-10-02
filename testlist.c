@@ -16,7 +16,7 @@ int main(void) {
   current->level = 1;
 
   int i;
-  for(i = 2; i < 21; i++ ) {
+  for(i = 2; i < 200000; i++ ) {
     current = get_new_tail(&list);
     current->name = bformat("heading%d", i % 3 + 1);
     current->level = i % 3 + 1;

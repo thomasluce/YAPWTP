@@ -30,6 +30,8 @@ unsigned int tag_content_size = 2 * MBYTE;
 
 bstring output_buffer;
 
+struct list list;
+
 void bprintf(const char *fmt, ...) {
   int ret;
   bvformata(ret, output_buffer, fmt, fmt);
@@ -186,14 +188,18 @@ heading = heading_marker {
     char tag[4];
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
-    current_header_level = 0;
 
     tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
 	urlencode(tmp);
     bprintf("<a name=\"%s\" />", bdata(tmp));
+	struct node *current = get_new_tail(&list);
+	bassign(current->name, tmp);
+	current->level = current_header_level;
     bdestroy(tmp);
+
     btrunc(tag_content, 0);
+    current_header_level = 0;
   }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
@@ -352,6 +358,8 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 %%
 
 int main() {
+  init_list(&list);
+
   tag_content = bfromcstr("");
   ballocmin(tag_content, tag_content_size);
 
@@ -368,6 +376,9 @@ int main() {
 
   printf("%s", bdata(output_buffer));
   bdestroy(output_buffer);
+  printf("\n----------------------------------------------\n");
+  print_list(&list);
+  list_free(&list);
 
   return 0;
 

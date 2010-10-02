@@ -14,6 +14,7 @@ void init_list(struct list *list) {
 struct node *node_alloc() {
   struct node *item = (struct node *)malloc(sizeof(struct node));
   item->name = bfromcstr("");
+  item->next = NULL;
   return item;
 }
 
@@ -42,7 +43,7 @@ void list_free(struct list *list) {
   }
   struct node *i = list->head->next;
   struct node *next;
-  while(i) {
+  while(i != NULL) {
 	next = i->next;
     node_free(i);
 	i = next;
@@ -53,7 +54,7 @@ void list_free(struct list *list) {
 void print_list(struct list *list) {
   struct node *i = list->head->next;
   struct node *next;
-  while(i) {
+  while(i != NULL) {
 	next = i->next;
 	printf("%s: %d\n", bdata(i->name), i->level);
 	i = next;
