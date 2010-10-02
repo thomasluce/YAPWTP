@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include "bstrlib.h"
-#include "tree.h"
+#include "list.h"
 
 #define YY_noDEBUG 1
 #define KBYTE 1024
@@ -99,7 +99,7 @@ void urlencode(bstring b) {
   };
 
   p = bdata(b);
-  while (c = *p++) {
+  while ((c = *p++)) { // Double parens to make gcc shut up
     /* [0-9A-Za-z] */
     if (('0' <= c && c <= '9') ||
         ('A' <= c && c <= 'Z') ||
@@ -370,4 +370,7 @@ int main() {
   bdestroy(output_buffer);
 
   return 0;
+
+  /* Make gcc warnings about unused yyunmatched go away... */
+  (void)yyunmatched;
 }
