@@ -9,8 +9,13 @@
 #define YY_noDEBUG 1
 #define KBYTE 1024
 #define MBYTE KBYTE * 1024
+
 #define IMAGE_FRAME 1
 #define IMAGE_THUMB ( 1 << 1 )
+
+#define TOC_NOTOC ( 1 << 1 )
+#define TOC_FORCETOC ( 1 << 2 )
+#define TOC_RELOC ( 1 << 3 )
 #define STR_BUFFER_LEN 1024
 
 int current_header_level = 0;
@@ -24,11 +29,14 @@ int image_attributes = 0;
 char image_url[STR_BUFFER_LEN];
 bstring image_variables;
 
+int toc_attributes = 0;
+
 int in_tag = 0;
 bstring tag_content;
 unsigned int tag_content_size = 2 * MBYTE;
 
 bstring output_buffer;
+bstring toc_buffer;
 
 struct list list;
 
@@ -41,15 +49,32 @@ int list_li_print(struct node *item) {
   if(!item) {
     return 0;
   }
-  printf("<li><a href=\"#%s\">%s</a>\n", bdata(item->name), bdata(item->content));
+  bformata(toc_buffer, "<li><a href=\"#%s\">%s</a>\n", bdata(item->name), bdata(item->content));
   return 1;
 }
 
-void print_toc() {
-  if(list.size > 3) {
-    printf("<ol>");
+void handle_toc() {
+  if(toc_attributes & TOC_NOTOC) {
+    return;
+  }
+
+  if((list.size > 3) || (toc_attributes & TOC_FORCETOC)) {
+    bformata(toc_buffer, "%s", "<ol>");
     list_iterate(list.head->next, list_li_print);
-    printf("</ol>");
+    bformata(toc_buffer, "%s", "</ol>");
+
+    if(toc_attributes & TOC_RELOC) {
+      bstring find = bfromcstr("__TOC__");
+      if(bfindreplace(output_buffer, find, toc_buffer, 0) == BSTR_ERR) {
+        printf("Error inserting toc_buffer into output_buffer\n");
+	  }
+      bdestroy(find);
+      return;
+    }
+
+    if(binsert(output_buffer, 0, toc_buffer, ' ') != BSTR_OK) {
+      printf("Error prepending toc_buffer to output_buffer\n");
+    }
   }
 }
 
@@ -178,8 +203,8 @@ void append_to_tag_content(char *fmt, ...) {
 
 # High-level
 page =  nowiki | pre_block | wikitext_line | wikitext
-wikitext_line = paragraph | horizontal_line | notoc
-wikitext = template | heading | indentation | list | formatting | image | link | table | anything_else | eol
+wikitext_line = paragraph | horizontal_line 
+wikitext = table_of_contents | template | heading | indentation | list | formatting | image | link | table | anything_else | eol
 
 # Generally useful rules
 eol = '\n' { start_of_line = 1; }
@@ -372,8 +397,11 @@ table_heading = { bprintf("<th"); }'!' ' '+ < ( !' |' . )* > { bprintf(" %s>", y
 # Templates
 template = '{{' space* ( !'}}' . )* '}}' { start_of_line = 0; }
 
-# __NOTOC__
-notoc = '__NOTOC__'
+# Table of Contents
+table_of_contents = ( notoc | toc | forcetoc )
+notoc = '__NOTOC__' { toc_attributes |= TOC_NOTOC; }
+forcetoc = '__FORCETOC__' { toc_attributes |= TOC_FORCETOC; }
+toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-through for later replacement }
 
 # Other shit
 anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
@@ -392,15 +420,18 @@ int main() {
   output_buffer = bfromcstr("");
   ballocmin(output_buffer, 1 * MBYTE);
 
+  toc_buffer = bfromcstr("");
+
   bprintf("<p>");
   while(yyparse()) {}
   bprintf("</p>");
   bdestroy(tag_content);
   bdestroy(image_variables);
 
-  print_toc();
+  handle_toc();
   printf("%s", bdata(output_buffer));
   bdestroy(output_buffer);
+  bdestroy(toc_buffer);
   list_free(&list);
 
   return 0;

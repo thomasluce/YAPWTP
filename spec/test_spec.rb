@@ -303,9 +303,14 @@ describe "Wikitext parser" do
   end
 
   describe "table of contents" do
-    it "should swallow __NOTOC__" do
-      parse("__NOTOC__").should == '<p></p>'
+    it "should not output a table of contents if  __NOTOC__ is present" do
+      parse("==Heading 1==\n__NOTOC__\n==Heading 2==\n==Heading 3==").should_not include "<ol>"
     end
+
+	it "should replace __TOC__ with the table of contents if more than 3 headings are present" do
+      parse("==heading==\n__TOC__\n==heading==\n==heading==").should ==
+        "<p><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" />__TOC__<h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" /><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" /></p>"
+	end
 
     it "should not output a table of contents when fewer than 3 headings are present" do
 	  parse("==Heading 1==\n==Heading 2==\n").should_not include "<ol>"
@@ -325,4 +330,5 @@ describe "Wikitext parser" do
   # TODO: links directly into edit mode
   # TODO: book sources "ISBN" links
   # TODO: RFC links
+  # TODO: Make safe HTML (whitelist tags)
 end
