@@ -27,6 +27,7 @@ struct node *list_get_new_tail(struct list *list) {
   struct node *child = node_alloc();
   list->tail->next = child;
   list->tail = child;
+  list->size++;
   return list->tail;
 }
 

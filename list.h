@@ -8,6 +8,7 @@ struct node {
 struct list {
   struct node *tail;
   struct node *head;
+  int size;
 };
 
 void list_init(struct list *list);

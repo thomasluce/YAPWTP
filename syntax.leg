@@ -46,9 +46,11 @@ int list_li_print(struct node *item) {
 }
 
 void print_toc() {
-  printf("<ol>");
-  list_iterate(list.head->next, list_li_print);
-  printf("</ol>");
+  if(list.size > 3) {
+    printf("<ol>");
+    list_iterate(list.head->next, list_li_print);
+    printf("</ol>");
+  }
 }
 
 void remove_parentheticals(bstring str) {

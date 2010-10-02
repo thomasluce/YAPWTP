@@ -183,10 +183,10 @@ describe "Wikitext parser" do
         be("<p><a href=\"/User_talk:Mr_Big/FOO.com\">Mr Big's Comments</a> on <a href=\"/FOO.com\">FOO.com</a></p>")
     end
 
-	it "should not add pre tags when the link is followed by a space" do
+    it "should not add pre tags when the link is followed by a space" do
       parse("[http://www.flowerpetal.com FlowerPetal.com] is the easy way to send flowers online").should_not
-	    include "<pre>";
-	end
+        include "<pre>";
+    end
   end
 
   describe "images" do
@@ -302,10 +302,19 @@ describe "Wikitext parser" do
     end
   end
 
-  describe "notoc" do
+  describe "table of contents" do
     it "should swallow __NOTOC__" do
       parse("__NOTOC__").should == '<p></p>'
-  end
+    end
+
+    it "should not output a table of contents when fewer than 3 headings are present" do
+	  parse("==Heading 1==\n==Heading 2==\n").should_not include "<ol>"
+    end
+
+    it "should output a table of contents when more than 3 headings are present" do
+      parse("==Heading 1==\n==Heading 2==\n==Heading 3==").should include 
+        "<ol><li><a href=\"#Heading_1\">Heading 1</a>\n<li><a href=\"#Heading_2\">Heading 2</a>\n<li><a href=\"#Heading_3\">Heading 3</a>\n</ol>"
+    end
   end
 
 
