@@ -9,6 +9,7 @@
 #define YY_noDEBUG 1
 #define KBYTE 1024
 #define MBYTE KBYTE * 1024
+#define STR_BUFFER_LEN 1024
 
 #define IMAGE_FRAME 1
 #define IMAGE_THUMB ( 1 << 1 )
@@ -16,7 +17,7 @@
 #define TOC_NOTOC ( 1 << 1 )
 #define TOC_FORCETOC ( 1 << 2 )
 #define TOC_RELOC ( 1 << 3 )
-#define STR_BUFFER_LEN 1024
+
 
 int current_header_level = 0;
 int current_bullet_list_level;
@@ -26,7 +27,7 @@ int start_of_line = 1;
 char protocol[5];
 
 int image_attributes = 0;
-char image_url[STR_BUFFER_LEN];
+bstring image_url;
 bstring image_variables;
 
 int toc_attributes = 0;
@@ -346,11 +347,11 @@ image = open_image { btrunc(image_variables, 0); } file_indicator arguments? clo
   }
 
   if(image_attributes & IMAGE_THUMB) {
-    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/></a>", image_url, image_url);
+    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/></a>", bdata(image_url), bdata(image_url));
   } else if(image_attributes & IMAGE_FRAME) {
-    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" class=\"thumbimage\"/></a>", image_url, image_url);
+    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" class=\"thumbimage\"/></a>", bdata(image_url), bdata(image_url));
   } else {
-    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" %s/></a>", image_url, image_url, bdata(image_variables));
+    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" %s/></a>", bdata(image_url), bdata(image_url), bdata(image_variables));
   }
 
   if(image_attributes & IMAGE_FRAME) {
@@ -359,7 +360,7 @@ image = open_image { btrunc(image_variables, 0); } file_indicator arguments? clo
 } 
 open_image = '[[' space*
 close_image = space* ']]'
-file_indicator = ( 'File:' | 'Image:' ) < ( !'|' !close_image . )* > { strncpy(image_url, yytext, STR_BUFFER_LEN); }
+file_indicator = ( 'File:' | 'Image:' ) < ( !'|' !close_image . )* > { bassignformat(image_url, "%s", yytext); }
 arguments = '|' variable value? arguments?
 variable = special_image_variables | generic_variable
 special_image_variables = image_type | float
@@ -416,6 +417,7 @@ int main() {
   ballocmin(tag_content, tag_content_size);
 
   image_variables = bfromcstr("");
+  image_url = bfromcstr("");
 
   output_buffer = bfromcstr("");
   ballocmin(output_buffer, 1 * MBYTE);
@@ -427,6 +429,7 @@ int main() {
   bprintf("</p>");
   bdestroy(tag_content);
   bdestroy(image_variables);
+  bdestroy(image_url);
 
   handle_toc();
   printf("%s", bdata(output_buffer));
