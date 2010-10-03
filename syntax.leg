@@ -31,13 +31,13 @@ bstring image_url;
 bstring image_variables;
 
 int toc_attributes = 0;
+bstring toc_buffer;
 
 int in_tag = 0;
 bstring tag_content;
 unsigned int tag_content_size = 2 * MBYTE;
 
 bstring output_buffer;
-bstring toc_buffer;
 
 struct list list;
 
@@ -50,7 +50,7 @@ int list_li_print(struct node *item) {
   if(!item) {
     return 0;
   }
-  bformata(toc_buffer, "<li><a href=\"#%s\">%s</a>\n", bdata(item->name), bdata(item->content));
+  bformata(toc_buffer, "<li><a href=\"#%s\">%s</a></li>\n", bdata(item->name), bdata(item->content));
   return 1;
 }
 
