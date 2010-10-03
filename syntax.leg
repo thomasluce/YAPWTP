@@ -9,6 +9,7 @@
 #define YY_noDEBUG 1
 #define KBYTE 1024
 #define MBYTE KBYTE * 1024
+#define STR_BUFFER_LEN 1024
 
 #define IMAGE_FRAME 1
 #define IMAGE_THUMB ( 1 << 1 )
