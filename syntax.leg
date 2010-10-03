@@ -31,7 +31,6 @@ bstring image_url;
 bstring image_variables;
 
 int toc_attributes = 0;
-bstring toc_buffer;
 
 int in_tag = 0;
 bstring tag_content;
@@ -41,41 +40,80 @@ bstring output_buffer;
 
 struct list list;
 
+// Buffer printf, buffer output until we're ready
 void bprintf(const char *fmt, ...) {
   int ret;
   bvformata(ret, output_buffer, fmt, fmt);
 }
 
-int list_li_print(struct node *item) {
+// Render the ToC from a list, output to buffer
+void assemble_toc(struct node *item, bstring toc_buffer) {
   if(!item) {
-    return 0;
+    printf("Bad list passed to assemble_toc\n");
+    return;
   }
-  bformata(toc_buffer, "<li><a href=\"#%s\">%s</a></li>\n", bdata(item->name), bdata(item->content));
-  return 1;
+
+  struct node *next;
+  int previous_level = item->level;
+  int total_layers = 0;
+
+  bformata(toc_buffer, "%s", "<ol>");
+  while(item != NULL) {
+    next = item->next;
+	// Layer the list deeper as necessary
+    if(item->level > previous_level) {
+      bformata(toc_buffer, "%s", "\n<ol>\n");
+      total_layers++;
+    } else if(item->level < previous_level) {
+      bformata(toc_buffer, "%s", "\n</ol>\n");
+      total_layers--;
+    }
+	
+	// Add the item
+    if(item->name && item->content) {
+      bformata(toc_buffer, "<li><a href=\"#%s\">%s</a></li>\n", bdata(item->name), bdata(item->content));
+    }
+    previous_level = item->level;
+    item = next;
+  }
+ 
+  // Clean up lists left open
+  while(total_layers > 0) {
+    bformata(toc_buffer, "%s", "\n</ol>\n");
+    total_layers--;
+  }
+  bformata(toc_buffer, "%s", "</ol>");
 }
 
+// Insert the ToC into the output buffer in place of the __TOC__ tag
+void insert_reloc_toc(bstring toc_buffer) {
+  bstring find = bfromcstr("__TOC__");
+  if(bfindreplace(output_buffer, find, toc_buffer, 0) == BSTR_ERR) {
+    printf("Error inserting toc_buffer into output_buffer\n");
+  }
+  bdestroy(find);
+}
+
+// Main ToC routine
 void handle_toc() {
   if(toc_attributes & TOC_NOTOC) {
     return;
   }
 
   if((list.size > 3) || (toc_attributes & TOC_FORCETOC)) {
-    bformata(toc_buffer, "%s", "<ol>");
-    list_iterate(list.head->next, list_li_print);
-    bformata(toc_buffer, "%s", "</ol>");
+    bstring toc_buffer = bfromcstr("");
+    assemble_toc(list.head->next, toc_buffer);
 
     if(toc_attributes & TOC_RELOC) {
-      bstring find = bfromcstr("__TOC__");
-      if(bfindreplace(output_buffer, find, toc_buffer, 0) == BSTR_ERR) {
-        printf("Error inserting toc_buffer into output_buffer\n");
-	  }
-      bdestroy(find);
+      insert_reloc_toc(toc_buffer);
+      bdestroy(toc_buffer);
       return;
     }
 
     if(binsert(output_buffer, 0, toc_buffer, ' ') != BSTR_OK) {
       printf("Error prepending toc_buffer to output_buffer\n");
     }
+    bdestroy(toc_buffer);
   }
 }
 
@@ -132,14 +170,14 @@ void urlencode(bstring b) {
     [38] '&',
     [43] '+',
     [44] ',',
-	[46] '.',
+    [46] '.',
     [47] '/',
     [58] ':',
     [59] ';',
     [61] '=',
     [63] '?',
     [64] '@',
-	[95] '_'
+    [95] '_'
   };
 
   p = bdata(b);
@@ -231,22 +269,22 @@ heading = heading_marker {
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
 
-	struct node *current = list_get_new_tail(&list);
+    struct node *current = list_get_new_tail(&list);
 
     tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
-	urlencode(tmp);
+    urlencode(tmp);
     bprintf("<a name=\"%s\" />", bdata(tmp));
-	bassign(current->name, tmp);
+    bassign(current->name, tmp);
 
-	bstring human_name = bstrcpy(tag_content);
-	strip_tags(human_name);
-	brtrimws(human_name);
-	bassign(current->content, human_name);
-	current->level = current_header_level;
+    bstring human_name = bstrcpy(tag_content);
+    strip_tags(human_name);
+    brtrimws(human_name);
+    bassign(current->content, human_name);
+    current->level = current_header_level;
 
     bdestroy(tmp);
-	bdestroy(human_name);
+    bdestroy(human_name);
 
     btrunc(tag_content, 0);
     current_header_level = 0;
@@ -312,7 +350,7 @@ link = renamed_link | simple_link | external_link { start_of_line = 0; }
 renamed_link = '[[' < ( !'|' !']]' . )* > { 
     bstring path = bfromcstr(yytext);
     strip_html_markup(path);
-	urlencode(path);
+    urlencode(path);
     append_to_tag_content("<a href=\"/%s\">", bdata(path));
     bdestroy(path);
   } '|' < ( !']]' . )* > { 
@@ -322,7 +360,7 @@ renamed_link = '[[' < ( !'|' !']]' . )* > {
 simple_link = '[[' ':'? < ( !']]' . )* > {
     bstring path = bfromcstr(yytext);
     strip_html_markup(path);
-	urlencode(path);
+    urlencode(path);
     bstring name = bfromcstr(yytext);
     remove_parentheticals(name);
     brtrimws(name);
@@ -422,8 +460,6 @@ int main() {
   output_buffer = bfromcstr("");
   ballocmin(output_buffer, 1 * MBYTE);
 
-  toc_buffer = bfromcstr("");
-
   bprintf("<p>");
   while(yyparse()) {}
   bprintf("</p>");
@@ -434,7 +470,6 @@ int main() {
   handle_toc();
   printf("%s", bdata(output_buffer));
   bdestroy(output_buffer);
-  bdestroy(toc_buffer);
   list_free(&list);
 
   return 0;
