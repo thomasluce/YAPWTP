@@ -326,6 +326,17 @@ describe "Wikitext parser" do
     end
   end
 
+  describe "html markup" do
+    it "should allow some html markup" do
+      parse("<i>test</i>").should == "<p><i>test</i></p>"
+      parse("<pre>test</pre>").should == "<p><pre>test</pre></p>"
+	end
+
+    it "should disallow some html markup" do
+      parse("<script>test</script>").should == "<p>test</p>"
+	end
+  end
+
 
   # TODO: categories
   # TODO: redirects

@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <time.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include "bstrlib.h"
 #include "list.h"
 
@@ -259,10 +260,72 @@ void append_to_tag_content(char *fmt, ...) {
   bvformata(ret, tag_content, fmt, fmt);
 }
 
+// Validate whether or not a specific HTML tag is allowed. Naive implementation.
+bool valid_html_tag(char *html_tag, size_t orig_len) {
+  char *tag = html_tag;
+  int len = orig_len;
+
+  if((tag[0] == '/') && (len > 1)) {
+    tag++;
+	len--;
+  }
+
+  // Ordered by guess at likeliness to occur.
+  if(!strncasecmp(tag, "b", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "i", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "br", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "hr", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "strong", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "del", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "strike", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "s", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "pre", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "center", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "code", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "blockquote", len)) {
+    return true;
+  }
+
+  return false;
+}
+
 %}
 
 # High-level
-page =  nowiki | pre_block | wikitext_line | wikitext
+page =  nowiki | html | pre_block | wikitext_line | wikitext
 wikitext_line = paragraph | horizontal_line 
 wikitext = table_of_contents | template | heading | indentation | list | formatting | image | link | table | anything_else | eol
 
@@ -462,6 +525,9 @@ table_of_contents = ( notoc | toc | forcetoc )
 notoc = '__NOTOC__' { toc_attributes |= TOC_NOTOC; }
 forcetoc = '__FORCETOC__' { toc_attributes |= TOC_FORCETOC; }
 toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-through for later replacement }
+
+# HTML markup
+html = '<' < '/'? ( !'>' . )+ > '/'? '>' { if(valid_html_tag(yytext, yyleng)) { bprintf("<%s>", yytext); } }
 
 # Other shit
 anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
