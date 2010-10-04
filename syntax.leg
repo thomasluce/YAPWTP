@@ -561,7 +561,6 @@ int main() {
   parse(output);
   printf("%s", bdata(output));
   bdestroy(output);
-
   return 0;
 
   /* Make gcc warnings about unused yyunmatched go away... */
