@@ -165,9 +165,15 @@ describe "Wikitext parser" do
       parse("[[path]]s").should == '<p><a href="/path">paths</a></p>'
     end
 
-    it "should be able to do external links" do
-      parse("[http://www.google.com google]").should == '<p><a href="http://www.google.com">google</a></p>'
-      parse("[http://www.google.com]").should == '<p><a href="http://www.google.com">http://www.google.com</a></p>'
+    describe "external links" do
+      it "should be able to do external links" do
+        parse("[http://www.google.com google]").should == '<p><a href="http://www.google.com">google</a></p>'
+        parse("[http://www.google.com]").should == '<p><a href="http://www.google.com">http://www.google.com</a></p>'
+      end
+
+      it "should allow multiple links on a line" do
+        parse("[http://www.google.com] should link to [[google]]").should == '<p><a href="http://www.google.com">http://www.google.com</a> should link to <a href="/google">google</a></p>'
+      end
     end
 
     it "should be able to make full urls into links" do

@@ -445,7 +445,7 @@ simple_link = '[[' ':'? < ( !']]' . )* > {
   }
 external_link = named_link | unnamed_link | url
 named_link = '[' { append_to_tag_content("<a href=\""); } link_url { append_to_tag_content("\">");} ' '+ link_name + space* ']' {append_to_tag_content("</a>"); }
-link_url = < ( !' ' . )+ >  { append_to_tag_content(yytext); }
+link_url = < ( !' ' !']' . )+ >  { append_to_tag_content(yytext); }
 link_name = < ( !']' . )+ > { append_to_tag_content(yytext); }
 unnamed_link = '[' < ( !']' . )* > ']' { append_to_tag_content("<a href=\"%s\">%s</a>", yytext, yytext);}
 url = < ( 'http' | 'https' | 'ftp' ) > { strcpy(protocol, yytext); } '://' < ( !eol !' ' . )* > { append_to_tag_content("<a href=\"%s://%s\">%s://%s</a>", protocol, yytext, protocol, yytext); }
