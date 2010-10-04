@@ -5,19 +5,19 @@ all : $(EXAMPLES)
 
 syntax : .FORCE
 	mkdir -p bin
-	`which leg` -o syntax.leg.c syntax.leg
-	$(CC) $(CFLAGS) -c bstrlib.c
-	$(CC) $(CFLAGS) -c syntax.leg.c
-	$(CC) $(CFLAGS) -c list.c
+	`which leg` -o src/syntax.leg.c src/syntax.leg
+	$(CC) $(CFLAGS) -c src/bstrlib.c
+	$(CC) $(CFLAGS) -c src/syntax.leg.c
+	$(CC) $(CFLAGS) -c src/list.c
 	$(CC) $(CFLAGS) -o bin/parser syntax.leg.o bstrlib.o list.o
 
 testlist: .FORCE
-	$(CC) $(CFLAGS) -c bstrlib.c
-	$(CC) $(CFLAGS) -c list.c
-	$(CC) $(CFLAGS) -c testlist.c
+	$(CC) $(CFLAGS) -c src/bstrlib.c
+	$(CC) $(CFLAGS) -c src/list.c
+	$(CC) $(CFLAGS) -c src/testlist.c
 	$(CC) $(CFLAGS) -o bin/testlist testlist.o bstrlib.o list.o
 
 clean : .FORCE
-	rm -rf bin/* *~ *.o *.[pl]eg.[cd] $(EXAMPLES)
+	rm -rf bin/* *~ src/*.o src/*.[pl]eg.[cd] $(EXAMPLES)
 
 .FORCE :
