@@ -298,8 +298,9 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
   }
 
   int i;
+  char c = tolower(tag[0]);
   for(i = 0; i < HTML_MAX_TAG_ENTRIES; i++) {
-    if(tolower(valid_tags[len][i][0]) == tolower(tag[0])) { // Integer comparison on first character
+    if(tolower(valid_tags[len][i][0]) == c) { // Integer comparison on first character
       if(!strncasecmp(tag, valid_tags[len][i], len)) {
         return true;
       }
