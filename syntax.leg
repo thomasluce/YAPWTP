@@ -559,7 +559,7 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 
 %%
 
-int main() {
+void parse(bstring buffer) {
   list_init(&list);
 
   tag_content = bfromcstr("");
@@ -568,7 +568,7 @@ int main() {
   image_variables = bfromcstr("");
   image_url = bfromcstr("");
 
-  output_buffer = bfromcstr("");
+  output_buffer = buffer;
   ballocmin(output_buffer, 1 * MBYTE);
 
   bprintf("<p>");
@@ -579,9 +579,14 @@ int main() {
   bdestroy(image_url);
 
   handle_toc();
-  printf("%s", bdata(output_buffer));
-  bdestroy(output_buffer);
   list_free(&list);
+}
+
+int main() {
+  bstring output = bfromcstr("");
+  parse(output);
+  printf("%s", bdata(output));
+  bdestroy(output);
 
   return 0;
 
