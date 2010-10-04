@@ -75,7 +75,7 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
   bformata(toc_buffer, "%s", "<div id=\"toc\" class=\"toc\">\n<div id=\"toctitle\">Contents</div>\n<ol>\n");
   while(item != NULL) {
     next = item->next;
-	
+    
     // Layer the list deeper as necessary
     if(item->level > previous_level) {
       repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
@@ -272,12 +272,12 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
   // Lookup table based on tag length
   static const char valid_tags[HTML_MAX_LENGTH][HTML_MAX_TAG_ENTRIES][10] = {
     [1]  { "b", "i", "s" },
-	[2]  { "br", "hr" },
-	[3]  { "big", "del", "div", "pre" },
+    [2]  { "br", "hr" },
+    [3]  { "big", "del", "div", "pre" },
     [4]  { "code" },
-	[5]  { "small" }, 
-	[6]  { "strong", "strike", "center" },
-	[10] { "blockquote" }
+    [5]  { "small" }, 
+    [6]  { "strong", "strike", "center" },
+    [10] { "blockquote" }
   };
 
   char *tag = html_tag;
@@ -285,7 +285,7 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
 
   if((tag[0] == '/') && (len > 1)) {
     tag++;
-	len--;
+    len--;
   }
 
   if(len == 0) {
@@ -298,12 +298,13 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
   }
 
   int i;
+  char c = tolower(tag[0]);
   for(i = 0; i < HTML_MAX_TAG_ENTRIES; i++) {
-    if(tolower(valid_tags[len][i][0]) == tolower(tag[0])) { // Integer comparison on first character
+    if(tolower(valid_tags[len][i][0]) == c) { // Integer comparison on first character
       if(!strncasecmp(tag, valid_tags[len][i], len)) {
         return true;
       }
-	}
+    }
   }
 
   return false;
@@ -517,9 +518,9 @@ toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-throu
 html = '<' < '/'? ( !'>' . )+ > '/'? '>' { 
   if(valid_html_tag(yytext, yyleng)) { 
     bstring b = bfromcstr(yytext);
-	btolower(b);
+    btolower(b);
     bprintf("<%s>", bdata(b));
-	bdestroy(b);
+    bdestroy(b);
   } else {
     bprintf("&lt;%s&gt;", yytext); 
   }
