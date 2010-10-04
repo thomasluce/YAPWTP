@@ -317,7 +317,7 @@ wikitext_line = paragraph | horizontal_line
 wikitext = table_of_contents | template | heading | indentation | list | formatting | image | link | table | anything_else | eol
 
 # Generally useful rules
-eol = '\n' { start_of_line = 1; }
+eol = '\r'? '\n' { start_of_line = 1; }
 eof = !.
 space = [\t ]
 
