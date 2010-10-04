@@ -18,6 +18,6 @@ testlist: .FORCE
 	$(CC) $(CFLAGS) -o bin/testlist testlist.o bstrlib.o list.o
 
 clean : .FORCE
-	rm -rf bin/* *~ src/*.o src/*.[pl]eg.[cd] $(EXAMPLES)
+	rm -rf bin/* *~ *.o *.[pl]eg.[cd] $(EXAMPLES)
 
 .FORCE :
