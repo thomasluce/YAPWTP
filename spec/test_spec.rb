@@ -322,7 +322,7 @@ describe "Wikitext parser" do
     end
 
     it "should output a table of contents with fewer than 4 headings if __FORCETOC__ is present" do
-      parse("==heading==\n__FORCETOC__").should include "<ol><li><a href=\"#heading\">heading</a>"
+      parse("==heading==\n__FORCETOC__").should include "<ol>\n     <li><a href=\"#heading\">heading</a>"
     end
   end
 

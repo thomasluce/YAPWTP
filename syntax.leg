@@ -46,6 +46,19 @@ void bprintf(const char *fmt, ...) {
   bvformata(ret, output_buffer, fmt, fmt);
 }
 
+// Append a character to a buffer a repeat number of times
+void repeat_append(bstring buffer, char chr, int count) {
+  int i;
+  bstring tmp = bfromcstr("");
+  ballocmin(tmp, count);
+  for(i = 0; i <= count; i++) {
+      tmp->data[i] = chr;
+    tmp->slen++;
+  }
+  bconcat(buffer, tmp);
+  bdestroy(tmp);
+}
+
 // Render the ToC from a list, output to buffer
 void assemble_toc(struct node *item, bstring toc_buffer) {
   if(!item) {
@@ -56,22 +69,30 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
   struct node *next;
   int previous_level = item->level;
   int total_layers = 0;
+  int i;
 
-  bformata(toc_buffer, "%s", "<ol>");
+  bformata(toc_buffer, "%s", "<ol>\n");
   while(item != NULL) {
     next = item->next;
-	// Layer the list deeper as necessary
+    // Layer the list deeper as necessary
     if(item->level > previous_level) {
-      bformata(toc_buffer, "%s", "\n<ol>\n");
-      total_layers++;
+      repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
+      for(i = previous_level; i < item->level; i++) {
+        bformata(toc_buffer, "%s", "<ol>\n");
+        total_layers++;
+      }
     } else if(item->level < previous_level) {
-      bformata(toc_buffer, "%s", "\n</ol>\n");
-      total_layers--;
+      for(i = previous_level; i > item->level; i--) {
+        repeat_append(toc_buffer, ' ', (total_layers) * 2);
+        bformata(toc_buffer, "%s", "</ol>\n");
+        total_layers--;
+      }
     }
-	
-	// Add the item
+    
+    // Add the item
     if(item->name && item->content) {
-      bformata(toc_buffer, "<li><a href=\"#%s\">%s</a></li>\n", bdata(item->name), bdata(item->content));
+      repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
+      bformata(toc_buffer, "  <li><a href=\"#%s\">%s</a></li>\n", bdata(item->name), bdata(item->content));
     }
     previous_level = item->level;
     item = next;
@@ -79,10 +100,10 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
  
   // Clean up lists left open
   while(total_layers > 0) {
-    bformata(toc_buffer, "%s", "\n</ol>\n");
+    bformata(toc_buffer, "%s", "</ol>\n");
     total_layers--;
   }
-  bformata(toc_buffer, "%s", "</ol>");
+  bformata(toc_buffer, "%s", "</ol>\n");
 }
 
 // Insert the ToC into the output buffer in place of the __TOC__ tag
