@@ -332,8 +332,12 @@ describe "Wikitext parser" do
       parse("<pre>test</pre>").should == "<p><pre>test</pre></p>"
 	end
 
-    it "should disallow some html markup" do
-      parse("<script>test</script>").should == "<p>test</p>"
+	it "should be case insensitive" do
+      parse("<BlockQuote>some text to be block-quoted</bLocKquoTe>").should == "<p><blockquote>some text to be block-quoted</blockquote></p>"
+	end
+
+	it "should encode < and > as &lt; and &gt; when the tag is not allowed" do
+      parse("<script>some_script</script>").should == "<p>&lt;script&gt;some_script&lt;/script&gt;</p>"
 	end
   end
 

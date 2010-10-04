@@ -72,9 +72,10 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
   int total_layers = 0;
   int i;
 
-  bformata(toc_buffer, "%s", "<ol>\n");
+  bformata(toc_buffer, "%s", "<div id=\"toc\" class=\"toc\">\n<div id=\"toctitlc\">Contents</div>\n<ol>\n");
   while(item != NULL) {
     next = item->next;
+	
     // Layer the list deeper as necessary
     if(item->level > previous_level) {
       repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
@@ -104,7 +105,7 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
     bformata(toc_buffer, "%s", "</ol>\n");
     total_layers--;
   }
-  bformata(toc_buffer, "%s", "</ol>\n");
+  bformata(toc_buffer, "%s", "</ol>\n</div>\n");
 }
 
 // Insert the ToC into the output buffer in place of the __TOC__ tag
@@ -262,6 +263,8 @@ void append_to_tag_content(char *fmt, ...) {
 
 // Validate whether or not a specific HTML tag is allowed. Naive implementation.
 bool valid_html_tag(char *html_tag, size_t orig_len) {
+  // Probably best implemented as a lazily-initialized tree
+
   char *tag = html_tag;
   int len = orig_len;
 
@@ -527,7 +530,16 @@ forcetoc = '__FORCETOC__' { toc_attributes |= TOC_FORCETOC; }
 toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-through for later replacement }
 
 # HTML markup
-html = '<' < '/'? ( !'>' . )+ > '/'? '>' { if(valid_html_tag(yytext, yyleng)) { bprintf("<%s>", yytext); } }
+html = '<' < '/'? ( !'>' . )+ > '/'? '>' { 
+  if(valid_html_tag(yytext, yyleng)) { 
+    bstring b = bfromcstr(yytext);
+	btolower(b);
+    bprintf("<%s>", bdata(b));
+	bdestroy(b);
+  } else {
+    bprintf("&lt;%s&gt;", yytext); 
+  }
+}
 
 # Other shit
 anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
