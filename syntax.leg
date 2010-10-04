@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "bstrlib.h"
 #include "list.h"
 
@@ -260,9 +261,24 @@ void append_to_tag_content(char *fmt, ...) {
   bvformata(ret, tag_content, fmt, fmt);
 }
 
-// Validate whether or not a specific HTML tag is allowed. Naive implementation.
+// Number of entries on one line of the valid tag lookup table
+#define HTML_MAX_TAG_ENTRIES 5
+// Longest allowed tag length
+#define HTML_MAX_LENGTH 11
+
+// Validate whether or not a specific HTML tag is allowed.
 bool valid_html_tag(char *html_tag, size_t orig_len) {
-  // Probably best implemented as a lazily-initialized tree
+
+  // Lookup table based on tag length
+  static const char valid_tags[HTML_MAX_LENGTH][HTML_MAX_TAG_ENTRIES][10] = {
+    [1]  { "b", "i", "s" },
+	[2]  { "br", "hr" },
+	[3]  { "big", "del", "div", "pre" },
+    [4]  { "code" },
+	[5]  { "small" }, 
+	[6]  { "strong", "strike", "center" },
+	[10] { "blockquote" }
+  };
 
   char *tag = html_tag;
   int len = orig_len;
@@ -272,65 +288,22 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
 	len--;
   }
 
-  // Ordered by guess at likeliness to occur.
-  if(!strncasecmp(tag, "b", len)) {
-    return true;
+  if(len == 0) {
+    return false;
   }
 
-  if(!strncasecmp(tag, "i", len)) {
-    return true;
+  // If there are no allowed tags this length
+  if(!valid_tags[len]) {
+    return false;
   }
 
-  if(!strncasecmp(tag, "br", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "hr", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "strong", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "del", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "strike", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "s", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "pre", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "div", 3)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "center", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "big", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "small", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "code", len)) {
-    return true;
-  }
-
-  if(!strncasecmp(tag, "blockquote", len)) {
-    return true;
+  int i;
+  for(i = 0; i < HTML_MAX_TAG_ENTRIES; i++) {
+    if(tolower(valid_tags[len][i][0]) == tolower(tag[0])) { // Integer comparison on first character
+      if(!strncasecmp(tag, valid_tags[len][i], len)) {
+        return true;
+      }
+	}
   }
 
   return false;
