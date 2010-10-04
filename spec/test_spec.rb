@@ -149,8 +149,8 @@ describe "Wikitext parser" do
       result.should == "<p>check out the <a href=\"/thumbnail\">thumbnail</a> tool from <a href=\"/domaintools\">Domain Tools</a></p>"
     end
 
-    it "should hide parentheticals in the link text" do
-      parse("[[link (test)]]").should == '<p><a href="/link_(test)">link</a></p>'
+    it "should hide parentheticals in the link text and urlencode them in the href" do
+      parse("[[link (test)]]").should == "<p><a href=\"/link_%28test%29\">link</a></p>"
     end
     # TODO: hide namespaces. Eg: [[Namespace:test]] should produce <a href="/Namespace:test">test</a>
       # These two things together as well.
@@ -183,10 +183,10 @@ describe "Wikitext parser" do
         be("<p><a href=\"/User_talk:Mr_Big/FOO.com\">Mr Big's Comments</a> on <a href=\"/FOO.com\">FOO.com</a></p>")
     end
 
-	it "should not add pre tags when the link is followed by a space" do
+    it "should not add pre tags when the link is followed by a space" do
       parse("[http://www.flowerpetal.com FlowerPetal.com] is the easy way to send flowers online").should_not
-	    include "<pre>";
-	end
+        include "<pre>";
+    end
   end
 
   describe "images" do
@@ -302,10 +302,43 @@ describe "Wikitext parser" do
     end
   end
 
-  describe "notoc" do
-    it "should swallow __NOTOC__" do
-      parse("__NOTOC__").should == '<p></p>'
+  describe "table of contents" do
+    it "should not output a table of contents if  __NOTOC__ is present" do
+      parse("==Heading 1==\n__NOTOC__\n==Heading 2==\n==Heading 3==").should_not include "<ol>"
+    end
+
+	it "should replace __TOC__ with the table of contents if more than 3 headings are present" do
+      parse("==heading==\n__TOC__\n==heading==\n==heading==").should ==
+        "<p><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" />__TOC__<h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" /><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" /></p>"
+	end
+
+    it "should not output a table of contents when fewer than 3 headings are present" do
+	  parse("==Heading 1==\n==Heading 2==\n").should_not include "<ol>"
+    end
+
+    it "should output a table of contents when more than 3 headings are present" do
+      parse("==Heading 1==\n==Heading 2==\n==Heading 3==").should include 
+        "<ol><li><a href=\"#Heading_1\">Heading 1</a>\n<li><a href=\"#Heading_2\">Heading 2</a>\n<li><a href=\"#Heading_3\">Heading 3</a>\n</ol>"
+    end
+
+    it "should output a table of contents with fewer than 4 headings if __FORCETOC__ is present" do
+      parse("==heading==\n__FORCETOC__").should include "<ol>\n     <li><a href=\"#heading\">heading</a>"
+    end
   end
+
+  describe "html markup" do
+    it "should allow some html markup" do
+      parse("<i>test</i>").should == "<p><i>test</i></p>"
+      parse("<pre>test</pre>").should == "<p><pre>test</pre></p>"
+	end
+
+	it "should be case insensitive" do
+      parse("<BlockQuote>some text to be block-quoted</bLocKquoTe>").should == "<p><blockquote>some text to be block-quoted</blockquote></p>"
+	end
+
+	it "should encode < and > as &lt; and &gt; when the tag is not allowed" do
+      parse("<script>some_script</script>").should == "<p>&lt;script&gt;some_script&lt;/script&gt;</p>"
+	end
   end
 
 

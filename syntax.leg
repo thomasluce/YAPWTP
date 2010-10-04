@@ -3,15 +3,23 @@
 #include <signal.h>
 #include <time.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <ctype.h>
 #include "bstrlib.h"
-#include "tree.h"
+#include "list.h"
 
 #define YY_noDEBUG 1
 #define KBYTE 1024
 #define MBYTE KBYTE * 1024
+#define STR_BUFFER_LEN 1024
+
 #define IMAGE_FRAME 1
 #define IMAGE_THUMB ( 1 << 1 )
-#define STR_BUFFER_LEN 1024
+
+#define TOC_NOTOC ( 1 << 1 )
+#define TOC_FORCETOC ( 1 << 2 )
+#define TOC_RELOC ( 1 << 3 )
+
 
 int current_header_level = 0;
 int current_bullet_list_level;
@@ -21,8 +29,10 @@ int start_of_line = 1;
 char protocol[5];
 
 int image_attributes = 0;
-char image_url[STR_BUFFER_LEN];
+bstring image_url;
 bstring image_variables;
+
+int toc_attributes = 0;
 
 int in_tag = 0;
 bstring tag_content;
@@ -30,9 +40,104 @@ unsigned int tag_content_size = 2 * MBYTE;
 
 bstring output_buffer;
 
+struct list list;
+
+// Buffer printf, buffer output until we're ready
 void bprintf(const char *fmt, ...) {
   int ret;
   bvformata(ret, output_buffer, fmt, fmt);
+}
+
+// Append a character to a buffer a repeat number of times
+void repeat_append(bstring buffer, char chr, int count) {
+  int i;
+  bstring tmp = bfromcstr("");
+  ballocmin(tmp, count);
+  for(i = 0; i <= count; i++) {
+      tmp->data[i] = chr;
+    tmp->slen++;
+  }
+  bconcat(buffer, tmp);
+  bdestroy(tmp);
+}
+
+// Render the ToC from a list, output to buffer
+void assemble_toc(struct node *item, bstring toc_buffer) {
+  if(!item) {
+    printf("Bad list passed to assemble_toc\n");
+    return;
+  }
+
+  struct node *next;
+  int previous_level = item->level;
+  int total_layers = 0;
+  int i;
+  bformata(toc_buffer, "%s", "<div id=\"toc\" class=\"toc\">\n<div id=\"toctitle\">Contents</div>\n<ol>\n");
+  while(item != NULL) {
+    next = item->next;
+	
+    // Layer the list deeper as necessary
+    if(item->level > previous_level) {
+      repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
+      for(i = previous_level; i < item->level; i++) {
+        bformata(toc_buffer, "%s", "<ol>\n");
+        total_layers++;
+      }
+    } else if((item->level < previous_level) && (total_layers > 1)) {
+      for(i = previous_level; i > item->level; i--) {
+        repeat_append(toc_buffer, ' ', (total_layers) * 2);
+        bformata(toc_buffer, "%s", "</ol>\n");
+        total_layers--;
+      }
+    }
+    
+    // Add the item
+    if(item->name && item->content) {
+      repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
+      bformata(toc_buffer, "  <li><a href=\"#%s\">%s</a></li>\n", bdata(item->name), bdata(item->content));
+    }
+    previous_level = item->level;
+    item = next;
+  }
+ 
+  // Clean up lists left open
+  while(total_layers > 0) {
+    bformata(toc_buffer, "%s", "</ol>\n");
+    total_layers--;
+  }
+  bformata(toc_buffer, "%s", "</ol>\n</div>\n");
+}
+
+// Insert the ToC into the output buffer in place of the __TOC__ tag
+void insert_reloc_toc(bstring toc_buffer) {
+  bstring find = bfromcstr("__TOC__");
+  if(bfindreplace(output_buffer, find, toc_buffer, 0) == BSTR_ERR) {
+    printf("Error inserting toc_buffer into output_buffer\n");
+  }
+  bdestroy(find);
+}
+
+// Main ToC routine
+void handle_toc() {
+  if(toc_attributes & TOC_NOTOC) {
+    return;
+  }
+
+  if((list.size > 3) || (toc_attributes & TOC_FORCETOC)) {
+    bstring toc_buffer = bfromcstr("");
+    assemble_toc(list.head->next, toc_buffer);
+
+    if(toc_attributes & TOC_RELOC) {
+      insert_reloc_toc(toc_buffer);
+      bdestroy(toc_buffer);
+      return;
+    }
+
+    if(binsert(output_buffer, 0, toc_buffer, ' ') != BSTR_OK) {
+      printf("Error prepending toc_buffer to output_buffer\n");
+    }
+    bdestroy(toc_buffer);
+  }
 }
 
 void remove_parentheticals(bstring str) {
@@ -42,13 +147,13 @@ void remove_parentheticals(bstring str) {
   int in_tag = 0;
   for(i = 0; i < blength(str); i++) {
     if((bdata(str))[i] == '(') {
-      in_tag = 1;
+      in_tag++;
       continue;
     } else if((bdata(str))[i] == ')') {
-      in_tag = 0;
+      in_tag--;
       continue;
     }
-    if(!in_tag) temp[index++] = (bdata(str))[i];
+    if(in_tag < 1) temp[index++] = (bdata(str))[i];
   }
   temp[index] = '\0';
   bdestroy(str);
@@ -63,18 +168,58 @@ void strip_tags(bstring str) {
   int in_tag = 0;
   for(i = 0; i < blength(str); i++) {
     if((bdata(str))[i] == '<') {
-      in_tag = 1;
+      in_tag++;
       continue;
     } else if((bdata(str))[i] == '>') {
-      in_tag = 0;
+      in_tag--;
       continue;
     }
-    if(!in_tag) temp[index++] = (bdata(str))[i];
+    if(in_tag < 1) temp[index++] = (bdata(str))[i];
   }
   temp[index] = '\0';
   bdestroy(str);
   str = bfromcstr(temp);
   bcstrfree(temp);
+}
+
+void urlencode(bstring b) {
+  char *p;
+  int c, e;
+  bstring target = bfromcstr("");
+
+  int whitelist[] = {
+    /* reserved characters */
+    [36] '$',
+    [38] '&',
+    [43] '+',
+    [44] ',',
+    [46] '.',
+    [47] '/',
+    [58] ':',
+    [59] ';',
+    [61] '=',
+    [63] '?',
+    [64] '@',
+    [95] '_'
+  };
+
+  p = bdata(b);
+  while ((c = *p++)) { // Double parens to make gcc shut up
+    /* [0-9A-Za-z] */
+    if (('0' <= c && c <= '9') ||
+        ('A' <= c && c <= 'Z') ||
+        ('a' <= c && c <= 'z')) {
+      bformata(target, "%c", c);
+      continue;
+    }
+    e = whitelist[c];
+    if (e) {
+      bformata(target, "%c", c);
+      continue;
+    }
+    bformata(target, "%%%02x", c);
+  }
+  bassign(b, target);
 }
 
 void strip_html_markup(bstring str) {
@@ -116,12 +261,60 @@ void append_to_tag_content(char *fmt, ...) {
   bvformata(ret, tag_content, fmt, fmt);
 }
 
+// Number of entries on one line of the valid tag lookup table
+#define HTML_MAX_TAG_ENTRIES 5
+// Longest allowed tag length
+#define HTML_MAX_LENGTH 11
+
+// Validate whether or not a specific HTML tag is allowed.
+bool valid_html_tag(char *html_tag, size_t orig_len) {
+
+  // Lookup table based on tag length
+  static const char valid_tags[HTML_MAX_LENGTH][HTML_MAX_TAG_ENTRIES][10] = {
+    [1]  { "b", "i", "s" },
+	[2]  { "br", "hr" },
+	[3]  { "big", "del", "div", "pre" },
+    [4]  { "code" },
+	[5]  { "small" }, 
+	[6]  { "strong", "strike", "center" },
+	[10] { "blockquote" }
+  };
+
+  char *tag = html_tag;
+  int len = orig_len;
+
+  if((tag[0] == '/') && (len > 1)) {
+    tag++;
+	len--;
+  }
+
+  if(len == 0) {
+    return false;
+  }
+
+  // If there are no allowed tags this length
+  if(!valid_tags[len]) {
+    return false;
+  }
+
+  int i;
+  for(i = 0; i < HTML_MAX_TAG_ENTRIES; i++) {
+    if(tolower(valid_tags[len][i][0]) == tolower(tag[0])) { // Integer comparison on first character
+      if(!strncasecmp(tag, valid_tags[len][i], len)) {
+        return true;
+      }
+	}
+  }
+
+  return false;
+}
+
 %}
 
 # High-level
-page =  nowiki | pre_block | wikitext_line | wikitext
-wikitext_line = paragraph | horizontal_line | notoc
-wikitext = template | heading | indentation | list | formatting | image | link | table | anything_else | eol
+page =  nowiki | html | pre_block | wikitext_line | wikitext
+wikitext_line = paragraph | horizontal_line 
+wikitext = table_of_contents | template | heading | indentation | list | formatting | image | link | table | anything_else | eol
 
 # Generally useful rules
 eol = '\n' { start_of_line = 1; }
@@ -138,6 +331,7 @@ heading = heading_marker {
     brtrimws(tag_content);
     bstring tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
+    urlencode(tmp);
     bprintf("<span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"%s\">", bdata(tmp));
     bdestroy(tmp);
 
@@ -145,13 +339,26 @@ heading = heading_marker {
     char tag[4];
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
-    current_header_level = 0;
+
+    struct node *current = list_get_new_tail(&list);
 
     tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
+    urlencode(tmp);
     bprintf("<a name=\"%s\" />", bdata(tmp));
+    bassign(current->name, tmp);
+
+    bstring human_name = bstrcpy(tag_content);
+    strip_tags(human_name);
+    brtrimws(human_name);
+    bassign(current->content, human_name);
+    current->level = current_header_level;
+
     bdestroy(tmp);
+    bdestroy(human_name);
+
     btrunc(tag_content, 0);
+    current_header_level = 0;
   }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
@@ -214,6 +421,7 @@ link = renamed_link | simple_link | external_link { start_of_line = 0; }
 renamed_link = '[[' < ( !'|' !']]' . )* > { 
     bstring path = bfromcstr(yytext);
     strip_html_markup(path);
+    urlencode(path);
     append_to_tag_content("<a href=\"/%s\">", bdata(path));
     bdestroy(path);
   } '|' < ( !']]' . )* > { 
@@ -223,6 +431,7 @@ renamed_link = '[[' < ( !'|' !']]' . )* > {
 simple_link = '[[' ':'? < ( !']]' . )* > {
     bstring path = bfromcstr(yytext);
     strip_html_markup(path);
+    urlencode(path);
     bstring name = bfromcstr(yytext);
     remove_parentheticals(name);
     brtrimws(name);
@@ -247,11 +456,11 @@ image = open_image { btrunc(image_variables, 0); } file_indicator arguments? clo
   }
 
   if(image_attributes & IMAGE_THUMB) {
-    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/></a>", image_url, image_url);
+    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/></a>", bdata(image_url), bdata(image_url));
   } else if(image_attributes & IMAGE_FRAME) {
-    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" class=\"thumbimage\"/></a>", image_url, image_url);
+    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" class=\"thumbimage\"/></a>", bdata(image_url), bdata(image_url));
   } else {
-    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" %s/></a>", image_url, image_url, bdata(image_variables));
+    bprintf("<a href=\"File:%s\" class=\"image\"><img src=\"%s\" %s/></a>", bdata(image_url), bdata(image_url), bdata(image_variables));
   }
 
   if(image_attributes & IMAGE_FRAME) {
@@ -260,7 +469,7 @@ image = open_image { btrunc(image_variables, 0); } file_indicator arguments? clo
 } 
 open_image = '[[' space*
 close_image = space* ']]'
-file_indicator = ( 'File:' | 'Image:' ) < ( !'|' !close_image . )* > { strncpy(image_url, yytext, STR_BUFFER_LEN); }
+file_indicator = ( 'File:' | 'Image:' ) < ( !'|' !close_image . )* > { bassignformat(image_url, "%s", yytext); }
 arguments = '|' variable value? arguments?
 variable = special_image_variables | generic_variable
 special_image_variables = image_type | float
@@ -298,8 +507,24 @@ table_heading = { bprintf("<th"); }'!' ' '+ < ( !' |' . )* > { bprintf(" %s>", y
 # Templates
 template = '{{' space* ( !'}}' . )* '}}' { start_of_line = 0; }
 
-# __NOTOC__
-notoc = '__NOTOC__'
+# Table of Contents
+table_of_contents = ( notoc | toc | forcetoc )
+notoc = '__NOTOC__' { toc_attributes |= TOC_NOTOC; }
+forcetoc = '__FORCETOC__' { toc_attributes |= TOC_FORCETOC; }
+toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-through for later replacement }
+
+# HTML markup
+html = '<' < '/'? ( !'>' . )+ > '/'? '>' { 
+  if(valid_html_tag(yytext, yyleng)) { 
+    bstring b = bfromcstr(yytext);
+	btolower(b);
+    bprintf("<%s>", bdata(b));
+	bdestroy(b);
+  } else {
+    bprintf("&lt;%s&gt;", yytext); 
+  }
+  start_of_line = 0;
+}
 
 # Other shit
 anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
@@ -307,13 +532,16 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 
 %%
 
-int main() {
+void parse(bstring buffer) {
+  list_init(&list);
+
   tag_content = bfromcstr("");
   ballocmin(tag_content, tag_content_size);
 
   image_variables = bfromcstr("");
+  image_url = bfromcstr("");
 
-  output_buffer = bfromcstr("");
+  output_buffer = buffer;
   ballocmin(output_buffer, 1 * MBYTE);
 
   bprintf("<p>");
@@ -321,9 +549,20 @@ int main() {
   bprintf("</p>");
   bdestroy(tag_content);
   bdestroy(image_variables);
+  bdestroy(image_url);
 
-  printf("%s", bdata(output_buffer));
-  bdestroy(output_buffer);
+  handle_toc();
+  list_free(&list);
+}
+
+int main() {
+  bstring output = bfromcstr("");
+  parse(output);
+  printf("%s", bdata(output));
+  bdestroy(output);
 
   return 0;
+
+  /* Make gcc warnings about unused yyunmatched go away... */
+  (void)yyunmatched;
 }
