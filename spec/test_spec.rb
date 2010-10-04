@@ -19,6 +19,10 @@ describe "Wikitext parser" do
   end
 
   describe "headings" do
+    it "should be able to use windows line-endings" do
+      parse("==heading==\r\n").should == '<p><h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h2><a name="heading" /></p>'
+    end
+
     it "should not freak out when there are multiple headings" do
       parse("===heading===\n===heading===").should_not include 'headingheading'
     end
