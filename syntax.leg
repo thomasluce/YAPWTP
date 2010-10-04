@@ -71,8 +71,7 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
   int previous_level = item->level;
   int total_layers = 0;
   int i;
-
-  bformata(toc_buffer, "%s", "<div id=\"toc\" class=\"toc\">\n<div id=\"toctitlc\">Contents</div>\n<ol>\n");
+  bformata(toc_buffer, "%s", "<div id=\"toc\" class=\"toc\">\n<div id=\"toctitle\">Contents</div>\n<ol>\n");
   while(item != NULL) {
     next = item->next;
 	
@@ -83,7 +82,7 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
         bformata(toc_buffer, "%s", "<ol>\n");
         total_layers++;
       }
-    } else if(item->level < previous_level) {
+    } else if((item->level < previous_level) && (total_layers > 1)) {
       for(i = previous_level; i > item->level; i--) {
         repeat_append(toc_buffer, ' ', (total_layers) * 2);
         bformata(toc_buffer, "%s", "</ol>\n");
@@ -310,7 +309,19 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
     return true;
   }
 
+  if(!strncasecmp(tag, "div", 3)) {
+    return true;
+  }
+
   if(!strncasecmp(tag, "center", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "big", len)) {
+    return true;
+  }
+
+  if(!strncasecmp(tag, "small", len)) {
     return true;
   }
 
@@ -539,6 +550,7 @@ html = '<' < '/'? ( !'>' . )+ > '/'? '>' {
   } else {
     bprintf("&lt;%s&gt;", yytext); 
   }
+  start_of_line = 0;
 }
 
 # Other shit

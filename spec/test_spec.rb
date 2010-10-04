@@ -349,5 +349,4 @@ describe "Wikitext parser" do
   # TODO: links directly into edit mode
   # TODO: book sources "ISBN" links
   # TODO: RFC links
-  # TODO: Make safe HTML (whitelist tags)
 end
