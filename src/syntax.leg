@@ -262,7 +262,7 @@ void append_to_tag_content(char *fmt, ...) {
 }
 
 // Number of entries on one line of the valid tag lookup table
-#define HTML_MAX_TAG_ENTRIES 5
+#define HTML_MAX_TAG_ENTRIES 13
 // Longest allowed tag length
 #define HTML_MAX_LENGTH 11
 
@@ -271,12 +271,13 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
 
   // Lookup table based on tag length
   static const char valid_tags[HTML_MAX_LENGTH][HTML_MAX_TAG_ENTRIES][10] = {
-    [1]  { "b", "i", "s" },
-    [2]  { "br", "hr" },
-    [3]  { "big", "del", "div", "pre" },
-    [4]  { "code" },
-    [5]  { "small" }, 
+    [1]  { "b", "i", "p", "s" },
+    [2]  { "br", "dd", "dl", "dt", "em", "hr", "li", "ol", "td", "th", "tr", "tt", "ul" },
+    [3]  { "big", "del", "div", "ins", "pre", "sub", "sup" },
+    [4]  { "abbr", "cite", "code", "font", "span" },
+    [5]  { "small", "table" }, 
     [6]  { "strong", "strike", "center" },
+	[7]  { "caption" },
     [10] { "blockquote" }
   };
 
