@@ -56,22 +56,15 @@ void bprintf(const char *fmt, ...) {
 // Read from a string buffer rather than a file when requested by leg code.
 // Could be made faster by reading more than a byte at a time... (up to max_size)
 void handle_input(char *buf, int *result, size_t max_size) {
-  // This switch controls whether we read from stdin or a bstring buffer.
-  // breada() is not compatible with stdin.
-  if(read_from_buffer) {
-    if(input_buffer_pos > input_buffer->slen) {
-      *result = 0;
-    } else {
-      *buf = input_buffer->data[input_buffer_pos++];
-      *result = 1;
-    }
-  } else {
-    int yyc= getchar();
-    *result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1);
+  if(input_buffer_pos > input_buffer->slen) {
+    *result = 0;
+	return;
   }
+  *buf = input_buffer->data[input_buffer_pos++];
+  *result = 1;
 }
 
-// Read a file into a bstring buffer which is consumed by YY_INPUT
+// Read a file into a bstring buffer 
 void file_get_contents(bstring buffer, char *filename) {
   if(!buffer) {
     printf("Invalid buffer supplied to buffer_from_file.\n");
@@ -83,6 +76,22 @@ void file_get_contents(bstring buffer, char *filename) {
   }
   breada(buffer, (bNread)fread, infile);
   fclose(infile);
+}
+
+// Read from stdin until EOF, buffering to a bstring (destructive)
+void stdin_get_contents(bstring buffer) {
+  int c;
+  ballocmin(buffer, 100 * KBYTE);
+  buffer->slen = 0;
+  while(EOF != (c = getchar())) {
+    if(buffer->slen == buffer->mlen) {
+      ballocmin(buffer, buffer->mlen * 2); // Just double the buffer
+	  buffer->mlen = buffer->mlen * 2;
+	}
+    buffer->data[buffer->slen] = c;
+	buffer->slen++;
+  }
+  buffer->slen--; // Move the pointer back on the very last pass
 }
 
 // Append a character to a buffer a repeat number of times
@@ -572,6 +581,14 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 
 %%
 
+void set_output_buffer(bstring buffer) {
+  output_buffer = buffer;
+}
+
+void set_input_buffer(bstring buffer) {
+  input_buffer = buffer;
+}
+
 void init() {
   current_header_level = 0;
   start_of_line = 1;
@@ -593,7 +610,7 @@ void init() {
   ballocmin(output_buffer, 1 * MBYTE);
 }
 
-void shutdown() {
+void cleanup() {
   bdestroy(tag_content);
   bdestroy(image_variables);
   bdestroy(image_url);
@@ -602,21 +619,22 @@ void shutdown() {
 
 void parse(bstring inputbuffer, bstring outbuffer) {
   init();
+  set_output_buffer(outbuffer);
+  set_input_buffer(inputbuffer);
 
-  output_buffer = outbuffer;
-  input_buffer = inputbuffer;
   bprintf("<p>");
   while(yyparse()) {}
   bprintf("</p>");
-
   handle_toc();
-  shutdown();
+
+  cleanup();
 }
 
 int main() {
   bstring output = bfromcstr("");
   bstring input = bfromcstr("");
-  file_get_contents(input, "spec/fixtures/cnn.com");
+  //file_get_contents(input, "spec/fixtures/cnn.com");
+  stdin_get_contents(input);
   parse(input, output);
   printf("%s", bdata(output));
   bdestroy(output);
