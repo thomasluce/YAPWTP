@@ -5,7 +5,7 @@ all : $(EXAMPLES)
 
 syntax : .FORCE
 	mkdir -p bin
-	`which leg` -o src/syntax.leg.c src/syntax.leg
+	leg -o src/syntax.leg.c src/syntax.leg
 	$(CC) $(CFLAGS) -c src/bstrlib.c
 	$(CC) $(CFLAGS) -c src/syntax.leg.c
 	$(CC) $(CFLAGS) -c src/list.c

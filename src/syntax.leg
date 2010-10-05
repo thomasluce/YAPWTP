@@ -20,6 +20,9 @@
 #define TOC_FORCETOC ( 1 << 2 )
 #define TOC_RELOC ( 1 << 3 )
 
+int read_from_buffer = 0;
+
+#define YY_INPUT(buf, result, max_size) handle_input(buf, &result, max_size)
 
 int current_header_level = 0;
 int current_bullet_list_level;
@@ -41,7 +44,9 @@ int in_tag = 0;
 bstring tag_content;
 unsigned int tag_content_size = 2 * MBYTE;
 
-bstring output_buffer;
+bstring output_buffer = NULL;
+bstring input_buffer = NULL;
+long input_buffer_pos = 0;
 
 struct list list;
 
@@ -49,6 +54,47 @@ struct list list;
 void bprintf(const char *fmt, ...) {
   int ret;
   bvformata(ret, output_buffer, fmt, fmt);
+}
+
+// Read from a string buffer rather than a file when requested by leg code.
+// Could be made faster by reading more than a byte at a time... (up to max_size)
+void handle_input(char *buf, int *result, size_t max_size) {
+  if(input_buffer_pos > input_buffer->slen) {
+    *result = 0;
+  return;
+  }
+  *buf = input_buffer->data[input_buffer_pos++];
+  *result = 1;
+}
+
+// Read a file into a bstring buffer 
+void file_get_contents(bstring buffer, char *filename) {
+  if(!buffer) {
+    printf("Invalid buffer supplied to buffer_from_file.\n");
+  }
+
+  FILE *infile;
+  if(!(infile = fopen(filename, "r"))) {
+     printf("Can't open %s to read.\n", filename);
+  }
+  breada(buffer, (bNread)fread, infile);
+  fclose(infile);
+}
+
+// Read from stdin until EOF, buffering to a bstring (destructive)
+void stdin_get_contents(bstring buffer) {
+  int c;
+  ballocmin(buffer, 100 * KBYTE);
+  buffer->slen = 0;
+  while(EOF != (c = getchar())) {
+    if(buffer->slen == buffer->mlen) {
+      ballocmin(buffer, buffer->mlen * 2); // Just double the buffer
+    buffer->mlen = buffer->mlen * 2;
+  }
+    buffer->data[buffer->slen] = c;
+  buffer->slen++;
+  }
+  buffer->slen--; // Move the pointer back on the very last pass
 }
 
 // Append a character to a buffer a repeat number of times
@@ -223,6 +269,7 @@ void urlencode(bstring b) {
     bformata(target, "%%%02x", c);
   }
   bassign(b, target);
+  bdestroy(target);
 }
 
 void strip_html_markup(bstring str) {
@@ -265,7 +312,7 @@ void append_to_tag_content(char *fmt, ...) {
 }
 
 // Number of entries on one line of the valid tag lookup table
-#define HTML_MAX_TAG_ENTRIES 5
+#define HTML_MAX_TAG_ENTRIES 13
 // Longest allowed tag length
 #define HTML_MAX_LENGTH 11
 
@@ -274,12 +321,13 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
 
   // Lookup table based on tag length
   static const char valid_tags[HTML_MAX_LENGTH][HTML_MAX_TAG_ENTRIES][10] = {
-    [1]  { "b", "i", "s" },
-    [2]  { "br", "hr" },
-    [3]  { "big", "del", "div", "pre" },
-    [4]  { "code" },
-    [5]  { "small" }, 
+    [1]  { "b", "i", "p", "s" },
+    [2]  { "br", "dd", "dl", "dt", "em", "hr", "li", "ol", "td", "th", "tr", "tt", "ul" },
+    [3]  { "big", "del", "div", "ins", "pre", "sub", "sup" },
+    [4]  { "abbr", "cite", "code", "font", "span" },
+    [5]  { "small", "table" }, 
     [6]  { "strong", "strike", "center" },
+    [7]  { "caption" },
     [10] { "blockquote" }
   };
 
@@ -527,9 +575,25 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 
 %%
 
-void parse(bstring buffer) {
-  list_init(&list);
+void set_output_buffer(bstring buffer) {
+  output_buffer = buffer;
+}
 
+void set_input_buffer(bstring buffer) {
+  input_buffer = buffer;
+}
+
+void init() {
+  current_header_level = 0;
+  start_of_line = 1;
+  image_attributes = 0;
+  toc_attributes = 0;
+  in_tag = 0;
+  bstring output_buffer = NULL;
+  bstring input_buffer = NULL;
+  input_buffer_pos = 0;
+
+  list_init(&list);
   tag_content = bfromcstr("");
   ballocmin(tag_content, tag_content_size);
 
@@ -539,25 +603,40 @@ void parse(bstring buffer) {
   link_path = bfromcstr("");
   link_text = bfromcstr("");
 
-  output_buffer = buffer;
+  output_buffer = bfromcstr("");
+  input_buffer = bfromcstr("");
   ballocmin(output_buffer, 1 * MBYTE);
+}
 
-  bprintf("<p>");
-  while(yyparse()) {}
-  bprintf("</p>");
+void cleanup() {
   bdestroy(tag_content);
   bdestroy(image_variables);
   bdestroy(image_url);
   bdestroy(link_path);
   bdestroy(link_text);
 
-  handle_toc();
   list_free(&list);
+}
+
+void parse(bstring inputbuffer, bstring outbuffer) {
+  init();
+  set_output_buffer(outbuffer);
+  set_input_buffer(inputbuffer);
+
+  bprintf("<p>");
+  while(yyparse()) {}
+  bprintf("</p>");
+  handle_toc();
+
+  cleanup();
 }
 
 int main() {
   bstring output = bfromcstr("");
-  parse(output);
+  bstring input = bfromcstr("");
+  //file_get_contents(input, "spec/fixtures/cnn.com");
+  stdin_get_contents(input);
+  parse(input, output);
   printf("%s", bdata(output));
   bdestroy(output);
   return 0;
