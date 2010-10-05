@@ -121,7 +121,7 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
   bformata(toc_buffer, "%s", "<div id=\"toc\" class=\"toc\">\n<div id=\"toctitle\">Contents</div>\n<ol>\n");
   while(item != NULL) {
     next = item->next;
-    
+
     // Layer the list deeper as necessary
     if(item->level > previous_level) {
       repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
@@ -136,7 +136,7 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
         total_layers--;
       }
     }
-    
+
     // Add the item
     if(item->name && item->content) {
       repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
@@ -145,7 +145,7 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
     previous_level = item->level;
     item = next;
   }
- 
+
   // Clean up lists left open
   while(total_layers > 0) {
     bformata(toc_buffer, "%s", "</ol>\n");
@@ -492,10 +492,10 @@ simple_link = '[[' ':'? < ( !']]' . )* > {
     start_of_line = 0; // prevent <pre> block from starting due to the next space 
   }
 external_link = named_link | unnamed_link | url
-named_link = '[' { append_to_tag_content("<a href=\""); } link_url { append_to_tag_content("\">");} ' '+ link_name + space* ']' {append_to_tag_content("</a>"); }
+named_link = '[' !'javascript:' { append_to_tag_content("<a href=\""); } link_url { append_to_tag_content("\">");} ' '+ link_name + space* ']' {append_to_tag_content("</a>"); }
 link_url = < ( !' ' !']' . )+ >  { append_to_tag_content(yytext); }
 link_name = < ( !']' . )+ > { append_to_tag_content(yytext); }
-unnamed_link = '[' < ( !']' . )* > ']' { append_to_tag_content("<a href=\"%s\">%s</a>", yytext, yytext);}
+unnamed_link = '[' !'javascript:' < ( !']' . )* > ']' { append_to_tag_content("<a href=\"%s\">%s</a>", yytext, yytext);}
 url = < ( 'http' | 'https' | 'ftp' ) > { strcpy(protocol, yytext); } '://' < ( !eol !' ' . )* > { append_to_tag_content("<a href=\"%s://%s\">%s://%s</a>", protocol, yytext, protocol, yytext); }
 
 # Images
