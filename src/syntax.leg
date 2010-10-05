@@ -32,6 +32,9 @@ int image_attributes = 0;
 bstring image_url;
 bstring image_variables;
 
+bstring link_path;
+bstring link_text;
+
 int toc_attributes = 0;
 
 int in_tag = 0;
@@ -418,37 +421,28 @@ pre_line = ' ' < ( !eol . )* ( eol | eof ) > { bprintf("%s", yytext); }
 nowiki = '<nowiki>' ( !'</nowiki>' anything_else )* '</nowiki>'
 
 # Links
-link = renamed_link | simple_link | external_link { start_of_line = 0; }
-renamed_link = '[[' < ( !'|' !']]' . )* > { 
-    bstring path = bfromcstr(yytext);
-    strip_html_markup(path);
-    urlencode(path);
-    append_to_tag_content("<a href=\"/%s\">", bdata(path));
-    bdestroy(path);
-  } '|' < ( !']]' . )* > { 
-    append_to_tag_content("%s</a>", yytext); 
-    start_of_line = 0; // prevent <pre> block from starting due to the next space
-  } ']]'
-simple_link = '[[' ':'? < ( !']]' . )* > {
-    bstring path = bfromcstr(yytext);
-    strip_html_markup(path);
-    urlencode(path);
-    bstring name = bfromcstr(yytext);
-    remove_parentheticals(name);
-    brtrimws(name);
-    append_to_tag_content("<a href=\"/%s\">%s", bdata(path), bdata(name));
-    bdestroy(path);
-    bdestroy(name);
-  } ']]' < ( !space !( '=' '='+  ) !'[' !eol !eof . )* > { 
-    append_to_tag_content("%s</a>", yytext); 
-    start_of_line = 0; // prevent <pre> block from starting due to the next space 
+link = ( local_link | external_link ) { start_of_line = 0; }
+local_link = link_open ':'? namespace? link_path rename? link_close blend {
+  strip_html_markup(link_path);
+  urlencode(link_path);
+  remove_parentheticals(link_text);
+  btrimws(link_text);
+  append_to_tag_content("<a href=\"/%s\">%s</a>", bdata(link_path), bdata(link_text));
+  link_path = bfromcstr(""); link_text = bfromcstr("");
   }
+namespace = < ( !':' !link_close . )* > ':' { link_path = bfromcstr(yytext); bconchar(link_path, ':'); }
+link_path = < ( !link_close !'|' . )* > { bcatcstr(link_path, yytext); link_text = bfromcstr(yytext); }
+rename = '|' < ( !link_close . )* > { link_text = bfromcstr(yytext); }
+blend = < ( !space !( '=' '='+ ) !'[' !eol !eof . )* > { bcatcstr(link_text, yytext); }
+
 external_link = named_link | unnamed_link | url
 named_link = '[' !'javascript:' { append_to_tag_content("<a href=\""); } link_url { append_to_tag_content("\">");} ' '+ link_name + space* ']' {append_to_tag_content("</a>"); }
 link_url = < ( !' ' !']' . )+ >  { append_to_tag_content(yytext); }
 link_name = < ( !']' . )+ > { append_to_tag_content(yytext); }
 unnamed_link = '[' !'javascript:' < ( !']' . )* > ']' { append_to_tag_content("<a href=\"%s\">%s</a>", yytext, yytext);}
 url = < ( 'http' | 'https' | 'ftp' ) > { strcpy(protocol, yytext); } '://' < ( !eol !' ' . )* > { append_to_tag_content("<a href=\"%s://%s\">%s://%s</a>", protocol, yytext, protocol, yytext); }
+link_open = '[['
+link_close = ']]'
 
 # Images
 image = open_image { btrunc(image_variables, 0); } file_indicator arguments? close_image {
@@ -542,6 +536,9 @@ void parse(bstring buffer) {
   image_variables = bfromcstr("");
   image_url = bfromcstr("");
 
+  link_path = bfromcstr("");
+  link_text = bfromcstr("");
+
   output_buffer = buffer;
   ballocmin(output_buffer, 1 * MBYTE);
 
@@ -551,6 +548,8 @@ void parse(bstring buffer) {
   bdestroy(tag_content);
   bdestroy(image_variables);
   bdestroy(image_url);
+  bdestroy(link_path);
+  bdestroy(link_text);
 
   handle_toc();
   list_free(&list);
