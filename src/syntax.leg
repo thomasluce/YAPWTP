@@ -20,6 +20,9 @@
 #define TOC_FORCETOC ( 1 << 2 )
 #define TOC_RELOC ( 1 << 3 )
 
+int read_from_buffer = 0;
+
+#define YY_INPUT(buf, result, max_size) handle_input(buf, &result, max_size)
 
 int current_header_level = 0;
 int current_bullet_list_level;
@@ -38,7 +41,9 @@ int in_tag = 0;
 bstring tag_content;
 unsigned int tag_content_size = 2 * MBYTE;
 
-bstring output_buffer;
+bstring output_buffer = NULL;
+bstring input_buffer = NULL;
+long input_buffer_pos = 0;
 
 struct list list;
 
@@ -46,6 +51,38 @@ struct list list;
 void bprintf(const char *fmt, ...) {
   int ret;
   bvformata(ret, output_buffer, fmt, fmt);
+}
+
+// Read from a string buffer rather than a file when requested by leg code.
+// Could be made faster by reading more than a byte at a time... (up to max_size)
+void handle_input(char *buf, int *result, size_t max_size) {
+  // This switch controls whether we read from stdin or a bstring buffer.
+  // breada() is not compatible with stdin.
+  if(read_from_buffer) {
+    if(input_buffer_pos > input_buffer->slen) {
+      *result = 0;
+    } else {
+      *buf = input_buffer->data[input_buffer_pos++];
+      *result = 1;
+    }
+  } else {
+    int yyc= getchar();
+    *result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1);
+  }
+}
+
+// Read a file into a bstring buffer which is consumed by YY_INPUT
+void file_get_contents(bstring buffer, char *filename) {
+  if(!buffer) {
+    printf("Invalid buffer supplied to buffer_from_file.\n");
+  }
+
+  FILE *infile;
+  if(!(infile = fopen(filename, "r"))) {
+     printf("Can't open %s to read.\n", filename);
+  }
+  breada(buffer, (bNread)fread, infile);
+  fclose(infile);
 }
 
 // Append a character to a buffer a repeat number of times
@@ -220,6 +257,7 @@ void urlencode(bstring b) {
     bformata(target, "%%%02x", c);
   }
   bassign(b, target);
+  bdestroy(target);
 }
 
 void strip_html_markup(bstring str) {
@@ -277,7 +315,7 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
     [4]  { "abbr", "cite", "code", "font", "span" },
     [5]  { "small", "table" }, 
     [6]  { "strong", "strike", "center" },
-	[7]  { "caption" },
+    [7]  { "caption" },
     [10] { "blockquote" }
   };
 
@@ -534,32 +572,52 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 
 %%
 
-void parse(bstring buffer) {
-  list_init(&list);
+void init() {
+  current_header_level = 0;
+  start_of_line = 1;
+  image_attributes = 0;
+  toc_attributes = 0;
+  in_tag = 0;
+  bstring output_buffer = NULL;
+  bstring input_buffer = NULL;
+  input_buffer_pos = 0;
 
+  list_init(&list);
   tag_content = bfromcstr("");
   ballocmin(tag_content, tag_content_size);
 
   image_variables = bfromcstr("");
   image_url = bfromcstr("");
 
-  output_buffer = buffer;
+  input_buffer = bfromcstr("");
   ballocmin(output_buffer, 1 * MBYTE);
+}
 
-  bprintf("<p>");
-  while(yyparse()) {}
-  bprintf("</p>");
+void shutdown() {
   bdestroy(tag_content);
   bdestroy(image_variables);
   bdestroy(image_url);
+  list_free(&list);
+}
+
+void parse(bstring inputbuffer, bstring outbuffer) {
+  init();
+
+  output_buffer = outbuffer;
+  input_buffer = inputbuffer;
+  bprintf("<p>");
+  while(yyparse()) {}
+  bprintf("</p>");
 
   handle_toc();
-  list_free(&list);
+  shutdown();
 }
 
 int main() {
   bstring output = bfromcstr("");
-  parse(output);
+  bstring input = bfromcstr("");
+  file_get_contents(input, "spec/fixtures/cnn.com");
+  parse(input, output);
   printf("%s", bdata(output));
   bdestroy(output);
   return 0;
