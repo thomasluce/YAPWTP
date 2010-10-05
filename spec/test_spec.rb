@@ -41,7 +41,7 @@ describe "Wikitext parser" do
 
     it "should be able to make a heading" do
       parse("== heading ==").strip.should =~ /<span class="mw-headline" id="heading">heading<\/span>/
-      parse("== heading ==\n").strip.should =~ /<span class="mw-headline" id="heading">heading<\/span>/
+        parse("== heading ==\n").strip.should =~ /<span class="mw-headline" id="heading">heading<\/span>/
     end
 
     it "should make an anchor with the heading" do
@@ -66,11 +66,11 @@ describe "Wikitext parser" do
       result.should include '</h3>'
     end
 
-  it "should not output bogus h tags" do
+    it "should not output bogus h tags" do
       result = parse("========== heading ==").strip
-    result.should_not include "<h10>"
-    result.should include "<h5>"
-  end
+      result.should_not include "<h10>"
+      result.should include "<h5>"
+    end
   end
 
   describe "paragraphs" do
@@ -157,7 +157,7 @@ describe "Wikitext parser" do
       parse("[[link (test)]]").should == "<p><a href=\"/link_%28test%29\">link</a></p>"
     end
     # TODO: hide namespaces. Eg: [[Namespace:test]] should produce <a href="/Namespace:test">test</a>
-      # These two things together as well.
+    # These two things together as well.
     # TODO: interwiki links.
 
     # blended links
@@ -190,12 +190,16 @@ describe "Wikitext parser" do
 
     it "should handle at least a renamed link and a simple link on a line" do
       parse("[[User_talk:Mr Big/FOO.com|Mr Big's Comments]] on [[FOO.com]]").should 
-        be("<p><a href=\"/User_talk:Mr_Big/FOO.com\">Mr Big's Comments</a> on <a href=\"/FOO.com\">FOO.com</a></p>")
+      be("<p><a href=\"/User_talk:Mr_Big/FOO.com\">Mr Big's Comments</a> on <a href=\"/FOO.com\">FOO.com</a></p>")
     end
 
     it "should not add pre tags when the link is followed by a space" do
       parse("[http://www.flowerpetal.com FlowerPetal.com] is the easy way to send flowers online").should_not
-        include "<pre>";
+      include "<pre>";
+    end
+
+    it "should not allow javascript links" do
+      parse("[javascript:alert('pwnd')]").should_not include '<a'
     end
   end
 
@@ -317,18 +321,18 @@ describe "Wikitext parser" do
       parse("==Heading 1==\n__NOTOC__\n==Heading 2==\n==Heading 3==").should_not include "<ol>"
     end
 
-	it "should replace __TOC__ with the table of contents if more than 3 headings are present" do
+    it "should replace __TOC__ with the table of contents if more than 3 headings are present" do
       parse("==heading==\n__TOC__\n==heading==\n==heading==").should ==
         "<p><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" />__TOC__<h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" /><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" /></p>"
-	end
+    end
 
     it "should not output a table of contents when fewer than 3 headings are present" do
-	  parse("==Heading 1==\n==Heading 2==\n").should_not include "<ol>"
+      parse("==Heading 1==\n==Heading 2==\n").should_not include "<ol>"
     end
 
     it "should output a table of contents when more than 3 headings are present" do
       parse("==Heading 1==\n==Heading 2==\n==Heading 3==").should include 
-        "<ol><li><a href=\"#Heading_1\">Heading 1</a>\n<li><a href=\"#Heading_2\">Heading 2</a>\n<li><a href=\"#Heading_3\">Heading 3</a>\n</ol>"
+      "<ol><li><a href=\"#Heading_1\">Heading 1</a>\n<li><a href=\"#Heading_2\">Heading 2</a>\n<li><a href=\"#Heading_3\">Heading 3</a>\n</ol>"
     end
 
     it "should output a table of contents with fewer than 4 headings if __FORCETOC__ is present" do
@@ -340,15 +344,15 @@ describe "Wikitext parser" do
     it "should allow some html markup" do
       parse("<i>test</i>").should == "<p><i>test</i></p>"
       parse("<pre>test</pre>").should == "<p><pre>test</pre></p>"
-	end
+    end
 
-	it "should be case insensitive" do
+    it "should be case insensitive" do
       parse("<BlockQuote>some text to be block-quoted</bLocKquoTe>").should == "<p><blockquote>some text to be block-quoted</blockquote></p>"
-	end
+    end
 
-	it "should encode < and > as &lt; and &gt; when the tag is not allowed" do
+    it "should encode < and > as &lt; and &gt; when the tag is not allowed" do
       parse("<script>some_script</script>").should == "<p>&lt;script&gt;some_script&lt;/script&gt;</p>"
-	end
+    end
   end
 
 
@@ -360,3 +364,4 @@ describe "Wikitext parser" do
   # TODO: book sources "ISBN" links
   # TODO: RFC links
 end
+
