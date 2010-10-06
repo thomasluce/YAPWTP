@@ -1,6 +1,6 @@
 EXAMPLES = syntax
 
-CFLAGS = -g3 -Wall -std=gnu99
+CFLAGS = -fPIC -g3 -Wall -std=gnu99
 all : $(EXAMPLES)
 
 syntax : .FORCE
@@ -11,7 +11,7 @@ syntax : .FORCE
 	$(CC) $(CFLAGS) -c src/list.c
 	$(CC) $(CFLAGS) -c src/content.c
 	$(CC) $(CFLAGS) -c src/io.c
-	$(CC) $(CFLAGS) -shared -fPIC -o libyapwtp.so syntax.leg.o bstrlib.o list.o content.o io.o
+	$(CC) $(CFLAGS) -shared -o libyapwtp.so syntax.leg.o bstrlib.o list.o content.o io.o
 	$(CC) $(CFLAGS) -c src/main.c
 	$(CC) $(CFLAGS) -o bin/parser -L. -lyapwtp main.o
 
