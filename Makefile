@@ -11,8 +11,9 @@ syntax : .FORCE
 	$(CC) $(CFLAGS) -c src/list.c
 	$(CC) $(CFLAGS) -c src/content.c
 	$(CC) $(CFLAGS) -c src/io.c
+	$(CC) $(CFLAGS) -shared -fPIC -o libyapwtp.so syntax.leg.o bstrlib.o list.o content.o io.o
 	$(CC) $(CFLAGS) -c src/main.c
-	$(CC) $(CFLAGS) -o bin/parser syntax.leg.o bstrlib.o list.o content.o io.o main.o
+	$(CC) $(CFLAGS) -o bin/parser -L. -lyapwtp main.o
 
 testlist: .FORCE
 	$(CC) $(CFLAGS) -c src/bstrlib.c
@@ -21,6 +22,6 @@ testlist: .FORCE
 	$(CC) $(CFLAGS) -o bin/testlist testlist.o bstrlib.o list.o
 
 clean : .FORCE
-	rm -rf bin/* *~ *.o *.[pl]eg.[cd] $(EXAMPLES)
+	rm -rf bin/* *~ *.o *.[pl]eg.[cd] *.so *.a $(EXAMPLES)
 
 .FORCE :

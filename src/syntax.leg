@@ -110,7 +110,7 @@ void insert_reloc_toc(bstring toc_buffer) {
 }
 
 // Main ToC routine
-void handle_toc() {
+void handle_toc(void) {
   if(toc_attributes & TOC_NOTOC) {
     return;
   }
@@ -408,7 +408,7 @@ void set_input_buffer(bstring buffer) {
   input_buffer = buffer;
 }
 
-void init() {
+void init(void) {
   current_header_level = 0;
   start_of_line = 1;
   image_attributes = 0;
@@ -435,7 +435,7 @@ void init() {
   ballocmin(output_buffer, 1 * MBYTE);
 }
 
-void cleanup() {
+void cleanup(void) {
   bdestroy(tag_content);
   bdestroy(image_variables);
   bdestroy(image_url);

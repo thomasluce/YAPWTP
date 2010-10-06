@@ -1,8 +1,6 @@
 #include "yapwtp.h"
 #include "io.h"
 
-extern void parse(bstring inputbuffer, bstring outbuffer);
-
 int main() {
   bstring output = bfromcstr("");
   bstring input = bfromcstr("");
