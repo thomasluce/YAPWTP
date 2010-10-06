@@ -192,7 +192,7 @@ heading = heading_marker {
     tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
     urlencode(tmp);
-    bprintf("<a name=\"%s\" />", bdata(tmp));
+    bprintf("<a name=\"%s\"></a>", bdata(tmp));
     bassign(current->name, tmp);
 
     bstring human_name = bstrcpy(tag_content);

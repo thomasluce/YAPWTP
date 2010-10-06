@@ -20,7 +20,7 @@ describe "Wikitext parser" do
 
   describe "headings" do
     it "should be able to use windows line-endings" do
-      parse("==heading==\r\n").should == '<p><h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h2><a name="heading" /></p>'
+      parse("==heading==\r\n").should == '<p><h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h2><a name="heading"></a></p>'
     end
 
     it "should not freak out when there are multiple headings" do
@@ -32,11 +32,11 @@ describe "Wikitext parser" do
     end
 
     it "should be able to do multiple links in one heading" do
-      parse("===[[link]] on [[FOO.com]]===").should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="link_on_FOO.com"><a href="/link">link</a> on <a href="/FOO.com">FOO.com</a></span></h3><a name="link_on_FOO.com" /></p>'
+      parse("===[[link]] on [[FOO.com]]===").should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="link_on_FOO.com"><a href="/link">link</a> on <a href="/FOO.com">FOO.com</a></span></h3><a name="link_on_FOO.com"></a></p>'
     end
 
     it "should create the markup like mediawiki" do
-      parse("===heading ===").strip.should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h3><a name="heading" /></p>'
+      parse("===heading ===").strip.should == '<p><h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="heading">heading</span></h3><a name="heading"></a></p>'
     end
 
     it "should be able to make a heading" do
@@ -327,7 +327,7 @@ describe "Wikitext parser" do
 
     it "should replace __TOC__ with the table of contents if more than 3 headings are present" do
       parse("==heading==\n__TOC__\n==heading==\n==heading==").should ==
-        "<p><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" />__TOC__<h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" /><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\" /></p>"
+        "<p><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\"></a>__TOC__<h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\"></a><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\"></a></p>"
     end
 
     it "should not output a table of contents when fewer than 3 headings are present" do
