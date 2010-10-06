@@ -13,7 +13,7 @@ syntax : .FORCE
 	$(CC) $(CFLAGS) -c src/io.c
 	$(CC) $(CFLAGS) -shared -o libyapwtp.so syntax.leg.o bstrlib.o list.o content.o io.o
 	$(CC) $(CFLAGS) -c src/main.c
-	$(CC) $(CFLAGS) -o bin/parser -L. -lyapwtp main.o
+	$(CC) $(CFLAGS) -o bin/parser main.o syntax.leg.o bstrlib.o list.o content.o io.o
 
 testlist: .FORCE
 	$(CC) $(CFLAGS) -c src/bstrlib.c
