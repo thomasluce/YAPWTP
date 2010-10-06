@@ -400,20 +400,8 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 
 %%
 
-void set_output_buffer(bstring buffer) {
-  output_buffer = buffer;
-}
-
-void set_input_buffer(bstring buffer) {
-  input_buffer = buffer;
-}
-
 bstring get_output_buffer(void) {
   return output_buffer;
-}
-
-bstring get_input_buffer(void) {
-  return input_buffer;
 }
 
 char *get_output_buffer_cstr(void) {
