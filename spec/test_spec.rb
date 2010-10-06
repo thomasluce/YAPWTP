@@ -156,8 +156,12 @@ describe "Wikitext parser" do
     it "should hide parentheticals in the link text and urlencode them in the href" do
       parse("[[link (test)]]").should == "<p><a href=\"/link_%28test%29\">link</a></p>"
     end
-    # TODO: hide namespaces. Eg: [[Namespace:test]] should produce <a href="/Namespace:test">test</a>
-    # These two things together as well.
+
+    it "should hide namespaces" do
+      result = parse("[[Namespace:test]]")
+      result.should include '<a href="/Namespace:test"'
+      result.should include '>test</a>'
+    end
     # TODO: interwiki links.
 
     # blended links
@@ -219,7 +223,7 @@ describe "Wikitext parser" do
     end
 
     it "should be able to link to the file instead of display it" do
-      parse("[[:File:image.png]]").should == '<p><a href="/File:image.png">File:image.png</a></p>'
+      parse("[[:File:image.png]]").should == '<p><a href="/File:image.png">image.png</a></p>'
       # TODO: "Media:" links that you can title
     end
 
