@@ -259,9 +259,9 @@ numbered = < '#'+ > {
 
 # Formatting
 formatting = bold_italic | bold | italic
-bold_italic = "'''''" {append_to_tag_content("<b><i>");}( !"'''''" wikitext )* "'''''" {append_to_tag_content("</i></b>");}
-bold = "'''" {append_to_tag_content("<b>");}( !"'''" wikitext )* "'''" {append_to_tag_content("</b>");}
-italic = "''" {append_to_tag_content("<i>");}( !"''" wikitext )* "''" {append_to_tag_content("</i>");}
+bold_italic = "'''''" { append_to_tag_content("<b><i>"); }( !"'''''" wikitext )* "'''''" { append_to_tag_content("</i></b>"); }
+bold = "'''" { append_to_tag_content("<b>"); }( !"'''" wikitext )* "'''" { append_to_tag_content("</b>"); }
+italic = "''" { append_to_tag_content("<i>"); }( !"''" wikitext )* "''" { append_to_tag_content("</i>"); }
 
 # pre-formatted blocks
 pre_block = &{ start_of_line } { bprintf("<pre>"); } pre_line+ { bprintf("</pre>"); }
@@ -276,11 +276,12 @@ local_link = link_open ':'? namespace? link_path rename? link_close blend {
   remove_parentheticals(link_text);
   btrimws(link_text);
   append_to_tag_content("<a href=\"/%s\">%s</a>", bdata(link_path), bdata(link_text));
-  link_path = bfromcstr(""); link_text = bfromcstr("");
+  btrunc(link_path, 0);
+  btrunc(link_text, 0);
   }
-namespace = < ( !':' !link_close . )* > ':' { link_path = bfromcstr(yytext); bconchar(link_path, ':'); }
-link_path = < ( !link_close !'|' . )* > { bcatcstr(link_path, yytext); link_text = bfromcstr(yytext); }
-rename = '|' < ( !link_close . )* > { link_text = bfromcstr(yytext); }
+namespace = < ( !':' !link_close . )* > ':' { bcatcstr(link_path, yytext); bconchar(link_path, ':'); }
+link_path = < ( !link_close !'|' . )* > { bcatcstr(link_path, yytext); bcatcstr(link_text, yytext); }
+rename = '|' < ( !link_close . )* > { btrunc(link_text, 0); bcatcstr(link_text,yytext); }
 blend = < ( !space !( '=' '='+ ) !'[' !eol !eof . )* > { bcatcstr(link_text, yytext); }
 
 external_link = named_link | unnamed_link | url
