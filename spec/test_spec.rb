@@ -208,6 +208,16 @@ describe "Wikitext parser" do
   end
 
   describe "images" do
+    describe "image linking" do
+      it "should link to nothing if you give it a blank link" do
+        parse("[[File:image.png|link=]]").should == '<p><img src="image.png" /></p>'
+      end
+
+      it "should link to someplace if you give it a valid link" do
+        parse("[[File:image.png|link=http://www.google.com]]").should == '<p><a href="http://www.google.com" class="image"><img src="image.png" /></a></p>'
+      end
+    end
+
     # TODO: link= and caption attributes
     # TODO: size and border attributes
     it "should be able to make an image" do
