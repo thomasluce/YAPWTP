@@ -1,3 +1,6 @@
+
+#ifndef __LIST_H
+#define __LIST_H
 struct node {
   bstring name;
   bstring content;
@@ -18,3 +21,5 @@ int node_free(struct node *item);
 int list_iterate(struct node *item, int (*listfunc)(struct node *));
 void list_free(struct list *list);
 void list_print(struct list *list);
+
+#endif
