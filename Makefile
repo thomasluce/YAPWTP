@@ -11,7 +11,8 @@ syntax : .FORCE
 	$(CC) $(CFLAGS) -c src/list.c
 	$(CC) $(CFLAGS) -c src/content.c
 	$(CC) $(CFLAGS) -c src/io.c
-	$(CC) $(CFLAGS) -o bin/parser syntax.leg.o bstrlib.o list.o content.o io.o
+	$(CC) $(CFLAGS) -c src/main.c
+	$(CC) $(CFLAGS) -o bin/parser syntax.leg.o bstrlib.o list.o content.o io.o main.o
 
 testlist: .FORCE
 	$(CC) $(CFLAGS) -c src/bstrlib.c

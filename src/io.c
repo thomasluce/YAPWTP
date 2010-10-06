@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include "common.h"
+#include "yapwtp.h"
 #include "io.h"
 #include "bstrlib.h"
 
