@@ -218,7 +218,16 @@ describe "Wikitext parser" do
       end
     end
 
-    # TODO: link= and caption attributes
+    describe "caption" do
+      it "should be able to give a default image a title on the link" do
+        parse("[[File:image.png|caption HO!]]").should == '<p><a href="File:image.png" class="image" title="caption HO!"><img src="image.png" /></a></p>'
+      end
+
+      it "should be able to put the caption in a visible location if framed or thumbed" do
+        parse("[[File:image.png|frame|caption HO!]]").should include '<div class="thumbcaption">caption HO!</div>'
+      end
+    end
+
     # TODO: size and border attributes
     it "should be able to make an image" do
       parse("[[File:image.png]]").should == '<p><a href="File:image.png" class="image"><img src="image.png" /></a></p>'
