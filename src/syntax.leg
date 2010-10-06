@@ -408,14 +408,24 @@ void set_input_buffer(bstring buffer) {
   input_buffer = buffer;
 }
 
+bstring get_output_buffer(void) {
+  return output_buffer;
+}
+
+bstring get_input_buffer(void) {
+  return input_buffer;
+}
+
+char *get_output_buffer_cstr(void) {
+  return bdata(output_buffer);
+}
+
 void init(void) {
   current_header_level = 0;
   start_of_line = 1;
   image_attributes = 0;
   toc_attributes = 0;
   in_tag = 0;
-  bstring output_buffer = NULL;
-  bstring input_buffer = NULL;
   input_buffer_pos = 0;
 
   list_init(&list);
@@ -443,20 +453,16 @@ void cleanup(void) {
   bdestroy(image_caption);
   bdestroy(link_path);
   bdestroy(link_text);
+  bdestroy(output_buffer);
+  bdestroy(input_buffer);
 
   list_free(&list);
 }
 
-void parse(bstring inputbuffer, bstring outbuffer) {
-  init();
-  set_output_buffer(outbuffer);
-  set_input_buffer(inputbuffer);
-
+void parse() {
   bprintf("<p>");
   while(yyparse()) {}
   bprintf("</p>");
   handle_toc();
-
-  cleanup();
 }
 

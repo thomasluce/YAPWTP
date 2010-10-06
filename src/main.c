@@ -2,12 +2,11 @@
 #include "io.h"
 
 int main() {
-  bstring output = bfromcstr("");
-  bstring input = bfromcstr("");
+  init();
   //file_get_contents(input, "spec/fixtures/cnn.com");
-  stdin_get_contents(input);
-  parse(input, output);
-  printf("%s", bdata(output));
-  bdestroy(output);
+  stdin_get_contents(input_buffer);
+  parse();
+  printf("%s", bdata(output_buffer));
+  cleanup();
   return 0;
 }

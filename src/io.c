@@ -51,3 +51,8 @@ void stdin_get_contents(bstring buffer) {
   }
   buffer->slen--; // Move the pointer back on the very last pass
 }
+
+// Fill the input buffer from a standard C string
+void str_get_contents(const char *str) {
+  bcatcstr(input_buffer, str);
+}
