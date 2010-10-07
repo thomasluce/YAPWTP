@@ -51,7 +51,7 @@ module YAPWTP
   def self.next_template
     template = Node.new(YAPWTP.get_next_template())
     name = YAPWTP.bstr2cstr(template[:name], 20)
-    n = name.to_s
+    n = String.new(name) # Ruby gets to own this one
     YAPWTP.bcstrfree(name)
     return n
   end
@@ -61,20 +61,17 @@ if __FILE__ == $0
   #YAPWTP.stdin_get_contents(YAPWTP.get_input_buffer)
   #YAPWTP.file_get_contents(YAPWTP.get_input_buffer, "../spec/fixtures/cnn.com")
   
-  #200.times do |i|
-
-    # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
-    File.open("../spec/fixtures/cnn.com", "rb") do |f|
-      YAPWTP.init
-      YAPWTP.str_get_contents f.read
-      YAPWTP.parse
-      #puts YAPWTP.get_template_count
-      puts YAPWTP.next_template
-      #puts YAPWTP.get_output_buffer_cstr 
-      # puts i
-      YAPWTP.cleanup
+  # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
+  File.open("../spec/fixtures/cnn.com", "rb") do |f|
+    YAPWTP.init
+    YAPWTP.str_get_contents f.read
+    YAPWTP.parse
+    YAPWTP.get_template_count.times do |i|
+      puts "#{YAPWTP.next_template}"
+      puts "-" * 78;
     end
-
-  #end
+    puts YAPWTP.get_output_buffer_cstr 
+    YAPWTP.cleanup
+  end
 
 end
