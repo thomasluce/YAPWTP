@@ -279,9 +279,9 @@ local_link = link_open ':'? namespace? link_path rename? link_close blend {
   btrunc(link_path, 0);
   btrunc(link_text, 0);
   }
-namespace = < ( !':' !link_close . )* > ':' { bcatcstr(link_path, yytext); bconchar(link_path, ':'); }
+namespace = < ( !':' !link_close . )* > ':' { bformata(link_path, "%s:", yytext); }
 link_path = < ( !link_close !'|' . )* > { bcatcstr(link_path, yytext); bcatcstr(link_text, yytext); }
-rename = '|' < ( !link_close . )* > { btrunc(link_text, 0); bcatcstr(link_text,yytext); }
+rename = '|' < ( !link_close . )* > { btrunc(link_text, 0); bcatcstr(link_text, yytext); }
 blend = < ( !space !( '=' '='+ ) !'[' !eol !eof . )* > { bcatcstr(link_text, yytext); }
 
 external_link = named_link | unnamed_link | url
