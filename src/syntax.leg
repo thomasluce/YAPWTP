@@ -57,6 +57,10 @@ int in_tag = 0;
 bstring tag_content;
 unsigned int tag_content_size = 2 * MBYTE;
 
+// Templates
+struct list template_list;
+struct node *template_list_iter;
+
 // General
 bstring output_buffer = NULL;
 bstring input_buffer = NULL;
@@ -397,7 +401,7 @@ table_header = { bprintf("<tr>"); } table_heading+ { bprintf("</tr>"); }
 table_heading = { bprintf("<th"); }'!' ' '+ < ( !' |' . )* > { bprintf(" %s>", yytext); } ' |' space* < ( !eol . )* > eol {bprintf("%s</th>", yytext); }
 
 # Templates
-template = '{{' space* ( !'}}' . )* '}}' { start_of_line = 0; }
+template = '{{' space* < ( !'}}' . )* >'}}' { start_of_line = 0; struct node *node = list_get_new_tail(&template_list); bcatcstr(node->name, yytext); }
 
 # Table of Contents
 table_of_contents = ( notoc | toc | forcetoc )
@@ -466,6 +470,23 @@ void set_base_url(char *str) {
   bcatcstr(base_url, str);
 }
 
+int get_template_count(void) {
+  return template_list.size;
+}
+
+struct node *get_next_template(void) {
+  if(!template_list_iter) {
+    template_list_iter = template_list.head;
+  }
+ 
+  if(template_list_iter->next) {
+    template_list_iter = template_list_iter->next;
+    return template_list_iter;
+  }
+
+  return NULL;
+}
+
 void init(void) {
   current_header_level = 0;
   start_of_line = 1;
@@ -476,6 +497,7 @@ void init(void) {
 
   list_init(&list);
   list_init(&tag_attributes);
+  list_init(&template_list);
   tag_content = bfromcstr("");
   balloc(tag_content, tag_content_size);
 
@@ -515,6 +537,7 @@ void cleanup(void) {
 
   list_free(&list);
   list_free(&tag_attributes);
+  list_free(&template_list);
 
   // Clean up after leg...
   free(yybuf);
