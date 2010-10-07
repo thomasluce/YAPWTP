@@ -6,7 +6,7 @@
 void repeat_append(bstring buffer, char chr, int count) {
   int i;
   bstring tmp = bfromcstr("");
-  ballocmin(tmp, count);
+  balloc(tmp, count);
   for(i = 0; i <= count; i++) {
       tmp->data[i] = chr;
     tmp->slen++;

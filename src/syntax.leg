@@ -422,7 +422,7 @@ void init(void) {
 
   list_init(&list);
   tag_content = bfromcstr("");
-  ballocmin(tag_content, tag_content_size);
+  balloc(tag_content, tag_content_size);
 
   image_variables = bfromcstr("");
   image_url = bfromcstr("");
@@ -434,7 +434,7 @@ void init(void) {
 
   output_buffer = bfromcstr("");
   input_buffer = bfromcstr("");
-  ballocmin(output_buffer, 1 * MBYTE);
+  balloc(output_buffer, 1 * MBYTE);
 }
 
 void cleanup(void) {
