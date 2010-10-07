@@ -78,7 +78,7 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
     } else if(item->level < previous_level) {
       for(i = previous_level; i > item->level; i--) {
         repeat_append(toc_buffer, ' ', (total_layers) * 2);
-        bformata(toc_buffer, "%s", "</ol>\n");
+        bformata(toc_buffer, "%s", "</ol></li>\n");
         total_layers--;
       }
     }
@@ -86,7 +86,12 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
     // Add the item
     if(item->name && item->content) {
       repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
-      bformata(toc_buffer, "  <li><a href=\"#%s\">%s</a></li>\n", bdata(item->name), bdata(item->content));
+      bformata(toc_buffer, "  <li><a href=\"#%s\">%s</a>", bdata(item->name), bdata(item->content));
+      if(next && next->level > item->level) {
+        bcatcstr(toc_buffer, "\n");
+      } else {
+        bcatcstr(toc_buffer, "</li>\n");
+	  }
     }
     previous_level = item->level;
     item = next;
