@@ -233,17 +233,15 @@ bullet_list = { bprintf("<ul>"); } bullet_list_entry+ {
 }
 bullet_list_entry = bullet space* ( !eol wikitext )* ( eol | eof ) { bprintf("</li>"); }
 bullet = < '*'+ > {
-  start_of_line = 0;
-  if(current_bullet_list_level < yyleng && current_bullet_list_level != 0) {
-    bprintf("<ul>");
-  } else if(current_bullet_list_level > yyleng) {
-    bprintf("</ul>");
+  while((current_bullet_list_level < yyleng) && current_bullet_list_level++) { 
+      bprintf("<ul>"); 
   }
   while((current_bullet_list_level > yyleng) && current_bullet_list_level--) { 
-    bprintf("</ul>"); 
+      bprintf("</ul>"); 
   }
-  current_bullet_list_level = yyleng; 
+  current_bullet_list_level = yyleng;
   bprintf("<li>"); 
+  start_of_line = 0;
 }
 
 # Numbered list
