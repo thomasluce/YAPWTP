@@ -75,7 +75,7 @@ void assemble_toc(struct node *item, bstring toc_buffer) {
         bformata(toc_buffer, "%s", "<ol>\n");
         total_layers++;
       }
-    } else if((item->level < previous_level) && (total_layers > 1)) {
+    } else if(item->level < previous_level) {
       for(i = previous_level; i > item->level; i--) {
         repeat_append(toc_buffer, ' ', (total_layers) * 2);
         bformata(toc_buffer, "%s", "</ol>\n");
@@ -238,6 +238,9 @@ bullet = < '*'+ > {
     bprintf("<ul>");
   } else if(current_bullet_list_level > yyleng) {
     bprintf("</ul>");
+  }
+  while((current_bullet_list_level > yyleng) && current_bullet_list_level--) { 
+    bprintf("</ul>"); 
   }
   current_bullet_list_level = yyleng; 
   bprintf("<li>"); 

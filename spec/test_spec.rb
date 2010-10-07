@@ -102,6 +102,10 @@ describe "Wikitext parser" do
       parse("* test\n*test2\n** nested").should == '<p><ul><li>test</li><li>test2</li><ul><li>nested</li></ul></ul></p>'
     end
 
+    it "should handle nested lists that drop more than one level at a time" do
+      parse("* one\n* two\n** A\n** B\n*** a\n*** b\n* three\n* four\n").should include "</ul></ul><li>three"
+    end
+
     it "should be able to make numbered lists" do
       parse('# test').should == '<p><ol><li>test</li></ol></p>'
       parse("# test\n").should == '<p><ol><li>test</li></ol></p>'
