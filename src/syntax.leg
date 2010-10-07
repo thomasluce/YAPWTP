@@ -449,6 +449,13 @@ void cleanup(void) {
   bdestroy(input_buffer);
 
   list_free(&list);
+
+  // Clean up after leg...
+  free(yybuf);
+  free(yytext);
+  free(yythunks);
+  free(yyvals);
+  yybuflen = 0;
 }
 
 void parse() {
