@@ -16,7 +16,7 @@ void repeat_append(bstring buffer, char chr, int count) {
 }
 
 void remove_parentheticals(bstring str) {
-  char *temp = bstr2cstr(str, '\0');
+  bstring temp = bstrcpy(str);
 
   int i, index = 0;
   int in_tag = 0;
@@ -28,16 +28,15 @@ void remove_parentheticals(bstring str) {
       in_tag--;
       continue;
     }
-    if(in_tag < 1) temp[index++] = (bdata(str))[i];
+    if(in_tag < 1) temp->data[index++] = (bdata(str))[i];
   }
-  temp[index] = '\0';
-  bdestroy(str);
-  str = bfromcstr(temp);
-  bcstrfree(temp);
+  temp->slen = index;
+  bassign(str, temp);
+  bdestroy(temp);
 }
 
 void strip_tags(bstring str) {
-  char *temp = bstr2cstr(str, '\0');
+  bstring temp = bstrcpy(str);
 
   int i, index = 0;
   int in_tag = 0;
@@ -49,12 +48,11 @@ void strip_tags(bstring str) {
       in_tag--;
       continue;
     }
-    if(in_tag < 1) temp[index++] = (bdata(str))[i];
+    if(in_tag < 1) temp->data[index++] = (bdata(str))[i];
   }
-  temp[index] = '\0';
-  bdestroy(str);
-  str = bfromcstr(temp);
-  bcstrfree(temp);
+  temp->slen = index;
+  bassign(str, temp);
+  bdestroy(temp);
 }
 
 void urlencode(bstring b) {
