@@ -104,6 +104,7 @@ describe "Wikitext parser" do
 
     it "should handle nested lists that drop more than one level at a time" do
       parse("* one\n* two\n** A\n** B\n*** a\n*** b\n* three\n* four\n").should include "</ul></ul><li>three"
+      parse("# one\n# two\n## A\n## B\n### a\n### b\n# three\n# four\n").should include "</ol></ol><li>three"
     end
 
     it "should be able to make numbered lists" do

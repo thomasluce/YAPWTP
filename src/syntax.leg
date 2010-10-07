@@ -253,14 +253,15 @@ bullet = < '*'+ > {
 numbered_list = { bprintf("<ol>"); } numbered_list_entry+ { while(current_numbered_list_level--) { bprintf("</ol>"); } }
 numbered_list_entry = numbered space* ( !eol wikitext )* eol? { bprintf("</li>"); }
 numbered = < '#'+ > {
-  start_of_line = 0;
-  if(current_numbered_list_level < yyleng && current_numbered_list_level != 0) {
-    bprintf("<ol>");
-  } else if(current_numbered_list_level > yyleng) {
-    bprintf("</ol>");
+  while((current_numbered_list_level < yyleng) && current_numbered_list_level++) { 
+      bprintf("<ol>"); 
   }
-  current_numbered_list_level = yyleng; 
+  while((current_numbered_list_level > yyleng) && current_numbered_list_level--) { 
+      bprintf("</ol>"); 
+  }
+  current_numbered_list_level = yyleng;
   bprintf("<li>"); 
+  start_of_line = 0;
 }
 
 # Formatting
