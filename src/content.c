@@ -60,7 +60,7 @@ void urlencode(bstring b) {
   int c, e;
   bstring target = bfromcstr("");
 
-  int whitelist[] = {
+  static const int whitelist[] = {
     /* reserved characters */
     [36] '$',
     [38] '&',
