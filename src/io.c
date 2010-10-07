@@ -43,7 +43,7 @@ void stdin_get_contents(bstring buffer) {
   buffer->slen = 0;
   while(EOF != (c = getchar())) {
     if(buffer->slen == buffer->mlen) {
-      ballocmin(buffer, buffer->mlen * 2); // Just double the buffer
+      balloc(buffer, buffer->mlen * 2); // Just double the buffer
 	  buffer->mlen = buffer->mlen * 2;
 	}
     buffer->data[buffer->slen] = c;
