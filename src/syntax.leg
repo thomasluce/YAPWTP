@@ -400,6 +400,10 @@ anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
 
 %%
 
+bstring get_input_buffer(void) {
+  return input_buffer;
+}
+
 bstring get_output_buffer(void) {
   return output_buffer;
 }

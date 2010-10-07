@@ -28,12 +28,18 @@ if __FILE__ == $0
   #YAPWTP.stdin_get_contents(YAPWTP.get_input_buffer)
   #YAPWTP.file_get_contents(YAPWTP.get_input_buffer, "../spec/fixtures/cnn.com")
   
-  # Example using Ruby to read a file.  Using the above C-implemented methods should be a bit faster.
-  File.open("../spec/fixtures/cnn.com", "rb") do |f|
-    YAPWTP.init
-    YAPWTP.str_get_contents f.read
-    YAPWTP.parse
-    puts YAPWTP.get_output_buffer_cstr 
-    YAPWTP.cleanup
+  200.times do |i|
+
+    # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
+    File.open("../spec/fixtures/cnn.com", "rb") do |f|
+      YAPWTP.init
+      YAPWTP.str_get_contents f.read
+      YAPWTP.parse
+      #puts YAPWTP.get_output_buffer_cstr 
+      puts i
+      YAPWTP.cleanup
+    end
+
   end
+
 end
