@@ -2,13 +2,11 @@
 #include "io.h"
 
 int main() {
-  int i;
-  for(i = 0; i < 2000; i++) {
-  init();
-  file_get_contents(input_buffer, "spec/fixtures/cnn.com");
-  parse();
-  printf("%d\n", i);
-  cleanup();
-  }
-  return 0;
-}
+   init();
+   //file_get_contents(input, "spec/fixtures/cnn.com");
+   stdin_get_contents(input_buffer);
+   parse();
+   printf("%s", bdata(output_buffer));
+   cleanup();
+   return 0;
+ }
