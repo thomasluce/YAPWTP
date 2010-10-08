@@ -22,6 +22,8 @@ module YAPWTP
   attach_function :get_output_buffer_cstr, [], :string
   # void str_get_contents(const char *str)
   attach_function :str_get_contents, [:string], :void
+  # void set_base_url(char *str)
+  attach_function :set_base_uel, [:string], :void
 end
 
 if __FILE__ == $0

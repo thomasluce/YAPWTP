@@ -42,4 +42,5 @@ void handle_toc(void);
 bstring get_output_buffer();
 char *get_output_buffer_cstr(void);
 bstring get_input_buffer();
+void set_base_url(char *str);
 #endif

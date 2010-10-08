@@ -7,10 +7,10 @@ describe "Wikitext parser" do
     `cd #{dir} && make`
   end
 
-  def parse(wikitext)
+  def parse(wikitext, *args)
     parser = File.join(File.dirname(__FILE__), '..', 'bin', 'parser')
     result = ""
-    Open3.popen3(parser) do |stdin, stdout, sterr|
+    Open3.popen3("#{parser} #{args}") do |stdin, stdout, sterr|
       stdin.print wikitext
       stdin.close
       result = stdout.read
@@ -166,6 +166,10 @@ describe "Wikitext parser" do
       result = parse("[[Namespace:test]]")
       result.should include('<a href="/Namespace:test"')
       result.should include('>test</a>')
+    end
+
+    it "should support a base URL to be supplied on the command line or via the API" do
+      parse("[[link]]", "/foofoo").should include("/foofoo/link")
     end
     # TODO: interwiki links.
 
