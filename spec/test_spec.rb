@@ -120,6 +120,10 @@ describe "Wikitext parser" do
     it "should process other wiki text inside of list items" do
       parse("* [[link]]").should == '<p><ul><li><a href="/link">link</a></li></ul></p>'
     end
+
+    it "should protect HTML markup just like anywhere else" do
+      parse("* <a href=\"wikipedia.org\">wikipedia</a>").should_not include("<a href=")
+    end
   end
 
   describe "text formatting" do
