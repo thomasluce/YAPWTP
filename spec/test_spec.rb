@@ -24,11 +24,11 @@ describe "Wikitext parser" do
     end
 
     it "should not freak out when there are multiple headings" do
-      parse("===heading===\n===heading===").should_not include 'headingheading'
+      parse("===heading===\n===heading===").should_not include('headingheading')
     end
 
     it "should be able to do links inside of headings" do
-      parse("===[[heading]] ===").should_not include '[['
+      parse("===[[heading]] ===").should_not include('[[')
     end
 
     it "should be able to do multiple links in one heading" do
@@ -62,14 +62,14 @@ describe "Wikitext parser" do
 
     it "should let you close a heading with unballanced tags" do
       result = parse("=== heading ==").strip
-      result.should include '<h3>'
-      result.should include '</h3>'
+      result.should include('<h3>')
+      result.should include('</h3>')
     end
 
     it "should not output bogus h tags" do
       result = parse("========== heading ==").strip
-      result.should_not include "<h10>"
-      result.should include "<h5>"
+      result.should_not include("<h10>")
+      result.should include("<h5>")
     end
   end
 
@@ -83,7 +83,7 @@ describe "Wikitext parser" do
     end
 
     it "should be able to indent lines" do
-      parse(":text").strip.should include "&nbsp;&nbsp;text"
+      parse(":text").strip.should include("&nbsp;&nbsp;text")
     end
 
     it "should not make shitty paragraphs" do
@@ -103,8 +103,8 @@ describe "Wikitext parser" do
     end
 
     it "should handle nested lists that drop more than one level at a time" do
-      parse("* one\n* two\n** A\n** B\n*** a\n*** b\n* three\n* four\n").should include "</ul></ul><li>three"
-      parse("# one\n# two\n## A\n## B\n### a\n### b\n# three\n# four\n").should include "</ol></ol><li>three"
+      parse("* one\n* two\n** A\n** B\n*** a\n*** b\n* three\n* four\n").should include("</ul></ul><li>three")
+      parse("# one\n# two\n## A\n## B\n### a\n### b\n# three\n# four\n").should include("</ol></ol><li>three")
     end
 
     it "should be able to make numbered lists" do
@@ -164,8 +164,8 @@ describe "Wikitext parser" do
 
     it "should hide namespaces" do
       result = parse("[[Namespace:test]]")
-      result.should include '<a href="/Namespace:test"'
-      result.should include '>test</a>'
+      result.should include('<a href="/Namespace:test"')
+      result.should include('>test</a>')
     end
     # TODO: interwiki links.
 
@@ -190,11 +190,11 @@ describe "Wikitext parser" do
     end
 
     it "should handle links back to back" do
-      parse("[[FooFoo]][http://BarBar.com/]").should_not include "["
+      parse("[[FooFoo]][http://BarBar.com/]").should_not include("[")
     end
 
     it "should handle more than one link on a line" do
-      parse("[[FooFoo]] in [[BarBar]]").should_not include "[["
+      parse("[[FooFoo]] in [[BarBar]]").should_not include("[[")
     end
 
     it "should handle at least a renamed link and a simple link on a line" do
@@ -204,11 +204,11 @@ describe "Wikitext parser" do
 
     it "should not add pre tags when the link is followed by a space" do
       parse("[http://www.flowerpetal.com FlowerPetal.com] is the easy way to send flowers online").should_not
-      include "<pre>";
+      include("<pre>")
     end
 
     it "should not allow javascript links" do
-      parse("[javascript:alert('pwnd')]").should_not include '<a'
+      parse("[javascript:alert('pwnd')]").should_not include('<a')
     end
   end
 
@@ -229,7 +229,7 @@ describe "Wikitext parser" do
       end
 
       it "should be able to put the caption in a visible location if framed or thumbed" do
-        parse("[[File:image.png|frame|caption HO!]]").should include '<div class="thumbcaption">caption HO!</div>'
+        parse("[[File:image.png|frame|caption HO!]]").should include('<div class="thumbcaption">caption HO!</div>')
       end
     end
 
@@ -243,7 +243,7 @@ describe "Wikitext parser" do
     end
 
     it "should be able to apply alt-text to an image" do
-      parse("[[File:image.png|alt=alt text]]").should include 'alt="alt text"'
+      parse("[[File:image.png|alt=alt text]]").should include('alt="alt text"')
     end
 
     it "should be able to link to the file instead of display it" do
@@ -252,23 +252,23 @@ describe "Wikitext parser" do
     end
 
     it "should be able to float the image left, right, center, or not at all" do
-      parse("[[File:image.png|left]]").should include 'class="floatleft"'
+      parse("[[File:image.png|left]]").should include('class="floatleft"')
     end
 
     describe "thumbnail" do
       # TODO: if a filename is given as the value to 'thumb=', use that without the width, and height.
       it "should scale the image down" do
-        parse("[[File:image.png|thumb]]").should include 'width="220" height="30" class="thumbimage"'
+        parse("[[File:image.png|thumb]]").should include('width="220" height="30" class="thumbimage"')
       end
 
       it "should scale the image down" do
-        parse("[[File:image.png|thumbnail]]").should include 'width="220" height="30" class="thumbimage"'
+        parse("[[File:image.png|thumbnail]]").should include('width="220" height="30" class="thumbimage"')
       end
     end
 
     describe "frame" do
       it "should attach the thumbimage class but not actually size it down" do
-        parse("[[File:image.png|frame]]").should include 'class="thumbimage"'
+        parse("[[File:image.png|frame]]").should include('class="thumbimage"')
       end
     end
   end
@@ -346,7 +346,7 @@ describe "Wikitext parser" do
 
   describe "table of contents" do
     it "should not output a table of contents if  __NOTOC__ is present" do
-      parse("==Heading 1==\n__NOTOC__\n==Heading 2==\n==Heading 3==").should_not include "<ol>"
+      parse("==Heading 1==\n__NOTOC__\n==Heading 2==\n==Heading 3==").should_not include("<ol>")
     end
 
     it "should replace __TOC__ with the table of contents if more than 3 headings are present" do
@@ -355,16 +355,15 @@ describe "Wikitext parser" do
     end
 
     it "should not output a table of contents when fewer than 3 headings are present" do
-      parse("==Heading 1==\n==Heading 2==\n").should_not include "<ol>"
+      parse("==Heading 1==\n==Heading 2==\n").should_not include("<ol>")
     end
 
     it "should output a table of contents when more than 3 headings are present" do
-      parse("==Heading 1==\n==Heading 2==\n==Heading 3==").should include 
-      "<ol><li><a href=\"#Heading_1\">Heading 1</a>\n<li><a href=\"#Heading_2\">Heading 2</a>\n<li><a href=\"#Heading_3\">Heading 3</a>\n</ol>"
+      parse("==Heading 1==\n==Heading 2==\n==Heading 3==\n==Heading 4==").should include("<ol>\n     <li><a href=\"#Heading_1\">Heading 1</a></li>\n     <li><a href=\"#Heading_2\">Heading 2</a></li>\n     <li><a href=\"#Heading_3\">Heading 3</a></li>\n     <li><a href=\"#Heading_4\">Heading 4</a></li>\n</ol>")
     end
 
     it "should output a table of contents with fewer than 4 headings if __FORCETOC__ is present" do
-      parse("==heading==\n__FORCETOC__").should include "<ol>\n     <li><a href=\"#heading\">heading</a>"
+      parse("==heading==\n__FORCETOC__").should include("<ol>\n     <li><a href=\"#heading\">heading</a>")
     end
   end
 
