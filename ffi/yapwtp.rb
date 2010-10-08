@@ -26,26 +26,53 @@ module YAPWTP
   attach_function :init, [], :void
   # void cleanup(void)
   attach_function :cleanup, [], :void
+
   # void parse(bstring inputbuffer, bstring outbuffer);
   attach_function :parse, [], :void
+
   # void stdin_get_contents(bstring buffer)
   attach_function :stdin_get_contents, [:pointer], :void
   # void file_get_contents(bstring buffer, char *filename)
   attach_function :file_get_contents, [:pointer, :string], :void
+  # void str_get_contents(const char *str)
+  attach_function :str_get_contents, [:string], :void
+
   # bstring get_input_buffer(void)
   attach_function :get_input_buffer, [], :pointer
   # char * get_output_buffer_cstr(void)
   attach_function :get_output_buffer_cstr, [], :string
-  # void str_get_contents(const char *str)
-  attach_function :str_get_contents, [:string], :void
+
   # void set_base_url(char *str)
   attach_function :set_base_url, [:string], :void
+
+  # void reset_template_iter(void)
+  attach_function :reset_template_iter, [], :void
   # struct node *get_next_template(void)
   attach_function :get_next_template, [], :pointer
   # int get_template_count(void)
   attach_function :get_template_count, [], :int
+end
 
-  def self.next_template
+class WikiParser
+  include YAPWTP
+  extend YAPWTP
+
+  def initialize
+    init
+    @dirty = false
+  end
+
+  def self.release(ptr)
+    cleanup
+  end
+
+  def reset
+    cleanup
+    init
+  end
+
+  def next_template
+    return {} if !@dirty
     t = get_next_template
     return nil if t.null?
     template = Node.new(t)
@@ -59,28 +86,58 @@ module YAPWTP
     return { :name => n, :content => c }
   end
 
-  def self.parsed_text
-    String.new(YAPWTP.get_output_buffer_cstr)
+  def parsed_text
+    if @dirty
+      return @output ||= String.new(get_output_buffer_cstr)
+    end
+
+    ""
+  end
+
+  def html_from_string source
+    reset if @dirty
+    str_get_contents source
+    parse
+    @dirty = true
+    return parsed_text
+  end
+
+  def html_from_file file
+    reset if @dirty
+    if !File.exist? file
+      raise IOError "Can't open #{file}"
+    end
+    file_get_contents get_input_buffer, file
+    parse
+    @dirty = true
+    return parsed_text
+  end
+
+  def each_template
+    return nil if !@dirty
+    
+    reset_template_iter
+    while template = next_template
+      yield template
+    end
   end
 end
 
 if __FILE__ == $0
-  #YAPWTP.stdin_get_contents(YAPWTP.get_input_buffer)
-  #YAPWTP.file_get_contents(YAPWTP.get_input_buffer, "../spec/fixtures/cnn.com")
-  
-  # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
-  File.open("../spec/fixtures/cnn.com", "rb") do |f|
-    YAPWTP.init
-    YAPWTP.str_get_contents f.read
-    YAPWTP.parse
-    puts "# Templates: #{YAPWTP.get_template_count}"
-    puts "-" * 78;
-    while template = YAPWTP.next_template
-      puts "#{template[:name]} = #{template[:content]}"
+  parser = WikiParser.new
+
+  200.times do
+    # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
+    File.open("../spec/fixtures/cnn.com", "rb") do |f|
+      parser.html_from_string f.read
+      puts "# Templates: #{parser.get_template_count}"
       puts "-" * 78;
+      parser.each_template do |template|
+        puts "#{template[:name]} = #{template[:content]}"
+        puts "-" * 78;
+      end
+      puts parser.parsed_text
     end
-    puts YAPWTP.parsed_text
-    YAPWTP.cleanup
   end
 
 end

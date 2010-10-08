@@ -494,6 +494,10 @@ int get_template_count(void) {
   return template_list.size;
 }
 
+void reset_template_iter() {
+  template_list_iter = template_list.head;
+}
+
 struct node *get_next_template(void) {
   if(!template_list_iter) {
     template_list_iter = template_list.head;
