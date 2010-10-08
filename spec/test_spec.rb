@@ -2,7 +2,7 @@
 require 'open3'
 
 describe "Wikitext parser" do
-  before :suite do
+  before :all do
     dir = File.join(File.dirname(__FILE__), '..')
     `cd #{dir} && make`
   end
@@ -123,6 +123,16 @@ describe "Wikitext parser" do
 
     it "should protect HTML markup just like anywhere else" do
       parse("* <a href=\"wikipedia.org\">wikipedia</a>").should_not include("<a href=")
+    end
+
+    it "should not begin a list in the middle of a list line" do
+      parse("* foo * asf").scan("<ul>").size.should == 1
+      parse("# foo # asf").scan("<ol>").size.should == 1
+    end
+
+    it "should only begin a list when the bullet or hash is at the beginning of a line" do
+      parse("Some text # foo # asf").scan("<ol>").size.should == 0
+      parse("Some text * foo * asf").scan("<ul>").size.should == 0
     end
   end
 
