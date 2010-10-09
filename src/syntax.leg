@@ -400,7 +400,7 @@ html = '<' < '/'? ( !'>' . )+ > '/'? '>' {
   } else {
     bstring markup = bfromcstr(yytext);
     strip_tags(markup);
-    bprintf("&lt;%s&gt;", data(markup)); 
+    bprintf("&lt;%s&gt;", bdata(markup)); 
     bdestroy(markup);
   }
   start_of_line = 0;
