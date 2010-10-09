@@ -1,4 +1,5 @@
 EXAMPLES = syntax
+OS=$(shell uname)
 
 CFLAGS = -fPIC -g3 -Wall -std=gnu99
 all : $(EXAMPLES)
@@ -11,7 +12,11 @@ syntax : .FORCE
 	$(CC) $(CFLAGS) -c src/list.c
 	$(CC) $(CFLAGS) -c src/content.c
 	$(CC) $(CFLAGS) -c src/io.c
+ifeq ($(OS), Darwin)
+	$(CC) $(CFLAGS) -dynamiclib -shared -o libyapwtp.so syntax.leg.o bstrlib.o list.o content.o io.o
+else
 	$(CC) $(CFLAGS) -shared -o libyapwtp.so syntax.leg.o bstrlib.o list.o content.o io.o
+endif
 	$(CC) $(CFLAGS) -c src/main.c
 	$(CC) $(CFLAGS) -o bin/parser main.o syntax.leg.o bstrlib.o list.o content.o io.o
 
