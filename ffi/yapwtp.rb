@@ -23,7 +23,7 @@ module YAPWTP
   # void str_get_contents(const char *str)
   attach_function :str_get_contents, [:string], :void
   # void set_base_url(char *str)
-  attach_function :set_base_uel, [:string], :void
+  attach_function :set_base_url, [:string], :void
 end
 
 if __FILE__ == $0
