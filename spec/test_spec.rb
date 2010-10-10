@@ -359,7 +359,7 @@ describe "Wikitext parser" do
 
     it "should replace __TOC__ with the table of contents if more than 3 headings are present" do
       parse("==heading==\n__TOC__\n==heading==\n==heading==").should ==
-        "<p><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\"></a>__TOC__<h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\"></a><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\"></a></p>"
+        "<p><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\"></a>__TOC__\n<h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\"></a><h2><span class=\"editsection\">[<a href=\"edit\">edit</a>]</span><span class=\"mw-headline\" id=\"heading\">heading</span></h2><a name=\"heading\"></a></p>"
     end
 
     it "should not output a table of contents when fewer than 3 headings are present" do

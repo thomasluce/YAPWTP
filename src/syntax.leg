@@ -180,9 +180,9 @@ void append_to_tag_content(char *fmt, ...) {
 %}
 
 # High-level
-page =  nowiki | pre_block | wikitext_line | wikitext
+page =  nowiki | pre_block | wikitext_line | wikitext 
 wikitext_line = paragraph | horizontal_line 
-wikitext = html | table_of_contents | template | heading | indentation | list | formatting | image | link | table | anything_else | eol
+wikitext = html | table_of_contents | template | heading | indentation | list | formatting | image | link | table | anything_else | eol { append_to_tag_content("%c", '\n'); }
 
 # Generally useful rules
 eol = '\r'? '\n' { start_of_line = 1; }
