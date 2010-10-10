@@ -144,7 +144,7 @@ describe "Wikitext parser" do
     end
 
     it "should pass through anything that is inside of <nowiki> tags" do
-      parse("<nowiki>'''format'''</nowiki> '''format'''").should == "<p>'''format''' <b>format</b></p>"
+      parse("<nowiki>'''format'''\n\n'''format'''</nowiki> '''format'''").should == "<p>'''format'''\n\n'''format''' <b>format</b></p>"
     end
   end
 
