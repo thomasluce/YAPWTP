@@ -182,6 +182,10 @@ describe "Wikitext parser" do
       parse("[[path]]s").should == '<p><a href="/path">paths</a></p>'
     end
 
+    it "should not blend formatting characters (e.g. ' or [ or >)and wreck the wikitext tag" do
+      parse("<s>'''Segfaults on [[Parsed Examples]]'''</s>").should include("<s><b>Segfaults on <a href=\"/Parsed_Examples\">Parsed Examples</a></b></s>")
+    end
+
     describe "external links" do
       it "should be able to do external links" do
         parse("[http://www.google.com google]").should == '<p><a href="http://www.google.com">google</a></p>'

@@ -300,10 +300,10 @@ local_link = link_open ':'? namespace? link_path rename? link_close blend {
 namespace = < ( !':' !link_close . )* > ':' { bformata(link_path, "%s:", yytext); }
 link_path = < ( !link_close !'|' . )* > { bcatcstr(link_path, yytext); bcatcstr(link_text, yytext); }
 rename = '|' < ( !link_close . )* > { btrunc(link_text, 0); bcatcstr(link_text, yytext); }
-blend = < ( !space !( '=' '='+ ) !'[' !eol !eof . )* > { bcatcstr(link_text, yytext); }
+blend = < ( !space !( '=' '='+ ) ![<'[] !eol !eof . )* > { bcatcstr(link_text, yytext); }
 
 external_link = named_link | unnamed_link | url
-named_link = '[' !'javascript:' { append_to_tag_content("<a href=\""); } link_url { append_to_tag_content("\">");} ' '+ link_name + space* ']' {append_to_tag_content("</a>"); }
+named_link = '[' !'javascript:' { append_to_tag_content("<a href=\""); } link_url { append_to_tag_content("\">");} ' '+ link_name + space* ']' { append_to_tag_content("</a>"); }
 link_url = < ( !' ' !']' . )+ >  { append_to_tag_content(yytext); }
 link_name = < ( !']' . )+ > { append_to_tag_content(yytext); }
 unnamed_link = '[' !'javascript:' < ( !']' . )* > ']' { append_to_tag_content("<a href=\"%s\">%s</a>", yytext, yytext);}
