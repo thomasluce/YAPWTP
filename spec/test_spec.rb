@@ -388,6 +388,23 @@ describe "Wikitext parser" do
     it "should encode < and > as &lt; and &gt; when the tag is not allowed" do
       parse("<script>some_script</script>").should == "<p>&lt;script&gt;some_script&lt;/script&gt;</p>"
     end
+
+    it "should handle simple tags" do
+      parse("<div>some text</div>").should == "<p><div>some text</div></p>"
+    end
+
+    it "should handle complex tags" do
+      parse("<div name=\"something\">some text</div>").should == "<p><div name=\"something\">some text</div></p>"
+    end
+
+    it "should filter attributes, allowing only name and id for now" do
+      parse("<div id=\"myid\" onclick=\"javascript:alert('vulnerable'); return 0;\">text</div>").should ==
+        "<p><div id=\"myid\">text</div></p>"
+    end
+
+    it "should filter complex attributes, ignoring anything following a badly formed one" do
+      parse("<div id=\"myid\" foofoo=\"sss\" NAME=\"Asdf\" onclick=\"javascript:alert('vulnerable'); return 0; name=\"asdf\"/>text</div>").should == "<p><div id=\"myid\" name=\"Asdf\">text</div></p>"
+    end
   end
 
 

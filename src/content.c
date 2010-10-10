@@ -1,6 +1,9 @@
-#include "content.h"
 #include "bstrlib.h"
 #include "stdbool.h"
+#include "list.h"
+#include "content.h"
+
+extern bstring tag_attributes_validated;
 
 // Append a character to a buffer a repeat number of times
 void repeat_append(bstring buffer, char chr, int count) {
@@ -149,4 +152,23 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
   }
 
   return false;
+}
+
+// Validate whether a particular attribute is allowed on a tag.  Naive implementation.
+int validate_tag_attributes(struct node *item) {
+  if((item == NULL) || (item->name == NULL) || (item->content == NULL)) {
+    return 0;
+  }
+
+  btolower(item->name);
+  bstring name = bfromcstr("name");
+  bstring id = bfromcstr("id");
+  if((!bstrcmp(item->name, name)) || (!bstrcmp(item->name, id))) {
+    bformata(tag_attributes_validated, " %s=\"%s\"", bdata(item->name), bdata(item->content));
+  }
+  bdestroy(name);
+  bdestroy(id);
+
+  //printf("%s: %s\n", bdata(item->name), bdata(item->content));
+  return 1;
 }
