@@ -286,7 +286,10 @@ pre_block = &{ start_of_line } { bprintf("<pre>"); } pre_line+ { bprintf("</pre>
 pre_line = ' ' < ( !eol . )* ( eol | eof ) > { bprintf("%s", yytext); }
 nowiki = '<nowiki>' < ( !'</nowiki>' . )* > '</nowiki>' { 
   start_of_line = 0; 
-  append_to_tag_content("%s", yytext); 
+  bstring markup = bfromcstr(yytext);
+  strip_tags(markup);
+  append_to_tag_content("%s", bdata(markup)); 
+  bdestroy(markup);
 }
 
 # Links

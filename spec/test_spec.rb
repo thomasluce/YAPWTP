@@ -143,8 +143,12 @@ describe "Wikitext parser" do
       parse(" thing one\n  thing two").should == "<p><pre>thing one\n thing two</pre></p>"
     end
 
-    it "should pass through anything that is inside of <nowiki> tags" do
+    it "should pass through anything valid that is inside of <nowiki> tags" do
       parse("<nowiki>'''format'''\n\n'''format'''</nowiki> '''format'''").should == "<p>'''format'''\n\n'''format''' <b>format</b></p>"
+    end
+
+    it "should not pass HTML tags through when using <nowiki>" do
+      parse("<nowiki><div>asdf</div></nowiki>").should == "<p>asdf</p>"
     end
   end
 
