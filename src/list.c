@@ -19,7 +19,7 @@ struct node *node_alloc() {
   return item;
 }
 
-struct node *list_get_new_tail(struct list *list) {
+struct node *list_append_new(struct list *list) {
   if(list == NULL) {
     return NULL;
   }
@@ -46,8 +46,8 @@ int list_iterate(struct node *item, int (*listfunc)(struct node *)) {
   while(item != NULL) {
     next = item->next;
     if(listfunc(item) != 1) {
-	  return 0;
-	}
+      return 0;
+    }
     item = next;
   }
   return 1;

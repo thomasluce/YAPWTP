@@ -3,17 +3,20 @@
 require 'rubygems'
 require 'ffi'
 
-class Bstring < FFI::Struct
-  layout :data, :pointer,
-         :slen, :int,
-         :mlen, :int
-end
-
 class Node < FFI::Struct
   layout :name, :pointer,
          :content, :pointer,
          :level, :int,
          :next, :pointer # This is a pointer to a Node... Don't know how to do that yet...
+end
+
+module BString
+  extend FFI::Library
+  ffi_lib "libyapwtp.so" # Must be in your LD_LIBRARY_PATH
+  # char * bstr2cstr (const_bstring s, char z)
+  attach_function :bstr2cstr, [:pointer, :char], :string
+  # int bcstrfree (char * s)
+  attach_function :bcstrfree, [:string], :int
 end
 
 module YAPWTP
@@ -42,18 +45,16 @@ module YAPWTP
   # int get_template_count(void)
   attach_function :get_template_count, [], :int
 
-  # char * bstr2cstr (const_bstring s, char z)
-  attach_function :bstr2cstr, [:pointer, :char], :string
-
-  # int bcstrfree (char * s)
-  attach_function :bcstrfree, [:string], :int
-
   def self.next_template
     template = Node.new(YAPWTP.get_next_template())
-    name = YAPWTP.bstr2cstr(template[:name], 20)
-    n = String.new(name) # Ruby gets to own this one
-    YAPWTP.bcstrfree(name)
-    return n
+    name = BString.bstr2cstr(template[:name], 20)
+    content = BString.bstr2cstr(template[:content], 20)
+    # Ruby needs to own these
+    n = String.new(name) 
+    c = String.new(content) 
+    BString.bcstrfree(name)
+    BString.bcstrfree(content)
+    return { :name => n, :content => c }
   end
 end
 
@@ -67,7 +68,8 @@ if __FILE__ == $0
     YAPWTP.str_get_contents f.read
     YAPWTP.parse
     YAPWTP.get_template_count.times do |i|
-      puts "#{YAPWTP.next_template}"
+      template = YAPWTP.next_template
+      puts "#{template[:name]} = #{template[:content]}"
       puts "-" * 78;
     end
     puts YAPWTP.get_output_buffer_cstr 

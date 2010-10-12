@@ -157,7 +157,7 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
 // Validate whether a particular attribute is allowed on a tag.  Naive implementation.
 int validate_tag_attributes(struct node *item) {
   if((item == NULL) || (item->name == NULL) || (item->content == NULL)) {
-    return 0;
+    return 1;
   }
 
   btolower(item->name);

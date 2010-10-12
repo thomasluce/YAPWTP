@@ -33,7 +33,7 @@ extern bstring output_buffer;
 extern bstring input_buffer;
 extern long input_buffer_pos;
 
-extern struct list list;
+extern struct list toc_list;
 
 void init(void);
 void cleanup(void);

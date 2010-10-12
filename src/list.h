@@ -16,7 +16,7 @@ struct list {
 
 void list_init(struct list *list);
 struct node *node_alloc();
-struct node *list_get_new_tail(struct list *list);
+struct node *list_append_new(struct list *list);
 int node_free(struct node *item);
 int list_iterate(struct node *item, int (*listfunc)(struct node *));
 void list_free(struct list *list);

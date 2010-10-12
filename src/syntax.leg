@@ -13,6 +13,8 @@
 
 #define YY_noDEBUG 1
 
+#define PRESERVE_TEMPLATES 1
+
 #define IMAGE_FRAME 1
 #define IMAGE_THUMB ( 1 << 1 )
 #define IMAGE_NOLINK ( 1 << 2 )
@@ -47,10 +49,11 @@ bstring link_text;
 bstring tag_name = NULL;
 bstring tag_attribute = NULL;
 bstring tag_attributes_validated = NULL;
-struct list tag_attributes;
+struct list tag_attributes_list;
 
 // ToC
 int toc_attributes = 0;
+struct list toc_list;
 
 // Wikitext
 int in_tag = 0;
@@ -59,14 +62,13 @@ unsigned int tag_content_size = 2 * MBYTE;
 
 // Templates
 struct list template_list;
-struct node *template_list_iter;
+struct node *template_list_iter = NULL;
 
 // General
 bstring output_buffer = NULL;
 bstring input_buffer = NULL;
 long input_buffer_pos = 0;
 bstring base_url;
-struct list list;
 
 // Render the ToC from a list, output to buffer
 void assemble_toc(struct node *item, bstring toc_buffer) {
@@ -135,9 +137,9 @@ void handle_toc(void) {
     return;
   }
 
-  if((list.size > 3) || (toc_attributes & TOC_FORCETOC)) {
+  if((toc_list.size > 3) || (toc_attributes & TOC_FORCETOC)) {
     bstring toc_buffer = bfromcstr("");
-    assemble_toc(list.head->next, toc_buffer);
+    assemble_toc(toc_list.head->next, toc_buffer);
 
     if(toc_attributes & TOC_RELOC) {
       insert_reloc_toc(toc_buffer);
@@ -212,7 +214,7 @@ heading = heading_marker {
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
 
-    struct node *current = list_get_new_tail(&list);
+    struct node *current = list_append_new(&toc_list);
 
     tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
@@ -398,10 +400,25 @@ table_cell = '|'?
   ' '+ < ( !'||' !eol . )* > ( eol | '||' )
   { bprintf("%s</td>", yytext); }
 table_header = { bprintf("<tr>"); } table_heading+ { bprintf("</tr>"); }
-table_heading = { bprintf("<th"); }'!' ' '+ < ( !' |' . )* > { bprintf(" %s>", yytext); } ' |' space* < ( !eol . )* > eol {bprintf("%s</th>", yytext); }
+table_heading = { bprintf("<th"); }'!' ' '+ < ( !' |' . )* > { bprintf(" %s>", yytext); } ' |' space* < ( !eol . )* > eol { bprintf("%s</th>", yytext); }
 
 # Templates
-template = '{{' space* < ( !'}}' . )* >'}}' { start_of_line = 0; struct node *node = list_get_new_tail(&template_list); bcatcstr(node->name, yytext); }
+template = template_open space* template_name template_content? template_close
+template_open = '{{' { list_append_new(&template_list); }
+template_name = < ( !template_close !'|' . )* > { 
+  bcatcstr(template_list.tail->name, yytext); 
+  brtrimws(template_list.tail->name);
+}
+template_content = '|' space* < ( !template_close . )+ > { 
+  bcatcstr(template_list.tail->content, yytext); 
+}
+template_close = '}}' { 
+  start_of_line = 0; 
+  if(PRESERVE_TEMPLATES) {
+    // Some bug in leg prevents using braces here or even in this comment
+    bprintf("__%s__", bdata(template_list.tail->name));
+  }
+}
 
 # Table of Contents
 table_of_contents = ( notoc | toc | forcetoc )
@@ -410,32 +427,32 @@ forcetoc = '__FORCETOC__' { toc_attributes |= TOC_FORCETOC; }
 toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-through for later replacement }
 
 # HTML markup
-html = tag_open tag tag_attributes? tag_close 
+html = tag_open tag tag_attributes_list? tag_close 
 tag_open = '<' { 
   // Initialize variables used in html tag processing
   btrunc(tag_name, 0);
   btrunc(tag_attribute, 0);
   btrunc(tag_attributes_validated, 0);
-  if(tag_attributes.size > 0) {
-    list_free(&tag_attributes);
-    list_init(&tag_attributes); 
+  if(tag_attributes_list.size > 0) {
+    list_free(&tag_attributes_list);
+    list_init(&tag_attributes_list); 
   }
 }
 tag = < '/'? ( !tag_close !space . )+ > { bcatcstr(tag_name, yytext); } 
-tag_attributes = ( space ( tag_attribute | tag_junk ) )+
+tag_attributes_list = ( space ( tag_attribute | tag_junk ) )+
 tag_attribute = tag_attribute_name '=' tag_attribute_value
 tag_attribute_name = < ( !'=' . )+ > { 
   btrunc(tag_attribute, 0); 
   bcatcstr(tag_attribute, yytext);
 }
 tag_attribute_value = '"' < ( !tag_close !['"] . )+ > '"' {
-  struct node *node = list_get_new_tail(&tag_attributes);
+  struct node *node = list_append_new(&tag_attributes_list);
   bconcat(node->name, tag_attribute);
   bcatcstr(node->content, yytext);
 }
 tag_junk = < ( !tag_close . )+ >
 tag_close = ( space* '/'? '>' ) {
-  list_iterate(tag_attributes.head->next, validate_tag_attributes);
+  list_iterate(tag_attributes_list.head->next, validate_tag_attributes);
 
   btolower(tag_name);
   if(valid_html_tag(bdata(tag_name), tag_name->slen)) { 
@@ -494,9 +511,10 @@ void init(void) {
   toc_attributes = 0;
   in_tag = 0;
   input_buffer_pos = 0;
+  template_list_iter = NULL;
 
-  list_init(&list);
-  list_init(&tag_attributes);
+  list_init(&toc_list);
+  list_init(&tag_attributes_list);
   list_init(&template_list);
   tag_content = bfromcstr("");
   balloc(tag_content, tag_content_size);
@@ -535,8 +553,8 @@ void cleanup(void) {
   bdestroy(tag_attribute);
   bdestroy(tag_attributes_validated);
 
-  list_free(&list);
-  list_free(&tag_attributes);
+  list_free(&toc_list);
+  list_free(&tag_attributes_list);
   list_free(&template_list);
 
   // Clean up after leg...

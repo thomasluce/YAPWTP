@@ -356,8 +356,8 @@ describe "Wikitext parser" do
   end
 
   describe "templates" do
-    it "should just swallow templates at the moment" do
-      parse('{{template}}').should == '<p></p>'
+    it "should replace all template content with __name__" do
+      parse('{{template}}').should == '<p>__template__</p>'
     end
   end
 
