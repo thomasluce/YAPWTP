@@ -246,7 +246,8 @@ horizontal_line = "----" ( eol | eof )  { bprintf("<hr/>"); }
 indentation = &{ start_of_line } ':' { bprintf("&nbsp;&nbsp;"); } wikitext
 
 # Lists
-list = bullet_list | numbered_list
+list = &{ start_of_line} ( bullet_list | numbered_list )
+list_text = ( !eol ( < [*#] > { bprintf("%s", yytext); } | wikitext ) )*
 
 # Bullet list
 bullet_list = { bprintf("<ul>"); } bullet_list_entry+ {
@@ -254,7 +255,7 @@ bullet_list = { bprintf("<ul>"); } bullet_list_entry+ {
     bprintf("</ul>");
   }
 }
-bullet_list_entry = &{ start_of_line } bullet space* ( !eol < ( '#' | '*' )* > { printf("%s", yytext); } wikitext )* ( eol | eof ) { bprintf("</li>"); }
+bullet_list_entry = bullet space*  list_text ( eol | eof ) { bprintf("</li>"); }
 bullet = < '*'+ > {
   while((current_bullet_list_level < yyleng) && current_bullet_list_level++) {
       bprintf("<ul>");
@@ -269,7 +270,7 @@ bullet = < '*'+ > {
 
 # Numbered list
 numbered_list = { bprintf("<ol>"); } numbered_list_entry+ { while(current_numbered_list_level--) { bprintf("</ol>"); } }
-numbered_list_entry = &{ start_of_line } numbered space* ( !eol < ( '#' | '*' )* > { printf("%s", yytext); } wikitext )* eol? { bprintf("</li>"); }
+numbered_list_entry = numbered space* list_text eol? { bprintf("</li>"); }
 numbered = < '#'+ > {
   while((current_numbered_list_level < yyleng) && current_numbered_list_level++) {
       bprintf("<ol>");

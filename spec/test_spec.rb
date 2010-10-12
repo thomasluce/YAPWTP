@@ -125,14 +125,14 @@ describe "Wikitext parser" do
       parse("* <a href=\"wikipedia.org\">wikipedia</a>").should_not include("<a href=")
     end
 
-    it "should not try to make a list if the delimeter is not at the start of a line" do
-      parse("This should * not! * make a list").should_not include("<ul")
-      parse("Neither should # this #").should_not include("<ol")
+    it "should not begin a list in the middle of a list line" do
+      parse("* foo * asf").scan("<ul>").size.should == 1
+      parse("# foo # asf").scan("<ol>").size.should == 1
     end
 
-    it "should not try to nest list items that have sub-items on the same line" do
-      parse("* foo * bar * baz").split('<li').size.should == 2
-      parse("# foo # bar * baz").split('<li').size.should == 2
+    it "should only begin a list when the bullet or hash is at the beginning of a line" do
+      parse("Some text # foo # asf").scan("<ol>").size.should == 0
+      parse("Some text * foo * asf").scan("<ul>").size.should == 0
     end
   end
 
