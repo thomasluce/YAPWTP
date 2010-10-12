@@ -129,6 +129,11 @@ describe "Wikitext parser" do
       parse("This should * not! * make a list").should_not include("<ul")
       parse("Neither should # this #").should_not include("<ol")
     end
+
+    it "should not try to nest list items that have sub-items on the same line" do
+      parse("* foo * bar * baz").split('<li').size.should == 2
+      parse("# foo # bar * baz").split('<li').size.should == 2
+    end
   end
 
   describe "text formatting" do
