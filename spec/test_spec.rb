@@ -124,6 +124,11 @@ describe "Wikitext parser" do
     it "should protect HTML markup just like anywhere else" do
       parse("* <a href=\"wikipedia.org\">wikipedia</a>").should_not include("<a href=")
     end
+
+    it "should not try to make a list if the delimeter is not at the start of a line" do
+      parse("This should * not! * make a list").should_not include("<ul")
+      parse("Neither should # this #").should_not include("<ol")
+    end
   end
 
   describe "text formatting" do
@@ -250,9 +255,13 @@ describe "Wikitext parser" do
       end
     end
 
-    # TODO: size and border attributes
+    # TODO: size attribute
     it "should be able to make an image" do
       parse("[[File:image.png]]").should == '<p><a href="File:image.png" class="image"><img src="image.png" /></a></p>'
+    end
+
+    it "should be able to put a border around an unframed image" do
+      parse("[[File:image.png|border]]").should include 'class="thumbimage"'
     end
 
     it "should be able to use the alternate, 'Image:' indicator" do
