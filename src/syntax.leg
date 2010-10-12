@@ -186,8 +186,8 @@ void append_to_tag_content(char *fmt, ...) {
 %}
 
 # High-level
-page =  nowiki | pre_block | wikitext_line | wikitext 
-wikitext_line = paragraph | horizontal_line 
+page =  nowiki | pre_block | wikitext_line | wikitext
+wikitext_line = paragraph | horizontal_line
 wikitext = html | table_of_contents | template | heading | indentation | list | formatting | image | link | table | anything_else | eol { append_to_tag_content("%c", '\n'); }
 
 # Generally useful rules
@@ -200,7 +200,7 @@ heading = heading_marker {
     char tag[4];
     sprintf(tag, "h%d", current_header_level);
     open_tag(tag, NULL);
-  } space* heading_text heading_marker space* ( eol | eof ) 
+  } space* heading_text heading_marker space* ( eol | eof )
   {
     brtrimws(tag_content);
     bstring tmp = bstrcpy(tag_content);
@@ -234,7 +234,7 @@ heading = heading_marker {
     btrunc(tag_content, 0);
     current_header_level = 0;
   }
-heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* > 
+heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* >
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
 
 # Paragraph
@@ -248,21 +248,21 @@ indentation = &{ start_of_line } ':' { bprintf("&nbsp;&nbsp;"); } wikitext
 list = bullet_list | numbered_list
 
 # Bullet list
-bullet_list = { bprintf("<ul>"); } bullet_list_entry+ { 
-  while((current_bullet_list_level > 0) && current_bullet_list_level--) { 
-    bprintf("</ul>"); 
+bullet_list = { bprintf("<ul>"); } bullet_list_entry+ {
+  while((current_bullet_list_level > 0) && current_bullet_list_level--) {
+    bprintf("</ul>");
   }
 }
 bullet_list_entry = bullet space* ( !eol wikitext )* ( eol | eof ) { bprintf("</li>"); }
 bullet = < '*'+ > {
-  while((current_bullet_list_level < yyleng) && current_bullet_list_level++) { 
-      bprintf("<ul>"); 
+  while((current_bullet_list_level < yyleng) && current_bullet_list_level++) {
+      bprintf("<ul>");
   }
-  while((current_bullet_list_level > yyleng) && current_bullet_list_level--) { 
-      bprintf("</ul>"); 
+  while((current_bullet_list_level > yyleng) && current_bullet_list_level--) {
+      bprintf("</ul>");
   }
   current_bullet_list_level = yyleng;
-  bprintf("<li>"); 
+  bprintf("<li>");
   start_of_line = 0;
 }
 
@@ -270,14 +270,14 @@ bullet = < '*'+ > {
 numbered_list = { bprintf("<ol>"); } numbered_list_entry+ { while(current_numbered_list_level--) { bprintf("</ol>"); } }
 numbered_list_entry = numbered space* ( !eol wikitext )* eol? { bprintf("</li>"); }
 numbered = < '#'+ > {
-  while((current_numbered_list_level < yyleng) && current_numbered_list_level++) { 
-      bprintf("<ol>"); 
+  while((current_numbered_list_level < yyleng) && current_numbered_list_level++) {
+      bprintf("<ol>");
   }
-  while((current_numbered_list_level > yyleng) && current_numbered_list_level--) { 
-      bprintf("</ol>"); 
+  while((current_numbered_list_level > yyleng) && current_numbered_list_level--) {
+      bprintf("</ol>");
   }
   current_numbered_list_level = yyleng;
-  bprintf("<li>"); 
+  bprintf("<li>");
   start_of_line = 0;
 }
 
@@ -290,11 +290,11 @@ italic = "''" { append_to_tag_content("<i>"); }( !"''" wikitext )* "''" { append
 # pre-formatted blocks
 pre_block = &{ start_of_line } { bprintf("<pre>"); } pre_line+ { bprintf("</pre>"); }
 pre_line = ' ' < ( !eol . )* ( eol | eof ) > { bprintf("%s", yytext); }
-nowiki = '<nowiki>' < ( !'</nowiki>' . )* > '</nowiki>' { 
-  start_of_line = 0; 
+nowiki = '<nowiki>' < ( !'</nowiki>' . )* > '</nowiki>' {
+  start_of_line = 0;
   bstring markup = bfromcstr(yytext);
   strip_tags(markup);
-  append_to_tag_content("%s", bdata(markup)); 
+  append_to_tag_content("%s", bdata(markup));
   bdestroy(markup);
 }
 
@@ -362,7 +362,7 @@ special_image_variables = image_type | float | image_link
 image_type = frame | thumb
 frame = 'frame' { image_attributes |= IMAGE_FRAME; }
 thumb = ( 'thumbnail' | 'thumb' ) { image_attributes |= IMAGE_THUMB; }
-float = < ( 'left' | 'right' | 'center' ) > { 
+float = < ( 'left' | 'right' | 'center' ) > {
   bformata(image_variables, " class=\"float%s\"", yytext);
 } | 'none'
 image_link = 'link=' < ( !'|' !close_image . )* > {
@@ -373,7 +373,7 @@ image_link = 'link=' < ( !'|' !close_image . )* > {
     bassignformat(image_link_url, "%s", yytext);
   }
 }
-generic_variable = < ( !'|' !'=' !close_image . )* > { 
+generic_variable = < ( !'|' !'=' !close_image . )* > {
   bformata(image_variables, "%s", yytext);
 }
 value = '=' < ( !'|' !close_image . )* > {
@@ -385,7 +385,7 @@ image_caption = '|' < ( !close_image . )+ > {
 }
 
 # Tables
-table = '{|' 
+table = '{|'
   { bprintf("<table>"); }
   eol table_body '|}' ( eol | eof )
   { bprintf("</table>"); }
@@ -405,15 +405,15 @@ table_heading = { bprintf("<th"); }'!' ' '+ < ( !' |' . )* > { bprintf(" %s>", y
 # Templates
 template = template_open space* template_name template_content? template_close
 template_open = '{{' { list_append_new(&template_list); }
-template_name = < ( !template_close !'|' . )* > { 
-  bcatcstr(template_list.tail->name, yytext); 
+template_name = < ( !template_close !'|' . )* > {
+  bcatcstr(template_list.tail->name, yytext);
   brtrimws(template_list.tail->name);
 }
-template_content = '|' space* < ( !template_close . )+ > { 
-  bcatcstr(template_list.tail->content, yytext); 
+template_content = '|' space* < ( !template_close . )+ > {
+  bcatcstr(template_list.tail->content, yytext);
 }
-template_close = '}}' { 
-  start_of_line = 0; 
+template_close = '}}' {
+  start_of_line = 0;
   if(PRESERVE_TEMPLATES) {
     // Some bug in leg prevents using braces here or even in this comment
     bprintf("__%s__", bdata(template_list.tail->name));
@@ -427,22 +427,22 @@ forcetoc = '__FORCETOC__' { toc_attributes |= TOC_FORCETOC; }
 toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-through for later replacement }
 
 # HTML markup
-html = tag_open tag tag_attributes_list? tag_close 
-tag_open = '<' { 
+html = tag_open tag tag_attributes_list? tag_close
+tag_open = '<' {
   // Initialize variables used in html tag processing
   btrunc(tag_name, 0);
   btrunc(tag_attribute, 0);
   btrunc(tag_attributes_validated, 0);
   if(tag_attributes_list.size > 0) {
     list_free(&tag_attributes_list);
-    list_init(&tag_attributes_list); 
+    list_init(&tag_attributes_list);
   }
 }
-tag = < '/'? ( !tag_close !space . )+ > { bcatcstr(tag_name, yytext); } 
+tag = < '/'? ( !tag_close !space . )+ > { bcatcstr(tag_name, yytext); }
 tag_attributes_list = ( space ( tag_attribute | tag_junk ) )+
 tag_attribute = tag_attribute_name '=' tag_attribute_value
-tag_attribute_name = < ( !'=' . )+ > { 
-  btrunc(tag_attribute, 0); 
+tag_attribute_name = < ( !'=' . )+ > {
+  btrunc(tag_attribute, 0);
   bcatcstr(tag_attribute, yytext);
 }
 tag_attribute_value = '"' < ( !tag_close !['"] . )+ > '"' {
@@ -455,11 +455,11 @@ tag_close = ( space* '/'? '>' ) {
   list_iterate(tag_attributes_list.head->next, validate_tag_attributes);
 
   btolower(tag_name);
-  if(valid_html_tag(bdata(tag_name), tag_name->slen)) { 
+  if(valid_html_tag(bdata(tag_name), tag_name->slen)) {
     bprintf("<%s%s>", bdata(tag_name), bdata(tag_attributes_validated));
   } else {
     strip_tags(tag_name);
-    bprintf("&lt;%s&gt;", bdata(tag_name)); 
+    bprintf("&lt;%s&gt;", bdata(tag_name));
   }
   start_of_line = 0;
 }
@@ -495,7 +495,7 @@ struct node *get_next_template(void) {
   if(!template_list_iter) {
     template_list_iter = template_list.head;
   }
- 
+
   if(template_list_iter->next) {
     template_list_iter = template_list_iter->next;
     return template_list_iter;
