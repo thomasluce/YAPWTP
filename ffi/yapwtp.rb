@@ -46,7 +46,9 @@ module YAPWTP
   attach_function :get_template_count, [], :int
 
   def self.next_template
-    template = Node.new(YAPWTP.get_next_template())
+    t = get_next_template
+    return nil if t.null?
+    template = Node.new(t)
     name = BString.bstr2cstr(template[:name], 20)
     content = BString.bstr2cstr(template[:content], 20)
     # Ruby needs to own these
@@ -55,6 +57,10 @@ module YAPWTP
     BString.bcstrfree(name)
     BString.bcstrfree(content)
     return { :name => n, :content => c }
+  end
+
+  def self.parsed_text
+    String.new(YAPWTP.get_output_buffer_cstr)
   end
 end
 
@@ -67,12 +73,13 @@ if __FILE__ == $0
     YAPWTP.init
     YAPWTP.str_get_contents f.read
     YAPWTP.parse
-    YAPWTP.get_template_count.times do |i|
-      template = YAPWTP.next_template
+    puts "# Templates: #{YAPWTP.get_template_count}"
+    puts "-" * 78;
+    while template = YAPWTP.next_template
       puts "#{template[:name]} = #{template[:content]}"
       puts "-" * 78;
     end
-    puts YAPWTP.get_output_buffer_cstr 
+    puts YAPWTP.parsed_text
     YAPWTP.cleanup
   end
 
