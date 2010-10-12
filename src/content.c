@@ -118,7 +118,7 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
     [2]  { "br", "dd", "dl", "dt", "em", "hr", "li", "ol", "td", "th", "tr", "tt", "ul" },
     [3]  { "big", "del", "div", "ins", "pre", "sub", "sup" },
     [4]  { "abbr", "cite", "code", "font", "span" },
-    [5]  { "small", "table" }, 
+    [5]  { "small", "table" },
     [6]  { "strong", "strike", "center" },
     [7]  { "caption" },
     [10] { "blockquote" }
