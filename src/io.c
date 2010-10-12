@@ -22,7 +22,7 @@ void handle_input(char *buf, int *result, size_t max_size) {
   *result = 1;
 }
 
-// Read a file into a bstring buffer 
+// Read a file into a bstring buffer
 void file_get_contents(bstring buffer, char *filename) {
   if(!buffer) {
     printf("Invalid buffer supplied to buffer_from_file.\n");
