@@ -105,7 +105,7 @@ class WikiParser
   def html_from_file file
     reset if @dirty
     if !File.exist? file
-      raise IOError "Can't open #{file}"
+      raise IOError("Can't open #{file}")
     end
     file_get_contents get_input_buffer, file
     parse

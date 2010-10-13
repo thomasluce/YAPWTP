@@ -266,7 +266,7 @@ describe "Wikitext parser" do
     end
 
     it "should be able to put a border around an unframed image" do
-      parse("[[File:image.png|border]]").should include 'class="thumbimage"'
+      parse("[[File:image.png|border]]").should include('class="thumbimage"')
     end
 
     it "should be able to use the alternate, 'Image:' indicator" do
