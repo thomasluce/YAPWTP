@@ -355,6 +355,26 @@ describe "Wikitext parser" do
 ").should_not include("{|")
     end
 
+    it "should support full wikitext markup in table cells" do
+      parse("{|
+|Lorem ipsum dolor sit amet, 
+consetetur sadipscing elitr, 
+sed diam nonumy eirmod tempor invidunt
+ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. 
+
+At vero eos et accusam et justo duo dolores
+et ea rebum. Stet clita kasd gubergren,
+no sea takimata sanctus est Lorem ipsum
+dolor sit amet. 
+|
+* Lorem ipsum dolor sit amet
+* consetetur sadipscing elitr
+* sed diam nonumy eirmod tempor invidunt
+|}
+").should include("<ul><li>")
+    end
+
     describe "headers" do
       it "should be able to make headers" do
         parse("{|

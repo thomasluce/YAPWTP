@@ -393,21 +393,16 @@ table = '{|' space*
   eol table_body '|}' ( eol | eof )
   { bprintf("</table>"); }
 table_body = table_caption? table_header? ( table_row | table_cell )+
-table_caption = '|+' space* < ( !eol . )* > eol { bprintf("<caption>%s</caption>", yytext); }
+table_caption = '|+' { bprintf("<caption>"); } space* < ( !eol wikitext )* > eol { brtrimws(output_buffer); bprintf("</caption>"); }
 table_row = '|-'
   { bprintf("<tr>"); }
   space* eol table_heading* table_cell*
   { bprintf("</tr>"); }
 table_cell = '|'?
   { bprintf("<td>"); }
-  ![-}] space* < ( !'||' !eol . )* > ( eol | '||' ) { 
-  bstring markup = bfromcstr(yytext); 
-  brtrimws(markup); 
-  bprintf("%s</td>", bdata(markup)); 
-  bdestroy(markup);
-}
+  ![-}] space* ( !'||' !eol wikitext )* ( eol | '||' ) { brtrimws(output_buffer); bprintf("</td>"); }
 table_header = { bprintf("<tr>"); } table_heading+ { bprintf("</tr>"); }
-table_heading = { bprintf("<th"); }'!' space* < ( !' |' . )* > { bprintf(" %s>", yytext); } ' |' space* < ( !eol . )* > eol { bprintf("%s</th>", yytext); }
+table_heading = { bprintf("<th"); }'!' space* < ( !' |' . )* >  { bprintf(" %s>", yytext); } ' |' space* ( !eol wikitext )* eol { brtrimws(output_buffer); bprintf("</th>"); }
 
 # Templates
 template = template_open space* template_name template_content? template_close
