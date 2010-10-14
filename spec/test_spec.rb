@@ -323,7 +323,7 @@ describe "Wikitext parser" do
       parse("{|
 |-
 | Cell one || Cell two
-|}").should == "<p><table><tr><td>Cell one </td><td>Cell two</td></tr></table></p>"
+|}").should == "<p><table><tr><td>Cell one</td><td>Cell two</td></tr></table></p>"
     end
 
     it "should be able to do a few rows" do
@@ -334,7 +334,14 @@ describe "Wikitext parser" do
 |-
 | cell
 | cell
-|}").should == "<p><table><caption>Caption</caption><tr><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
+|}").should == "<p><table><caption>Caption</caption><tr><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
+    end
+
+    it "should handle ugly input text" do
+      parse("{|
+|-
+|cell1||cell2   || cell3
+|}").should == "<p><table><tr><td>cell1</td><td>cell2</td><td>cell3</td></tr></table></p>"
     end
 
     describe "headers" do
@@ -348,7 +355,7 @@ describe "Wikitext parser" do
 |-
 | cell
 | cell
-|}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
+|}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
       end
 
       it "should be able to do headers part-way down as well" do
@@ -362,7 +369,7 @@ describe "Wikitext parser" do
 |-
 | cell
 | cell
-|}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><th scope=\"row\">row heading</th><td>cell </td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
+|}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><th scope=\"row\">row heading</th><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
       end
     end
 
