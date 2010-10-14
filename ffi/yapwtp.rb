@@ -96,6 +96,10 @@ class WikiParser
 
   def html_from_string source
     reset if @dirty
+    # The parser wants a newline or EOF at the end of the file...
+    if source[-1] != "\n"
+      source << "\n"
+    end
     str_get_contents source
     parse
     @dirty = true
@@ -126,18 +130,16 @@ end
 if __FILE__ == $0
   parser = WikiParser.new
 
-  200.times do
-    # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
-    File.open("../spec/fixtures/cnn.com", "rb") do |f|
-      parser.html_from_string f.read
-      puts "# Templates: #{parser.get_template_count}"
+  # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
+  File.open("../wikiwiki/wiki-development/\?ContactList", "rb") do |f|
+    parser.html_from_string (f.read)
+    puts "# Templates: #{parser.get_template_count}"
+    puts "-" * 78;
+    parser.each_template do |template|
+      puts "#{template[:name]} = #{template[:content]}"
       puts "-" * 78;
-      parser.each_template do |template|
-        puts "#{template[:name]} = #{template[:content]}"
-        puts "-" * 78;
-      end
-      puts parser.parsed_text
     end
+    puts parser.parsed_text
   end
 
 end
