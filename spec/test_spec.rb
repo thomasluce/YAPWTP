@@ -344,6 +344,17 @@ describe "Wikitext parser" do
 |}").should == "<p><table><tr><td>cell1</td><td>cell2</td><td>cell3</td></tr></table></p>"
     end
 
+    it "should not require a row delimiter on the first row" do
+      parse("{|
+|Orange||Apple||more
+|-
+|Bread||Pie||more
+|-
+|Butter||Ice<br />cream||and<br />more
+|}
+").should_not include("{|")
+    end
+
     describe "headers" do
       it "should be able to make headers" do
         parse("{|

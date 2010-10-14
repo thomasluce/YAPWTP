@@ -392,7 +392,7 @@ table = '{|' space*
   { bprintf("<table>"); }
   eol table_body '|}' ( eol | eof )
   { bprintf("</table>"); }
-table_body = table_caption? table_header? table_row+
+table_body = table_caption? table_header? ( table_row | table_cell )+
 table_caption = '|+' space* < ( !eol . )* > eol { bprintf("<caption>%s</caption>", yytext); }
 table_row = '|-'
   { bprintf("<tr>"); }
