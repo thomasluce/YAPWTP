@@ -305,6 +305,7 @@ describe "Wikitext parser" do
   end
 
   describe "tables -- oh boy..." do
+    # TODO: Implement all of this: http://www.mediawiki.org/wiki/Help:Tables it's better than the spec
     it "should be able to make a caption for the table" do
       parse("{|
 |+ caption
@@ -355,8 +356,9 @@ describe "Wikitext parser" do
 ").should_not include("{|")
     end
 
-    it "should support full wikitext markup in table cells" do
-      parse("{|
+    it "should support full wikitext markup in table cells even with line feeds" do
+      pending
+      text = parse("{|
 |Lorem ipsum dolor sit amet, 
 consetetur sadipscing elitr, 
 sed diam nonumy eirmod tempor invidunt
@@ -372,7 +374,10 @@ dolor sit amet.
 * consetetur sadipscing elitr
 * sed diam nonumy eirmod tempor invidunt
 |}
-").should include("<ul><li>")
+")
+      text.should include("<ul><li>")
+      text.should_not include("{|")
+      text.should_not include("|}")
     end
 
     describe "headers" do
