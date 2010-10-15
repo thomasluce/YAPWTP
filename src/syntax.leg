@@ -388,21 +388,15 @@ image_caption = '|' < ( !close_image . )+ > {
 }
 
 # Tables
-table = '{|' space*
-  { bprintf("<table>"); }
-  eol table_body '|}' ( eol | eof )
-  { bprintf("</table>"); }
-table_body = table_caption? table_header? ( table_row | table_cell )+
-table_caption = '|+' { bprintf("<caption>"); } space* < ( !eol wikitext )* > eol { brtrimws(output_buffer); bprintf("</caption>"); }
-table_row = '|-'
-  { bprintf("<tr>"); }
-  space* eol table_heading* table_cell*
-  { bprintf("</tr>"); }
-table_cell = '|'?
-  { bprintf("<td>"); }
-  ![-}] space* ( !'||' !eol wikitext )* ( eol | '||' ) { brtrimws(output_buffer); bprintf("</td>"); }
-table_header = { bprintf("<tr>"); } table_heading+ { bprintf("</tr>"); }
-table_heading = { bprintf("<th"); }'!' space* < ( !' |' . )* >  { bprintf(" %s>", yytext); } ' |' space* ( !eol wikitext )* eol { brtrimws(output_buffer); bprintf("</th>"); }
+table = table_open eol* table_caption? ( table_row | table_cell )* eol* table_close
+table_specials = ( [|+}!] | '-' )
+table_delims =  ( ( '|' table_specials ) | ( &{start_of_line} '!' ) | ( &{start_of_line} '|') )
+table_open = '{|' { bprintf("<table>"); }
+table_caption = '|+' space* { bprintf("<caption>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</caption>"); }
+table_row = '|-' space* { bprintf("<tr>"); } eol* ( table_header | table_cell )* { bprintf("</tr>"); }
+table_header = '!' space* { bprintf("<th>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</th>"); }
+table_cell = '|'+ !table_specials space* { bprintf("<td>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</td>"); }
+table_close = '|}' { brtrimws(output_buffer); bprintf("</table>"); }
 
 # Templates
 template = template_open space* template_name template_content? template_close
