@@ -396,16 +396,19 @@ table_specials = ( [|+}!] | '-' )
 table_delims =  ( ( '|' table_specials ) | ( &{start_of_line} '!' ) | ( &{start_of_line} '|') )
 table_open = '{|' { tr_found = 0; bprintf("<table>"); }
 table_caption = '|+' space* { bprintf("<caption>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</caption>"); }
-table_row = '|-' space* { tr_found = 1; bprintf("<tr>"); } eol* ( table_header | table_cell )* { bprintf("</tr>"); }
+table_row = '|-' space* { tr_found = 1; bprintf("<tr>"); } eol* ( table_headers | table_cell )* { bprintf("</tr>"); }
+
 table_headers = {
   if(!tr_found) { bprintf("<tr>"); } 
-} table_header+ {
+} ( complex_header | simple_header )+ {
   if(!tr_found) { bprintf("</tr>"); } 
 }
-
-table_header = &{start_of_line} '!' space* { bprintf("<th"); } (
- < ( !( space* '|') . )* > space* { bprintf(" %s>", yytext); } '|' space* < ( !table_delims !eol . )* > { bprintf("%s", yytext); } ( &table_delims | eol )
+complex_header = &{start_of_line} '!' space* { bprintf("<th"); } (
+ < ( !( space* '|') . )* > space* { bprintf(" %s>", yytext); } '|' space* ( !table_delims !eol wikitext )* ( &table_delims | eol )
  ) { bprintf("</th>"); }
+simple_header = &{start_of_line} '!' space* { bprintf("<th>"); }
+  ( !eol !table_delims wikitext )+ ( eol | &table_delims ) 
+  { bprintf("</th>"); }
 
 table_cell = '|'+ !table_specials space* { bprintf("<td>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</td>"); }
 table_close = '|}' { brtrimws(output_buffer); bprintf("</table>"); }

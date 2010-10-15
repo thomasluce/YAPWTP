@@ -357,7 +357,6 @@ describe "Wikitext parser" do
     end
 
     it "should support full wikitext markup in table cells even with line feeds" do
-      pending
       text = parse("{|
 |Lorem ipsum dolor sit amet, 
 consetetur sadipscing elitr, 
@@ -381,7 +380,17 @@ dolor sit amet.
     end
 
     describe "headers" do
-      it "should be able to make headers" do
+      it "should be able to make simple headers" do
+        text = parse("{|
+|+Caption
+! heading 1
+! heading 2
+|}")
+        text.should include("<th>heading 1</th><th>heading 2</th>");
+        text.should_not include("{|");
+      end
+
+      it "should be able to make complex headers" do
         parse("{|
 |+ Caption
 ! scope=\"col\" | column heading 1
@@ -406,6 +415,14 @@ dolor sit amet.
 | cell
 | cell
 |}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><th scope=\"row\">row heading</th><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
+      end
+
+      it "should be able to do headers even with a first row defined" do
+        text = parse("{|
+|-
+! heading 1
+! heading 2
+|}")
       end
     end
 
