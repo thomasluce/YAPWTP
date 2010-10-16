@@ -424,6 +424,14 @@ dolor sit amet.
 ! heading 2
 |}")
       end
+
+      it "should support attributes on the table" do
+        parse('{| cellspacing="0" border="1"
+!style="width:50%"|You type
+!style="width:50%"|You get
+|-
+|}').should == "<p><table cellspacing=\"0\" border=\"1\"><tr><th style=\"width:50%\">You type</th><th style=\"width:50%\">You get</th></tr><tr></tr></table></p>"
+      end
     end
 
     # TODO: single-pipe separaters for a format modifier

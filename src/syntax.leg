@@ -394,7 +394,15 @@ image_caption = '|' < ( !close_image . )+ > {
 table = table_open eol* table_caption? ( table_row | table_headers | table_cell )* eol* table_close
 table_specials = ( [|+}!] | '-' )
 table_delims =  ( ( '|' table_specials ) | ( &{start_of_line} '!' ) | ( &{start_of_line} '|') )
-table_open = '{|' { tr_found = 0; bprintf("<table>"); }
+table_open = '{|' space* < ( !table_delims !eol . )* > { 
+  tr_found = 0; 
+  bprintf("<table");
+  if(yyleng > 0) { 
+    bprintf(" %s>", yytext); 
+  } else { 
+    bprintf(">"); 
+  }
+}
 table_caption = '|+' space* { bprintf("<caption>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</caption>"); }
 table_row = '|-' space* { tr_found = 1; bprintf("<tr>"); } eol* ( table_headers | table_cell )* { bprintf("</tr>"); }
 
@@ -527,6 +535,7 @@ void init(void) {
   in_tag = 0;
   input_buffer_pos = 0;
   template_list_iter = NULL;
+  tr_found = 0;
 
   list_init(&toc_list);
   list_init(&tag_attributes_list);
