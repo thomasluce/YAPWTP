@@ -132,7 +132,7 @@ if __FILE__ == $0
 
   # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
   File.open("../wikiwiki/wiki-development/\?ContactList", "rb") do |f|
-    parser.html_from_string (f.read)
+    parser.html_from_string(f.read)
     puts "# Templates: #{parser.get_template_count}"
     puts "-" * 78;
     parser.each_template do |template|

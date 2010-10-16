@@ -161,6 +161,10 @@ describe "Wikitext parser" do
       parse("<pre>'''bold'''</pre>").should == "<p><pre>'''bold'''</pre></p>";
     end
 
+    it "should treat <code> tags as nowiki tags" do
+      parse("<code>'''bold'''</code>").should == "<p><code>'''bold'''</code></p>";
+    end
+
     it "should handle nowiki in complex situations" do
       parse('{| cellspacing="0" border="1"
         !style="width:50%"|You type

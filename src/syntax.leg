@@ -303,12 +303,14 @@ nowiki = nowiki_open < ( !nowiki_close . )* > {
   append_to_tag_content("%s", bdata(markup));
   bdestroy(markup);
 } nowiki_close
-nowiki_open = nowiki_open_tag | html_pre_open
-nowiki_close = nowiki_close_tag | html_pre_close
+nowiki_open = nowiki_open_tag | html_pre_open | html_code_open
+nowiki_close = nowiki_close_tag | html_pre_close | html_code_close
 nowiki_open_tag = '<nowiki>' 
 nowiki_close_tag = '</nowiki>' 
 html_pre_open = ( '<pre>' | '<PRE>' ) { append_to_tag_content("<pre>"); }
 html_pre_close = ( '</pre>' | '</PRE>' ) { append_to_tag_content("</pre>"); }
+html_code_open = ( '<code>' | '<CODE>' ) { append_to_tag_content("<code>"); }
+html_code_close = ( '</code>' | '</CODE>' ) { append_to_tag_content("</code>"); }
 
 # Links
 link = ( local_link | external_link ) { start_of_line = 0; }
