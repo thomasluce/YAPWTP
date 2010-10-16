@@ -295,13 +295,20 @@ italic = "''" { append_to_tag_content("<i>"); }( !"''" wikitext )* "''" { append
 # pre-formatted blocks
 pre_block = &{ start_of_line } { bprintf("<pre>"); } pre_line+ { bprintf("</pre>"); }
 pre_line = ' ' < ( !eol . )* ( eol | eof ) > { bprintf("%s", yytext); }
-nowiki = '<nowiki>' < ( !'</nowiki>' . )* > '</nowiki>' {
+nowiki = nowiki_open < ( !nowiki_close . )* > {
   start_of_line = 0;
   bstring markup = bfromcstr(yytext);
   strip_tags(markup);
+  // TODO validate this potentially HTML text!
   append_to_tag_content("%s", bdata(markup));
   bdestroy(markup);
-}
+} nowiki_close
+nowiki_open = nowiki_open_tag | html_pre_open
+nowiki_close = nowiki_close_tag | html_pre_close
+nowiki_open_tag = '<nowiki>' 
+nowiki_close_tag = '</nowiki>' 
+html_pre_open = ( '<pre>' | '<PRE>' ) { append_to_tag_content("<pre>"); }
+html_pre_close = ( '</pre>' | '</PRE>' ) { append_to_tag_content("</pre>"); }
 
 # Links
 link = ( local_link | external_link ) { start_of_line = 0; }

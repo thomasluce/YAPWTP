@@ -157,6 +157,42 @@ describe "Wikitext parser" do
       parse("<nowiki>'''format'''\n\n'''format'''</nowiki> '''format'''").should == "<p>'''format'''\n\n'''format''' <b>format</b></p>"
     end
 
+    it "should treat <pre> tags as nowiki tags" do
+      parse("<pre>'''bold'''</pre>").should == "<p><pre>'''bold'''</pre></p>";
+    end
+
+    it "should handle nowiki in complex situations" do
+      parse('{| cellspacing="0" border="1"
+        !style="width:50%"|You type
+        !style="width:50%"|You get
+        |-
+        |
+        <pre>
+        {|
+        |Orange
+        |Apple
+        |-
+        |Bread
+        |Pie
+        |-
+        |Butter
+        |Ice cream 
+        |}
+        </pre>
+        |
+        {|
+        |Orange
+        |Apple
+        |-
+        |Bread
+        |Pie
+        |-
+        |Butter
+        |Ice cream 
+        |}
+        |}'.gsub('        ', '')).should == "<p><table cellspacing=\"0\" border=\"1\"><tr><th style=\"width:50%\">You type</th><th style=\"width:50%\">You get</th></tr><tr><td>\n<pre>\n{|\n|Orange\n|Apple\n|-\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}\n</pre></td><td>\n<table><td>Orange</td><td>Apple</td><tr><td>Bread</td><td>Pie</td></tr><tr><td>Butter</td><td>Ice cream</td></tr></table></td></tr></table></p>"
+    end
+
     it "should not pass HTML tags through when using <nowiki>" do
       parse("<nowiki><div>asdf</div></nowiki>").should == "<p>asdf</p>"
     end
@@ -308,34 +344,34 @@ describe "Wikitext parser" do
     # TODO: Implement all of this: http://www.mediawiki.org/wiki/Help:Tables it's better than the spec
     it "should be able to make a caption for the table" do
       parse("{|
-|+ caption
-|-
-|}").should == "<p><table><caption>caption</caption><tr></tr></table></p>"
+        |+ caption
+        |-
+        |}".gsub(/^ */, '')).should == "<p><table><caption>caption</caption><tr></tr></table></p>"
     end
 
     it "should be able to do simple rows" do
       parse("{|
-|-
-| cell one
-|}").should == "<p><table><tr><td>cell one</td></tr></table></p>"
+        |-
+        | cell one
+        |}".gsub(/^ */, "")).should == "<p><table><tr><td>cell one</td></tr></table></p>"
     end
 
     it "should be able to do single-line rows" do
       parse("{|
-|-
-| Cell one || Cell two
-|}").should == "<p><table><tr><td>Cell one</td><td>Cell two</td></tr></table></p>"
+        |-
+        | Cell one || Cell two
+        |}".gsub(/^ */, "")).should == "<p><table><tr><td>Cell one</td><td>Cell two</td></tr></table></p>"
     end
 
     it "should be able to do a few rows" do
       parse("{|
-|+ Caption
-|-
-| cell || cell
-|-
-| cell
-| cell
-|}").should == "<p><table><caption>Caption</caption><tr><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
+        |+ Caption
+        |-
+        | cell || cell
+        |-
+        | cell
+        | cell
+        |}".gsub(/^ */, '')).should == "<p><table><caption>Caption</caption><tr><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
     end
 
     it "should handle ugly input text" do
