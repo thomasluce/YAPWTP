@@ -412,7 +412,10 @@ table_open = '{|' space* < ( !table_delims !eol . )* > {
   }
 }
 table_caption = '|+' space* { bprintf("<caption>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</caption>"); }
-table_row = '|-' space* { tr_found = 1; bprintf("<tr>"); } eol* ( table_headers | table_cell )* { bprintf("</tr>"); }
+table_row = row_open ( simple_row | complex_row )
+row_open = '|-' space* { tr_found = 1; bprintf("<tr");  }
+simple_row = [ \t]* eol { bprintf(">"); } ( table_headers | table_cell )* { bprintf("</tr>"); }
+complex_row = < ( !eol . )* > eol { bprintf(" %s>", yytext); } ( table_headers | table_cell )* { bprintf("</tr>"); }
 
 table_headers = {
   if(!tr_found) { bprintf("<tr>"); } 

@@ -419,6 +419,21 @@ dolor sit amet.
       text.should_not include("|}")
     end
 
+    it "should support attributes on the table" do
+      parse('{| cellspacing="0" border="1"
+!style="width:50%"|You type
+!style="width:50%"|You get
+|-
+|}').should == "<p><table cellspacing=\"0\" border=\"1\"><tr><th style=\"width:50%\">You type</th><th style=\"width:50%\">You get</th></tr><tr></tr></table></p>"
+    end
+
+    it "should support attributes on row definitions" do
+      parse('{|
+        |- style="color:red"
+        | data
+        |}'.gsub(/^ */, '')).should == '<p><table><tr style="color:red"><td>data</td></tr></table></p>'
+    end
+
     describe "headers" do
       it "should be able to make simple headers" do
         text = parse("{|
@@ -463,14 +478,6 @@ dolor sit amet.
 ! heading 1
 ! heading 2
 |}")
-      end
-
-      it "should support attributes on the table" do
-        parse('{| cellspacing="0" border="1"
-!style="width:50%"|You type
-!style="width:50%"|You get
-|-
-|}').should == "<p><table cellspacing=\"0\" border=\"1\"><tr><th style=\"width:50%\">You type</th><th style=\"width:50%\">You get</th></tr><tr></tr></table></p>"
       end
     end
 
