@@ -9,6 +9,8 @@
 // Longest allowed tag length
 #define HTML_MAX_LENGTH 11
 
+extern bstring tag_name;
+
 void repeat_append(bstring buffer, char chr, int count);
 void remove_parentheticals(bstring str);
 void strip_tags(bstring str);

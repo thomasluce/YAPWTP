@@ -299,7 +299,6 @@ nowiki = nowiki_open < ( !nowiki_close . )* > {
   start_of_line = 0;
   bstring markup = bfromcstr(yytext);
   strip_tags(markup);
-  // TODO validate this potentially HTML text!
   append_to_tag_content("%s", bdata(markup));
   bdestroy(markup);
 } nowiki_close

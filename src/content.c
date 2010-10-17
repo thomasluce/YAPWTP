@@ -109,20 +109,72 @@ void strip_html_markup(bstring str) {
   bdestroy(replace);
 }
 
-// Validate whether or not a specific HTML tag is allowed.
-bool valid_html_tag(char *html_tag, size_t orig_len) {
+// Dan Bernstein's djb2 hash function
+unsigned long hash(char *str) {
+  unsigned long hash = 5381;
 
-  // Lookup table based on tag length
-  static const char valid_tags[HTML_MAX_LENGTH][HTML_MAX_TAG_ENTRIES][10] = {
-    [1]  { "b", "i", "p", "s" },
-    [2]  { "br", "dd", "dl", "dt", "em", "hr", "li", "ol", "td", "th", "tr", "tt", "ul" },
-    [3]  { "big", "del", "div", "ins", "pre", "sub", "sup" },
-    [4]  { "abbr", "cite", "code", "font", "span" },
-    [5]  { "small", "table" },
-    [6]  { "strong", "strike", "center" },
-    [7]  { "caption" },
-    [10] { "blockquote" }
-  };
+  while(*str!='\0') {
+    int c = *str;
+    /* hash = hash*33 + c */
+    hash = ((hash << 5) + hash) + c;
+    str++;
+  }
+  return hash;
+}
+
+// The value structure used in the below hash table
+struct hashed_tag {
+  char *key;             // The hash key
+  char *attributes[10];  // An array of allowed attributes
+  int size;              // The number of allowed attributes for this key
+};
+
+// This data structure is a pre-hashed table of allowed HTML tags
+// and each tag's corresponding allowed attributes.  These are also used for
+// validating attributes on wikitext equivalents of some of these tags
+// (e.g. tables).  The hashing algorithm is Dan Bernstein's % 512.
+static const struct hashed_tag tags_hash[455] = {
+  [7]   { "b",          { "id", "name" }, 2 },
+  [14]  { "i",          { "id", "name" }, 2 },
+  [21]  { "p",          { "id", "name" }, 2 },
+  [24]  { "s",          { "id", "name" }, 2 },
+  [31]  { "hr",         { "id", "name" }, 2 },
+  [47]  { "ins",        { "id", "name" }, 2 },
+  [60]  { "abbr",       { "id", "name" }, 2 },
+  [72]  { "div",        { "id", "name" }, 2 },
+  [94]  { "small",      { "id", "name" }, 2 },
+  [108] { "pre",        { "id", "name" }, 2 },
+  [119] { "span",       { "id", "name" }, 2 },
+  [128] { "code",       { "id", "name" }, 2 },
+  [134] { "center",     { "id", "name" }, 2 },
+  [141] { "table",      { "id", "name", "cellpadding", "border", "style", "width" }, 6 },
+  [154] { "li",         { "id", "name" }, 2 },
+  [158] { "blockquote", { "id", "name" }, 2 },
+  [211] { "caption",    { "id", "name" }, 2 },
+  [252] { "font",       { "id", "name" }, 2 },
+  [256] { "ol",         { "id", "name" }, 2 },
+  [266] { "cite",       { "id", "name" }, 2 },
+  [345] { "br",         { "id", "name" }, 2 },
+  [386] { "strong",     { "id", "name" }, 2 },
+  [397] { "dd",         { "id", "name" }, 2 },
+  [399] { "sub",        { "id", "name" }, 2 },
+  [405] { "dl",         { "id", "name" }, 2 },
+  [407] { "strike",     { "id", "name" }, 2 },
+  [413] { "dt",         { "id", "name" }, 2 },
+  [413] { "sup",        { "id", "name" }, 2 },
+  [413] { "td",         { "id", "name", "align", "style", "width" }, 5 },
+  [417] { "th",         { "id", "name", "align", "colspan", "style", "width" }, 6 },
+  [427] { "tr",         { "id", "name", "border", "style" }, 4 },
+  [429] { "tt",         { "id", "name" }, 2 },
+  [439] { "big",        { "id", "name" }, 2 },
+  [439] { "em",         { "id", "name" }, 2 },
+  [442] { "del",        { "id", "name" }, 2 },
+  [454] { "ul",         { "id", "name" }, 2 },
+};
+
+// Validate whether or not a specific HTML tag is allowed.
+// Only compares lower case, so process the text first as needed.
+bool valid_html_tag(char *html_tag, size_t orig_len) {
 
   char *tag = html_tag;
   int len = orig_len;
@@ -136,20 +188,10 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
     return false;
   }
 
-  // If there are no allowed tags this length
-  if(!valid_tags[len]) {
-    return false;
-  }
-
-  int i;
-  char c = tolower(tag[0]);
-  for(i = 0; i < HTML_MAX_TAG_ENTRIES; i++) {
-    if(tolower(valid_tags[len][i][0]) == c) { // Integer comparison on first character
-      if(!strncasecmp(tag, valid_tags[len][i], len)) {
-        return true;
-      }
-    }
-  }
+  int hashed_key = hash(tag) % 512;
+  if(tags_hash[hashed_key].key && !strncmp(tag, tags_hash[hashed_key].key, len)) {
+    return true;
+  } 
 
   return false;
 }
@@ -161,14 +203,22 @@ int validate_tag_attributes(struct node *item) {
   }
 
   btolower(item->name);
-  bstring name = bfromcstr("name");
-  bstring id = bfromcstr("id");
-  if((!bstrcmp(item->name, name)) || (!bstrcmp(item->name, id))) {
-    bformata(tag_attributes_validated, " %s=\"%s\"", bdata(item->name), bdata(item->content));
-  }
-  bdestroy(name);
-  bdestroy(id);
+  int hashed_key = hash(bdata(tag_name)) % 512;
 
-  //printf("%s: %s\n", bdata(item->name), bdata(item->content));
+  if(!tags_hash[hashed_key].key || (tags_hash[hashed_key].size < 1)) {
+    return 1;
+  }
+
+  int i;
+  for(i = 0; i < tags_hash[hashed_key].size; i++) {
+    // Do an integer compare on the first character first, then match the whole tag
+    if(tags_hash[hashed_key].attributes[i][0] == bdata(item->name)[0]) { 
+      if(!strncasecmp(bdata(item->name), tags_hash[hashed_key].attributes[i], item->name->slen)) {
+        bformata(tag_attributes_validated, " %s=\"%s\"", bdata(item->name), bdata(item->content));
+        return 1;
+      }
+    }
+  }
+
   return 1;
 }

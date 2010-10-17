@@ -131,7 +131,7 @@ if __FILE__ == $0
   parser = WikiParser.new
 
   # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
-  File.open("../wikiwiki/wiki-development/\?ContactList", "rb") do |f|
+  File.open("../spec/fixtures/cnn.com", "rb") do |f|
     parser.html_from_string(f.read)
     puts "# Templates: #{parser.get_template_count}"
     puts "-" * 78;
