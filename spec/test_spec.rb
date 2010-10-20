@@ -479,6 +479,15 @@ dolor sit amet.
 ! heading 2
 |}")
       end
+
+    describe "cells" do
+      it "should allow attributes for cells at the beginning of a line" do
+        parse('{| border="1"
+                |Orange
+                |align="right" | Apple
+                |}'.gsub(/^ */, '')).should include("<td align=\"right\">Apple</td>")
+      end
+    end
     end
 
     # TODO: single-pipe separaters for a format modifier

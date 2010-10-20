@@ -187,6 +187,17 @@ void append_to_tag_content(char *fmt, ...) {
   bvformata(ret, tag_content, fmt, fmt);
 }
 
+void init_tag_vars(void) {
+  // Initialize variables used in html tag processing
+  btrunc(tag_name, 0);
+  btrunc(tag_attribute, 0);
+  btrunc(tag_attributes_validated, 0);
+  if(tag_attributes_list.size > 0) {
+    list_free(&tag_attributes_list);
+    list_init(&tag_attributes_list);
+  }
+}
+
 %}
 
 # High-level
@@ -430,23 +441,35 @@ simple_header = &{start_of_line} '!' space* { bprintf("<th>"); }
   { bprintf("</th>"); }
 
 table_cell = ( sol_cell | inline_cell )
-#cell_attribute_list = ( space ( tag_attribute | tag_junk ) )+
-#cell_attribute = tag_attribute_name '=' tag_attribute_value
-#cell_attribute_name = < ( !'=' . )+ > {
-#  btrunc(tag_attribute, 0);
-#  bcatcstr(tag_attribute, yytext);
-#}
-#cell_attribute_value = '"' < ( !tag_close !['"] . )+ > '"' {
-#  struct node *node = list_append_new(&tag_attributes_list);
-#  bconcat(node->name, tag_attribute);
-#  bcatcstr(node->content, yytext);
-#}
+cell_attribute_list = ( ( cell_attribute | cell_junk ) space* )+ {
+  list_iterate(tag_attributes_list.head->next, validate_tag_attributes);
+  bprintf("%s>", bdata(tag_attributes_validated));
+}
+cell_attribute = cell_attribute_name '=' cell_attribute_value
+cell_attribute_name = < ( !eol !table_delims !'=' . )+ > {
+  btrunc(tag_attribute, 0);
+  bcatcstr(tag_attribute, yytext);
+}
+cell_attribute_value = '"' < ( !table_delims !['"] . )+ > '"' {
+  struct node *node = list_append_new(&tag_attributes_list);
+  bconcat(node->name, tag_attribute);
+  bcatcstr(node->content, yytext);
+}
+cell_junk = < ( !( &table_delims ) !eol !'|' . )+ >
+
 # -- start of line cell
-sol_cell = ( sol_cell_simple | sol_cell_complex )
-sol_cell_open = &{start_of_line} '|' !table_specials space* { bprintf("<td>"); }
-sol_cell_close = &table_delims { brtrimws(output_buffer); bprintf("</td>"); }
-sol_cell_simple  = sol_cell_open ( !table_delims wikitext )* sol_cell_close
-sol_cell_complex = sol_cell_open ( !table_delims wikitext )* sol_cell_close
+sol_cell = ( sol_cell_complex | sol_cell_simple )
+sol_cell_open = &{start_of_line} '|' !table_specials { 
+  init_tag_vars(); 
+  bcatcstr(tag_name, "td");
+  // TODO bare cells can end up with no tr when they don't have one explicitly in the wikitext
+  bprintf("<td"); }
+sol_cell_close = &table_delims { 
+  brtrimws(output_buffer); 
+  bprintf("</td>"); 
+}
+sol_cell_complex = sol_cell_open cell_attribute_list space* '|' !'|' space* ( !table_delims wikitext )* sol_cell_close 
+sol_cell_simple  = sol_cell_open space* { bprintf(">"); } ( !table_delims wikitext )* sol_cell_close
 # -- inline cell
 inline_cell = '||' space* { bprintf("<td>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</td>"); }
 
@@ -478,16 +501,7 @@ toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-throu
 
 # HTML markup
 html = tag_open tag tag_attributes_list? tag_close
-tag_open = '<' {
-  // Initialize variables used in html tag processing
-  btrunc(tag_name, 0);
-  btrunc(tag_attribute, 0);
-  btrunc(tag_attributes_validated, 0);
-  if(tag_attributes_list.size > 0) {
-    list_free(&tag_attributes_list);
-    list_init(&tag_attributes_list);
-  }
-}
+tag_open = '<' { init_tag_vars(); }
 tag = < '/'? ( !tag_close !space . )+ > { bcatcstr(tag_name, yytext); }
 tag_attributes_list = ( space ( tag_attribute | tag_junk ) )+
 tag_attribute = tag_attribute_name '=' tag_attribute_value
