@@ -213,6 +213,7 @@ space = [\t ]
 # Headings
 heading = heading_marker {
     char tag[4];
+    bprintf("\n  ");
     sprintf(tag, "h%d", current_header_level);
     open_tag(tag, NULL);
   } space* heading_text heading_marker space* ( eol | eof )
@@ -228,13 +229,14 @@ heading = heading_marker {
     char tag[4];
     sprintf(tag, "h%d", current_header_level);
     close_tag(tag);
+    bprintf("\n");
 
     struct node *current = list_append_new(&toc_list);
 
     tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
     urlencode(tmp);
-    bprintf("<a name=\"%s\"></a>", bdata(tmp));
+    bprintf("  <a name=\"%s\"></a>\n", bdata(tmp));
     bassign(current->name, tmp);
 
     bstring human_name = bstrcpy(tag_content);
@@ -253,8 +255,8 @@ heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* >
 heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
 
 # Paragraph
-paragraph = wikitext eol eol { bprintf("</p><p>"); }
-horizontal_line = "----" ( eol | eof )  { bprintf("<hr/>"); }
+paragraph = wikitext eol eol { bprintf("</p>\n<p>"); }
+horizontal_line = "----" ( eol | eof )  { bprintf("<hr/>\n"); }
 
 # Indentation
 indentation = &{ start_of_line } ':' { bprintf("&nbsp;&nbsp;"); } wikitext
