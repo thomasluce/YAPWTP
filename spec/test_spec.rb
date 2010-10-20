@@ -82,10 +82,6 @@ describe "Wikitext parser" do
       parse("----").strip.should =~ /<hr\/>/
     end
 
-    it "should be able to indent lines" do
-      parse(":text").strip.should include("&nbsp;&nbsp;text")
-    end
-
     it "should not get confused with colons in the middle of a line" do
       parse("* ''Unordered lists'' are easy to do:\n** Start every line with a star.").should_not include '**'
     end
@@ -119,6 +115,14 @@ describe "Wikitext parser" do
 
     it "should be able to nest numbered lists" do
       parse("# test\n#test2\n## nested").should == '<p><ol><li>test</li><li>test2</li><ol><li>nested</li></ol></ol></p>'
+    end
+
+    it "should be able to make definition lists/indented lists" do
+      parse(":text").strip.should == "<p><dl><dd>text</dd></dl></p>"
+    end
+
+    it "should be able to nest definition lists" do
+      parse(":text\n::text").strip.should == "<p><dl><dd>text</dd><dl><dd>text</dd></dl></dl></p>"
     end
 
     it "should process other wiki text inside of list items" do

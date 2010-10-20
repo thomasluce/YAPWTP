@@ -29,8 +29,9 @@
 #define YY_INPUT(buf, result, max_size) handle_input(buf, &result, max_size)
 
 int current_header_level = 0;
-int current_bullet_list_level;
-int current_numbered_list_level;
+int current_bullet_list_level = 0;
+int current_numbered_list_level = 0;
+int current_definition_list_level = 0;
 
 int start_of_line = 1;
 char protocol[5];
@@ -203,7 +204,7 @@ void init_tag_vars(void) {
 # High-level
 page =  pre_block | wikitext_line | wikitext
 wikitext_line = paragraph | horizontal_line
-wikitext = nowiki | html | table_of_contents | template | heading | indentation | list | formatting | image | link | table | anything_else | eol { append_to_tag_content("%c", '\n'); }
+wikitext = nowiki | html | table_of_contents | template | heading | list | formatting | image | link | table | anything_else | eol { append_to_tag_content("%c", '\n'); }
 
 # Generally useful rules
 eol = '\r'? '\n' { start_of_line = 1; }
@@ -258,11 +259,8 @@ heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_lev
 paragraph = wikitext eol eol { bprintf("</p>\n<p>"); }
 horizontal_line = "----" ( eol | eof )  { bprintf("<hr/>\n"); }
 
-# Indentation
-indentation = &{ start_of_line } ':' { bprintf("&nbsp;&nbsp;"); } wikitext
-
 # Lists
-list = &{ start_of_line } ( bullet_list | numbered_list )
+list = &{ start_of_line } ( bullet_list | numbered_list | definition_list )
 list_text = ( !eol ( < [*#:] > { bprintf("%s", yytext); } | wikitext ) )*
 
 # Bullet list
@@ -281,6 +279,25 @@ bullet = < '*'+ > {
   }
   current_bullet_list_level = yyleng;
   bprintf("<li>");
+  start_of_line = 0;
+}
+
+# Definition list (Indentation)
+definition_list = { bprintf("<dl>"); } definition_list_entry+ {
+  while((current_definition_list_level > 0) && current_definition_list_level--) {
+    bprintf("</dl>");
+  }
+}
+definition_list_entry = definition space*  list_text ( eol | eof ) { bprintf("</dd>"); }
+definition = < ':'+ > {
+  while((current_definition_list_level < yyleng) && current_definition_list_level++) {
+      bprintf("<dl>");
+  }
+  while((current_definition_list_level > yyleng) && current_definition_list_level--) {
+      bprintf("</dl>");
+  }
+  current_definition_list_level = yyleng;
+  bprintf("<dd>");
   start_of_line = 0;
 }
 
@@ -587,6 +604,11 @@ void init(void) {
   input_buffer_pos = 0;
   template_list_iter = NULL;
   tr_found = 0;
+
+  current_header_level = 0;
+  current_bullet_list_level = 0;
+  current_numbered_list_level = 0;
+  current_definition_list_level = 0;
 
   list_init(&toc_list);
   list_init(&tag_attributes_list);
