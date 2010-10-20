@@ -133,7 +133,7 @@ struct hashed_tag {
 // and each tag's corresponding allowed attributes.  These are also used for
 // validating attributes on wikitext equivalents of some of these tags
 // (e.g. tables).  The hashing algorithm is Dan Bernstein's % 512.
-static const struct hashed_tag tags_hash[455] = {
+static const struct hashed_tag tags_hash[512] = {
   [7]   { "b",          { "id", "name" }, 2 },
   [14]  { "i",          { "id", "name" }, 2 },
   [21]  { "p",          { "id", "name" }, 2 },
