@@ -16,7 +16,7 @@ void bprintf(const char *fmt, ...) {
 void handle_input(char *buf, int *result, size_t max_size) {
   if(input_buffer_pos > input_buffer->slen) {
     *result = 0;
-	return;
+    return;
   }
   *buf = input_buffer->data[input_buffer_pos++];
   *result = 1;
@@ -44,10 +44,10 @@ void stdin_get_contents(bstring buffer) {
   while(EOF != (c = getchar())) {
     if(buffer->slen == buffer->mlen) {
       balloc(buffer, buffer->mlen * 2); // Just double the buffer
-	  buffer->mlen = buffer->mlen * 2;
-	}
+      buffer->mlen = buffer->mlen * 2;
+    }
     buffer->data[buffer->slen] = c;
-	buffer->slen++;
+    buffer->slen++;
   }
   buffer->slen--; // Move the pointer back on the very last pass
 }

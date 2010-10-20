@@ -86,6 +86,10 @@ describe "Wikitext parser" do
       parse(":text").strip.should include("&nbsp;&nbsp;text")
     end
 
+    it "should not get confused with colons in the middle of a line" do
+      parse("* ''Unordered lists'' are easy to do:\n** Start every line with a star.").should_not include '**'
+    end
+
     it "should not make shitty paragraphs" do
       parse("paragraph 1\n\nparagraph 2").should == "<p>paragraph 1</p><p>paragraph 2</p>"
     end

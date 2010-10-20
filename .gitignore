@@ -5,3 +5,5 @@ syntax.leg.c
 *.o
 *.so
 *.a
+tags/
+wiki/
