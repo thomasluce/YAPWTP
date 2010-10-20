@@ -187,8 +187,8 @@ void append_to_tag_content(char *fmt, ...) {
   bvformata(ret, tag_content, fmt, fmt);
 }
 
+// Initialize variables used in html tag processing
 void init_tag_vars(void) {
-  // Initialize variables used in html tag processing
   btrunc(tag_name, 0);
   btrunc(tag_attribute, 0);
   btrunc(tag_attributes_validated, 0);
@@ -283,7 +283,11 @@ bullet = < '*'+ > {
 }
 
 # Numbered list
-numbered_list = { bprintf("<ol>"); } numbered_list_entry+ { while(current_numbered_list_level--) { bprintf("</ol>"); } }
+numbered_list = { bprintf("<ol>"); } numbered_list_entry+ { 
+  while((current_numbered_list_level > 0) && current_numbered_list_level--) { 
+    bprintf("</ol>"); 
+  } 
+}
 numbered_list_entry = numbered space* list_text eol? { bprintf("</li>"); }
 numbered = < '#'+ > {
   while((current_numbered_list_level < yyleng) && current_numbered_list_level++) {
