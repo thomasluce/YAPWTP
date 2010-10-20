@@ -18,4 +18,5 @@ void urlencode(bstring b);
 void strip_html_markup(bstring str);
 bool valid_html_tag(char *html_tag, size_t orig_len);
 int validate_tag_attributes(struct node *item);
+unsigned long hash(char *str);
 #endif

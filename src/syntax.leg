@@ -493,7 +493,7 @@ template_close = '}}' {
   start_of_line = 0;
   if(PRESERVE_TEMPLATES) {
     // Some bug in leg prevents using braces here or even in this comment
-    bprintf("__%s__", bdata(template_list.tail->name));
+    bprintf("__%s_%ld__", bdata(template_list.tail->name), hash(bdata(template_list.tail->content)));
   }
 }
 

@@ -498,8 +498,8 @@ dolor sit amet.
   end
 
   describe "templates" do
-    it "should replace all template content with __name__" do
-      parse('{{template}}').should == '<p>__template__</p>'
+    it "should replace all template content with __name_hash__" do
+      parse('{{template}}').should == '<p>__template_5381__</p>'
     end
   end
 
