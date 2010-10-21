@@ -209,7 +209,7 @@ int validate_tag_attributes(struct node *item) {
     return 1;
   }
 
-  //printf("--%s: %s--\n", bdata(item->name), bdata(item->content));
+  //printf("--%s--%s: %s--\n", bdata(tag_name), bdata(item->name), bdata(item->content));
 
   int i;
   for(i = 0; i < tags_hash[hashed_key].size; i++) {

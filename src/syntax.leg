@@ -445,12 +445,16 @@ table_open = '{|' space* < ( !table_delims !eol . )* > {
     bprintf(">"); 
   }
 }
+# -- caption
 table_caption = '|+' space* { bprintf("<caption>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</caption>"); }
+
+# -- row
 table_row = row_open ( simple_row | complex_row )
 row_open = '|-' space* { tr_found = 1; bprintf("<tr");  }
 simple_row = [ \t]* eol { bprintf(">"); } ( table_headers | table_cell )* { bprintf("</tr>"); }
 complex_row = < ( !eol . )* > eol { bprintf(" %s>", yytext); } ( table_headers | table_cell )* { bprintf("</tr>"); }
 
+# -- headers
 table_headers = {
   if(!tr_found) { bprintf("<tr>"); } 
 } ( complex_header | simple_header )+ {
@@ -463,6 +467,7 @@ simple_header = &{start_of_line} '!' space* { bprintf("<th>"); }
   ( !eol !table_delims wikitext )+ ( eol | &table_delims ) 
   { bprintf("</th>"); }
 
+# -- cells
 table_cell = ( sol_cell | inline_cell )
 cell_attribute_list = ( ( cell_attribute | cell_junk ) space* )+ {
   list_iterate(tag_attributes_list.head->next, validate_tag_attributes);
@@ -477,8 +482,14 @@ cell_attribute_value = '"' < ( !table_delims !['"] . )+ > '"' {
   struct node *node = list_append_new(&tag_attributes_list);
   bconcat(node->name, tag_attribute);
   bcatcstr(node->content, yytext);
+  btrimws(node->name);
+  btrimws(node->content);
 }
 cell_junk = < ( !( &table_delims ) !eol !'|' . )+ >
+cell_close = &table_delims { 
+  brtrimws(output_buffer); 
+  bprintf("</td>"); 
+}
 
 # -- start of line cell
 sol_cell = ( sol_cell_complex | sol_cell_simple )
@@ -486,15 +497,20 @@ sol_cell_open = &{start_of_line} '|' !table_specials {
   init_tag_vars(); 
   bcatcstr(tag_name, "td");
   // TODO bare cells can end up with no tr when they don't have one explicitly in the wikitext
-  bprintf("<td"); }
-sol_cell_close = &table_delims { 
-  brtrimws(output_buffer); 
-  bprintf("</td>"); 
+  bprintf("<td"); 
 }
-sol_cell_complex = sol_cell_open cell_attribute_list space* '|' !'|' space* ( !table_delims wikitext )* sol_cell_close 
-sol_cell_simple  = sol_cell_open space* { bprintf(">"); } ( !table_delims wikitext )* sol_cell_close
+sol_cell_complex = sol_cell_open cell_attribute_list space* '|' !'|' space* ( !table_delims wikitext )* cell_close 
+sol_cell_simple  = sol_cell_open space* { bprintf(">"); } ( !table_delims wikitext )* cell_close
+
 # -- inline cell
-inline_cell = '||' space* { bprintf("<td>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</td>"); }
+inline_cell = ( inline_cell_complex | inline_cell_simple ) 
+inline_cell_open = '||' { 
+  init_tag_vars();
+  bcatcstr(tag_name, "td");
+  bprintf("<td"); 
+}
+inline_cell_complex = inline_cell_open cell_attribute_list space* '|' !'|' space* ( !table_delims wikitext )* cell_close
+inline_cell_simple = inline_cell_open space* { bprintf(">"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</td>"); }
 
 table_close = '|}' { brtrimws(output_buffer); bprintf("</table>"); }
 
@@ -536,6 +552,8 @@ tag_attribute_value = '"' < ( !tag_close !['"] . )+ > '"' {
   struct node *node = list_append_new(&tag_attributes_list);
   bconcat(node->name, tag_attribute);
   bcatcstr(node->content, yytext);
+  btrimws(node->name);
+  btrimws(node->content);
 }
 tag_junk = < ( !tag_close . )+ >
 tag_close = ( space* '/'? '>' ) {
