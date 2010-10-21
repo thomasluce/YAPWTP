@@ -1,25 +1,25 @@
-#include <stdio.h>
+#include "stack.h"
 #include <stdlib.h>
-
-#define STACK_MAX_SIZE 50
-
-typedef struct stack {
-  void **stack;
-  int pos;
-} stack;
+#include <stdio.h>
 
 void stack_init(stack *s) {
-  s = malloc(sizeof(stack));
-  s->stack = malloc(STACK_MAX_SIZE * sizeof(s->stack));
+  s->stack = malloc(STACK_DEFAULT_SIZE * sizeof(void*));
   s->pos = 0;
+  s->mlen = STACK_DEFAULT_SIZE;
 }
 
-void stack_free(stack *stack) {
-  if(!stack) return;
-  if(!stack->stack) return;
+void stack_free(stack *s) {
+  if(!s) return;
+  if(!s->stack) return;
 
-  free(stack->stack);
-  free(stack);
+  free(s->stack);
+}
+
+void *stack_grow(stack *s) {
+  void *junk;   // So we don't whack s->stack on failure
+  s->mlen *= 2; // Double it
+  junk = realloc(s->stack, sizeof(void *) * s->mlen);
+  return junk;
 }
 
 int push(stack *s, void *item) {
@@ -27,8 +27,11 @@ int push(stack *s, void *item) {
     fprintf(stderr, "Bad stack passed to push()\n");
 	return -1;
   }
-  if(s->pos >= STACK_MAX_SIZE) return -1;
   if(!item) return -1;
+  if(s->pos >= s->mlen && !stack_grow(s)) {
+    fprintf(stderr, "Realloc failed\n"); 
+    return -1;
+  }
 
   s->stack[s->pos] = item;
   return ++s->pos;
@@ -39,25 +42,8 @@ void *pop(stack *s) {
     fprintf(stderr, "Bad stack passed to pop()\n");
 	return NULL;
   }
-  if(s->pos > STACK_MAX_SIZE) return NULL;
+  if(s->pos > s->mlen) return NULL;
+  if(s->pos - 1 < 0) return NULL;
 
-  return s->stack[s->pos--];
-}
-
-int main(void) {
-  long i;
-  stack *m;
-
-  stack_init(m);
-
-  for(i = 0; i < 50; i++) {
-    printf("--%ld\n", i);
-  	push(m, (void *)i);
-  }
-
-  for(i = 49; i >= 0; i--) {
-    printf("%ld\n", (long int)pop(m));
-  }
-
-  stack_free(m);
+  return s->stack[--s->pos];
 }

@@ -215,7 +215,8 @@ int validate_tag_attributes(struct node *item) {
   for(i = 0; i < tags_hash[hashed_key].size; i++) {
     // Do an integer compare on the first character first, then match the whole tag
     if(tags_hash[hashed_key].attributes[i][0] == bdata(item->name)[0]) { 
-      if(!strncasecmp(bdata(item->name), tags_hash[hashed_key].attributes[i], item->name->slen)) {
+      // Warnings are b/c of: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=17308
+      if(bdata(item->name) && !strncmp(bdata(item->name), tags_hash[hashed_key].attributes[i], item->name->slen)) {
         bformata(tag_attributes_validated, " %s=\"%s\"", bdata(item->name), bdata(item->content));
         return 1;
       }
