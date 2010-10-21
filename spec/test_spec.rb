@@ -361,67 +361,70 @@ describe "Wikitext parser" do
         |}".gsub(/^ */, '')).should == "<p><table><caption>caption</caption><tr></tr></table></p>"
     end
 
-    it "should be able to do simple rows" do
-      parse("{|
-        |-
-        | cell one
-        |}".gsub(/^ */, "")).should == "<p><table><tr><td>cell one</td></tr></table></p>"
-    end
+    describe "rows" do
+      it "should be able to do simple rows" do
+        parse("{|
+          |-
+          | cell one
+          |}".gsub(/^ */, "")).should == "<p><table><tr><td>cell one</td></tr></table></p>"
+      end
+  
+      it "should be able to do single-line rows" do
+        parse("{|
+          |-
+          | Cell one || Cell two
+          |}".gsub(/^ */, "")).should == "<p><table><tr><td>Cell one</td><td>Cell two</td></tr></table></p>"
+      end
+  
+      it "should be able to do a few rows" do
+        parse("{|
+          |+ Caption
+          |-
+          | cell || cell
+          |-
+          | cell
+          | cell
+          |}".gsub(/^ */, '')).should == "<p><table><caption>Caption</caption><tr><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
+      end
 
-    it "should be able to do single-line rows" do
-      parse("{|
-        |-
-        | Cell one || Cell two
-        |}".gsub(/^ */, "")).should == "<p><table><tr><td>Cell one</td><td>Cell two</td></tr></table></p>"
-    end
-
-    it "should be able to do a few rows" do
-      parse("{|
-        |+ Caption
-        |-
-        | cell || cell
-        |-
-        | cell
-        | cell
-        |}".gsub(/^ */, '')).should == "<p><table><caption>Caption</caption><tr><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
-    end
+      it "should not require a row delimiter on the first row" do
+        parse("{|
+          |Orange||Apple||more
+          |-
+          |Bread||Pie||more
+          |-
+          |Butter||Ice<br />cream||and<br />more
+          |}
+          ".gsub(/^ */, '')).should_not include("{|")
+      end
+	end
 
     it "should handle ugly input text" do
       parse("{|
-|-
-|cell1||cell2   || cell3
-|}").should == "<p><table><tr><td>cell1</td><td>cell2</td><td>cell3</td></tr></table></p>"
+        |-
+        |cell1||cell2   || cell3
+        |}".gsub(/^ */,'')).should == "<p><table><tr><td>cell1</td><td>cell2</td><td>cell3</td></tr></table></p>"
     end
 
-    it "should not require a row delimiter on the first row" do
-      parse("{|
-|Orange||Apple||more
-|-
-|Bread||Pie||more
-|-
-|Butter||Ice<br />cream||and<br />more
-|}
-").should_not include("{|")
-    end
 
     it "should support full wikitext markup in table cells even with line feeds" do
       text = parse("{|
-|Lorem ipsum dolor sit amet, 
-consetetur sadipscing elitr, 
-sed diam nonumy eirmod tempor invidunt
-ut labore et dolore magna aliquyam erat, 
-sed diam voluptua. 
-
-At vero eos et accusam et justo duo dolores
-et ea rebum. Stet clita kasd gubergren,
-no sea takimata sanctus est Lorem ipsum
-dolor sit amet. 
-|
-* Lorem ipsum dolor sit amet
-* consetetur sadipscing elitr
-* sed diam nonumy eirmod tempor invidunt
-|}
-")
+       |Lorem ipsum dolor sit amet, 
+       consetetur sadipscing elitr, 
+       sed diam nonumy eirmod tempor invidunt
+       ut labore et dolore magna aliquyam erat, 
+       sed diam voluptua. 
+       
+       At vero eos et accusam et justo duo dolores
+       et ea rebum. Stet clita kasd gubergren,
+       no sea takimata sanctus est Lorem ipsum
+       dolor sit amet. 
+       |
+       * Lorem ipsum dolor sit amet
+       * consetetur sadipscing elitr
+       * sed diam nonumy eirmod tempor invidunt
+       |}
+       ".gsub(/^ */,''))
       text.should include("<ul><li>")
       text.should_not include("{|")
       text.should_not include("|}")
@@ -468,16 +471,16 @@ dolor sit amet.
 
       it "should be able to do headers part-way down as well" do
         parse("{|
-|+ Caption
-! scope=\"col\" | column heading 1
-! scope=\"col\" | column heading 2
-|-
-! scope=\"row\" | row heading
-| cell || cell
-|-
-| cell
-| cell
-|}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><th scope=\"row\">row heading</th><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
+                |+ Caption
+                ! scope=\"col\" | column heading 1
+                ! scope=\"col\" | column heading 2
+                |-
+                ! scope=\"row\" | row heading
+                | cell || cell
+                |-
+                | cell
+                | cell
+                |}".gsub(/^ */,'')).should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><th scope=\"row\">row heading</th><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
       end
 
       it "should be able to do headers even with a first row defined" do
@@ -488,14 +491,24 @@ dolor sit amet.
 |}")
       end
 
-    describe "cells" do
-      it "should allow attributes for cells at the beginning of a line" do
-        parse('{| border="1"
-                |Orange
-                |align="right" | Apple
-                |}'.gsub(/^ */, '')).should include("<td align=\"right\">Apple</td>")
+      describe "cells" do
+        it "should allow attributes for cells at the beginning of a line" do
+          parse('{| border="1"
+                  |Orange
+                  |align="right" | Apple
+                  |}'.gsub(/^ */, '')).should include("<td align=\"right\">Apple</td>")
+        end
+  
+  	    it "should allow attributes on cells that are inlined" do
+          parse('{| border="1"
+                  | Orange || Apple     || align="right" | 12,333.00
+                  |-
+                  | Bread  || Pie       || align="right" | 500.00
+                  |-
+                  | Butter || Ice cream || align="right" | 1.00
+                  |}'.gsub(/^ */,'')).scan("<td align=\"right\">").size.should == 3;
+  	    end
       end
-    end
     end
 
     # TODO: single-pipe separaters for a format modifier
