@@ -9,6 +9,7 @@ void list_init(struct list *list) {
   }
   list->head = node_alloc();
   list->tail = list->head;
+  list->size = 0;
 }
 
 struct node *node_alloc() {
