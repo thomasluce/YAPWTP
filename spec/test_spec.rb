@@ -122,7 +122,7 @@ describe "Wikitext parser" do
     end
 
     it "should be able to nest definition lists" do
-      parse(":text\n::text").strip.should == "<p><dl><dd>text</dd><dl><dd>text</dd></dl></dl></p>"
+      parse(":text\n::text").strip.should == "<p><dl><dd>text<dl><dd>text</dd></dl></dd></dl></p>"
     end
 
     it "should process other wiki text inside of list items" do
