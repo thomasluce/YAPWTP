@@ -285,10 +285,11 @@ bullet = < '*'+ > {
 # Definition list (Indentation)
 definition_list = { bprintf("<dl>"); } definition_list_entry+ {
   while((current_definition_list_level > 0) && current_definition_list_level--) {
+    bprintf("</dd>");
     bprintf("</dl>");
   }
 }
-definition_list_entry = definition space*  list_text ( eol | eof ) { bprintf("</dd>"); }
+definition_list_entry = definition space*  list_text ( eol | eof ) 
 definition = < ':'+ > {
   while((current_definition_list_level < yyleng) && current_definition_list_level++) {
       bprintf("<dl>");
