@@ -63,7 +63,7 @@ void list_free(struct list *list) {
 }
 
 int node_print(struct node *item) {
-  printf("%s: %s, %d\n", bdata(item->name), bdata(item->content), item->level);
+  printf("%s: %s, %ld\n", bdata(item->name), bdata(item->content), item->level);
   return 1;
 }
 

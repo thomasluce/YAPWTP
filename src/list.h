@@ -4,7 +4,7 @@
 struct node {
   bstring name;
   bstring content;
-  int level;
+  long level;
   struct node *next;
 };
 
