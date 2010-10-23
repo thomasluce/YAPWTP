@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include "bstrlib.h"
 #include "list.h"
 #include "content.h"
@@ -558,7 +559,7 @@ template_close = '}}' {
   }
   if(PRESERVE_TEMPLATES) {
     // Some bug in leg prevents using braces here or even in this comment
-    bprintf("__%s_%llu__", bdata(template_list.tail->name), hash(bdata(template_list.tail->content)));
+    bprintf("__%s_%"PRIu64"__", bdata(template_list.tail->name), hash(bdata(template_list.tail->content)));
   }
 }
 

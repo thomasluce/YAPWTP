@@ -211,13 +211,16 @@ int validate_tag_attributes(struct node *item) {
 
   //printf("--%s--%s: %s--\n", bdata(tag_name), bdata(item->name), bdata(item->content));
 
+  // The purpose of this is just to make GCC shut up about non-null arguments to strcmp
+  char *item_name;
+  if(item && item->name) item_name = bdata(item->name);
+
   int i;
   for(i = 0; i < tags_hash[hashed_key].size; i++) {
     // Do an integer compare on the first character first, then match the whole tag
     if(tags_hash[hashed_key].attributes[i][0] == bdata(item->name)[0]) { 
-      // Warnings are b/c of: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=17308
-      if(bdata(item->name) && !strncmp(bdata(item->name), tags_hash[hashed_key].attributes[i], item->name->slen)) {
-        bformata(tag_attributes_validated, " %s=\"%s\"", bdata(item->name), bdata(item->content));
+      if(item_name && !strncmp(item_name, tags_hash[hashed_key].attributes[i], item->name->slen)) {
+        bformata(tag_attributes_validated, " %s=\"%s\"", item_name, bdata(item->content));
         return 1;
       }
     }
