@@ -524,6 +524,7 @@ template_name = < ( !template_close !'|' . )* > {
 }
 template_content = '|' space* < ( !template_close . )+ > {
   bcatcstr(template_list.tail->content, yytext);
+  template_list.tail->level = hash(yytext);
 }
 template_close = '}}' {
   start_of_line = 0;
