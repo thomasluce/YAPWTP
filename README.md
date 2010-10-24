@@ -9,3 +9,21 @@ this implementation are intended to be speed and memory footprint.
 
 At the moment a 100 line wikitext file with fairly complex markup
 can be parsed in 5-6ms on a one year old Apple MacBook Pro.
+
+Simplest Ruby Example with Templates
+------------------------------------
+    require "yapwtp"
+    
+    parser = WikiParser.new
+    
+    # Open the requested file, parse, capture text and templates
+    wikitext = parser.html_from_file("cnn.com.wt")
+    templates = parser.templates
+    
+    templates.each do |template|
+      template_file = File.join("templates", template[:name]) 
+      if File.exist? template_file
+        wikitext.gsub! /#{template[:replace_tag]}/, parser.html_from_file(template_file)
+      end
+    end
+    puts wikitext
