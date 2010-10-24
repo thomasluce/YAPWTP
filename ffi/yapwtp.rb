@@ -6,7 +6,7 @@ require 'ffi'
 class Node < FFI::Struct
   layout :name, :pointer,
          :content, :pointer,
-         :level, :int,
+         :level, :ulong,
          :next, :pointer # This is a pointer to a Node... Don't know how to do that yet...
 end
 
@@ -60,17 +60,20 @@ class WikiParser
   def initialize
     init
     @dirty = false
+    @output = nil
+    @templates = nil
+  end
+
+  def reset
+    cleanup
+    initialize
   end
 
   def self.release(ptr)
     cleanup
   end
 
-  def reset
-    cleanup
-    init
-  end
-
+  private
   def next_template
     return {} if !@dirty
     t = get_next_template
@@ -83,15 +86,20 @@ class WikiParser
     c = String.new(content) 
     BString.bcstrfree(name)
     BString.bcstrfree(content)
-    return { :name => n, :content => c }
+    return { :name => n, 
+             :content => c, 
+             :hash => template[:level],
+             :replace_tag => "__#{n}_#{template[:level]}__"  
+           }
   end
 
+  public
   def parsed_text
     if @dirty
-      return @output ||= String.new(get_output_buffer_cstr)
+      @output ||= String.new(get_output_buffer_cstr)
+    else
+      nil
     end
-
-    ""
   end
 
   def html_from_string source
@@ -125,21 +133,12 @@ class WikiParser
       yield template
     end
   end
-end
 
-if __FILE__ == $0
-  parser = WikiParser.new
-
-  # Example using Ruby to read a file.  Using the above C-implemented methods is barely faster.
-  File.open("../spec/fixtures/cnn.com", "rb") do |f|
-    parser.html_from_string(f.read)
-    puts "# Templates: #{parser.get_template_count}"
-    puts "-" * 78;
-    parser.each_template do |template|
-      puts "#{template[:name]} = #{template[:content]}"
-      puts "-" * 78;
-    end
-    puts parser.parsed_text
+  def templates
+    return @templates if @templates
+    @templates = []
+    each_template { |t| @templates << t }
+    return @templates
   end
-
 end
+
