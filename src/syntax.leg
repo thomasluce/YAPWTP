@@ -528,6 +528,10 @@ template_content = '|' space* < ( !template_close . )+ > {
 }
 template_close = '}}' {
   start_of_line = 0;
+  if(template_list.tail->level == 0) {
+    // Cover cases where the teamplate has no arguments
+    template_list.tail->level = hash("");
+  }
   if(PRESERVE_TEMPLATES) {
     // Some bug in leg prevents using braces here or even in this comment
     bprintf("__%s_%lu__", bdata(template_list.tail->name), hash(bdata(template_list.tail->content)));
