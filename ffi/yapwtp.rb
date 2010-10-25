@@ -90,8 +90,8 @@ class WikiParser
     BString.bcstrfree(content)
     return { :name => n, 
              :content => c, 
-             :hash => template[:level],
-             :replace_tag => "__#{n}_#{template[:level]}__"  
+             :hash => template[:level] + 0,
+             :replace_tag => "__#{n}_#{template[:level] + 0}__"
            }
   end
 
