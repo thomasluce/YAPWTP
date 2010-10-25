@@ -3,6 +3,7 @@
 #define __CONTENT_H
 #include "bstrlib.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 // Number of entries on one line of the valid tag lookup table
 #define HTML_MAX_TAG_ENTRIES 13
@@ -18,5 +19,5 @@ void urlencode(bstring b);
 void strip_html_markup(bstring str);
 bool valid_html_tag(char *html_tag, size_t orig_len);
 int validate_tag_attributes(struct node *item);
-unsigned long long hash(char *str);
+uint64_t hash(char *str);
 #endif
