@@ -110,8 +110,8 @@ void strip_html_markup(bstring str) {
 }
 
 // Dan Bernstein's djb2 hash function
-unsigned long hash(char *str) {
-  unsigned long hash = 5381;
+unsigned long long hash(char *str) {
+  long long hash = 5381;
 
   while(*str!='\0') {
     int c = *str;
