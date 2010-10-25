@@ -10,7 +10,7 @@ File.open("#{base_path}/../spec/fixtures/cnn.com", "rb") do |f|
   puts "# Templates: #{parser.get_template_count}"
   puts "-" * 78;
   parser.each_template do |template|
-    puts "#{template[:name]} = #{template[:content]}"
+    puts "#{template[:name]} (#{template[:replace_tag]}) = #{template[:content]}"
     puts "-" * 78;
   end
   puts parser.parsed_text

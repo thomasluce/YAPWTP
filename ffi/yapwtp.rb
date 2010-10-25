@@ -6,7 +6,7 @@ require 'ffi'
 class Node < FFI::Struct
   layout :name, :pointer,
          :content, :pointer,
-         :level, :ulong,
+         :level, :uint64,
          :next, :pointer # This is a pointer to a Node... Don't know how to do that yet...
 end
 

@@ -1,10 +1,12 @@
 
 #ifndef __LIST_H
 #define __LIST_H
+#include <stdint.h>
+
 struct node {
   bstring name;
   bstring content;
-  long long level;
+  uint64_t level;
   struct node *next;
 };
 

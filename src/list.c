@@ -1,4 +1,5 @@
 #include "bstrlib.h"
+#include <stdint.h>
 #include "list.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -63,7 +64,7 @@ void list_free(struct list *list) {
 }
 
 int node_print(struct node *item) {
-  printf("%s: %s, %lld\n", bdata(item->name), bdata(item->content), item->level);
+  printf("%s: %s, %llu\n", bdata(item->name), bdata(item->content), item->level);
   return 1;
 }
 
