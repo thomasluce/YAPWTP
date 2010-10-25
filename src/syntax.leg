@@ -73,7 +73,8 @@ struct node *template_list_iter = NULL;
 bstring output_buffer = NULL;
 bstring input_buffer = NULL;
 long input_buffer_pos = 0;
-bstring base_url;
+bstring base_url = NULL;
+bstring image_base_url = NULL;
 
 // Render the ToC from a list, output to buffer
 void assemble_toc(struct node *item, bstring toc_buffer) {
@@ -388,11 +389,11 @@ image = open_image { btrunc(image_variables, 0); } file_indicator arguments? ima
   }
 
   if(image_attributes & IMAGE_THUMB) {
-    bprintf("<img src=\"%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/>", bdata(image_url));
+    bprintf("<img src=\"%s%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/>", bdata(image_base_url), bdata(image_url));
   } else if((image_attributes & IMAGE_FRAME) || (image_attributes & IMAGE_BORDER)) {
-    bprintf("<img src=\"%s\" class=\"thumbimage\"/>", bdata(image_url));
+    bprintf("<img src=\"%s%s\" class=\"thumbimage\"/>", bdata(image_base_url), bdata(image_url));
   } else {
-    bprintf("<img src=\"%s\" %s/>", bdata(image_url), bdata(image_variables));
+    bprintf("<img src=\"%s%s\" %s/>", bdata(image_base_url), bdata(image_url), bdata(image_variables));
   }
   if(!(image_attributes & IMAGE_NOLINK)) {
     bprintf("</a>");
@@ -598,6 +599,11 @@ void set_base_url(char *str) {
   bcatcstr(base_url, str);
 }
 
+void set_image_base_url(char *str) {
+  btrunc(image_base_url, 0);
+  bcatcstr(image_base_url, str);
+}
+
 int get_template_count(void) {
   return template_list.size;
 }
@@ -653,6 +659,7 @@ void init(void) {
   balloc(output_buffer, 1 * MBYTE);
 
   base_url = bfromcstr("");
+  image_base_url = bfromcstr("");
 
   tag_name = bfromcstr("");
   tag_attribute = bfromcstr("");
@@ -670,6 +677,7 @@ void cleanup(void) {
   bdestroy(output_buffer);
   bdestroy(input_buffer);
   bdestroy(base_url);
+  bdestroy(image_base_url);
   bdestroy(tag_name);
   bdestroy(tag_attribute);
   bdestroy(tag_attributes_validated);
