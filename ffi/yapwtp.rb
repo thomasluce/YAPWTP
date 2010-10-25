@@ -142,5 +142,13 @@ class WikiParser
     each_template { |t| @templates << t }
     return @templates
   end
+
+  def base_url= url
+    set_base_url url
+  end
+
+  def image_base_url= url
+    set_image_base_url url
+  end
 end
 

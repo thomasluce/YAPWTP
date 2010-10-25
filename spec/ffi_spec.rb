@@ -9,6 +9,10 @@ describe WikiParser do
     @parser = WikiParser.new
   end
 
+  before :each do
+    @parser.reset
+  end
+
   describe "settings" do
     it "should support a base URL" do
       @parser.set_base_url "/test"
@@ -16,8 +20,7 @@ describe WikiParser do
 	end
 
 	it "should support an image base URL" do
-	  pending
-      @parser.set_image_base_url "/test/"
+      @parser.image_base_url = "/test/"
 	  @parser.html_from_string("[[Image:test.png]]").should include('src="/test/test.png"')
 	end
   end
