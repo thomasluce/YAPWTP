@@ -8,6 +8,9 @@ int main(int argc, char **argv) {
    if(argc > 0) {
      set_base_url(argv[1]);
    }
+   if(argc > 1) {
+     set_image_base_url(argv[2]);
+   }
    parse();
    printf("%s", bdata(output_buffer));
    cleanup();

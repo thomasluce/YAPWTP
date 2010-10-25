@@ -10,7 +10,7 @@ describe "Wikitext parser" do
   def parse(wikitext, *args)
     parser = File.join(File.dirname(__FILE__), '..', 'bin', 'parser')
     result = ""
-    Open3.popen3("#{parser} #{args}") do |stdin, stdout, sterr|
+    Open3.popen3("#{parser} #{args.join(" ")}") do |stdin, stdout, sterr|
       stdin.print wikitext
       stdin.close
       result = stdout.read
@@ -333,6 +333,10 @@ describe "Wikitext parser" do
     it "should be able to float the image left, right, center, or not at all" do
       parse("[[File:image.png|left]]").should include('class="floatleft"')
     end
+
+	it "should be able to set an image base URL" do
+      parse("[[File:image.png]]", "/", "/images/" ).should include("src=\"/images/image.png\"")
+	end
 
     describe "thumbnail" do
       # TODO: if a filename is given as the value to 'thumb=', use that without the width, and height.

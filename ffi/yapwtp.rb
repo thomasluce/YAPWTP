@@ -44,6 +44,8 @@ module YAPWTP
 
   # void set_base_url(char *str)
   attach_function :set_base_url, [:string], :void
+  # void set_image_base_url(char *str)
+  attach_function :set_image_base_url, [:string], :void
 
   # void reset_template_iter(void)
   attach_function :reset_template_iter, [], :void
