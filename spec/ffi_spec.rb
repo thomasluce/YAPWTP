@@ -5,6 +5,11 @@ require File.join(base_path, 'ffi', 'yapwtp')
 
 describe WikiParser do
 
+  before :suite do
+    dir = File.join(File.dirname(__FILE__), '..')
+    `cd #{dir} && make`
+  end
+
   before :all do
     @parser = WikiParser.new
   end
