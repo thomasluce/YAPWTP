@@ -18,6 +18,7 @@ struct node *node_alloc() {
   item->name = bfromcstr("");
   item->content = bfromcstr("");
   item->next = NULL;
+  item->level = 0;
   return item;
 }
 
