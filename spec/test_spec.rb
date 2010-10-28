@@ -357,7 +357,7 @@ describe "Wikitext parser" do
   end
 
   describe "tables -- oh boy..." do
-    # TODO: Implement all of this: http://www.mediawiki.org/wiki/Help:Tables it's better than the spec
+    # TODO: The only part left for 100% tables support is attributes on captions.
     it "should be able to make a caption for the table" do
       parse("{|
         |+ caption
@@ -462,15 +462,15 @@ describe "Wikitext parser" do
 
       it "should be able to make complex headers" do
         parse("{|
-|+ Caption
-! scope=\"col\" | column heading 1
-! scope=\"col\" | column heading 2
-|-
-| cell || cell
-|-
-| cell
-| cell
-|}").should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
+                |+ Caption
+                ! scope=\"col\" | column heading 1
+                ! scope=\"col\" | column heading 2
+                |-
+                | cell || cell
+                |-
+                | cell
+                | cell
+                |}".gsub(/^ */,'')).should == "<p><table><caption>Caption</caption><tr><th scope=\"col\">column heading 1</th><th scope=\"col\">column heading 2</th></tr><tr><td>cell</td><td>cell</td></tr><tr><td>cell</td><td>cell</td></tr></table></p>"
       end
 
       it "should be able to do headers part-way down as well" do
@@ -514,8 +514,6 @@ describe "Wikitext parser" do
   	    end
       end
     end
-
-    # TODO: single-pipe separaters for a format modifier
   end
 
   describe "templates" do
