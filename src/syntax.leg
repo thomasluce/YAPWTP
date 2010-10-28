@@ -390,7 +390,7 @@ image = open_image { btrunc(image_variables, 0); } file_indicator arguments? ima
   }
 
   if(image_attributes & IMAGE_THUMB) {
-    bprintf("<img src=\"%s%s\" width=\"220\" height=\"30\" class=\"thumbimage\"/>", bdata(image_base_url), bdata(image_url));
+    bprintf("<img src=\"%s%s\" class=\"thumbimage\"/>", bdata(image_base_url), bdata(image_url));
   } else if((image_attributes & IMAGE_FRAME) || (image_attributes & IMAGE_BORDER)) {
     bprintf("<img src=\"%s%s\" class=\"thumbimage\"/>", bdata(image_base_url), bdata(image_url));
   } else {
