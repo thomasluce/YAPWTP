@@ -147,7 +147,7 @@ static const struct hashed_tag tags_hash[512] = {
   [119] { "span",       { "id", "name" }, 2 },
   [128] { "code",       { "id", "name" }, 2 },
   [134] { "center",     { "id", "name" }, 2 },
-  [141] { "table",      { "id", "name", "cellpadding", "border", "style", "width" }, 6 },
+  [141] { "table",      { "id", "name", "cellspacing", "cellpadding", "border", "style", "width" }, 7 },
   [154] { "li",         { "id", "name" }, 2 },
   [158] { "blockquote", { "id", "name" }, 2 },
   [211] { "caption",    { "id", "name" }, 2 },
