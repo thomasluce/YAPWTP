@@ -202,7 +202,7 @@ describe "Wikitext parser" do
         |Butter
         |Ice cream 
         |}
-        |}'.gsub('        ', '')).should == "<p><table cellspacing=\"0\" border=\"1\"><tr><th style=\"width:50%\">You type</th><th style=\"width:50%\">You get</th></tr><tr><td>\n<pre>\n{|\n|Orange\n|Apple\n|-\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}\n</pre></td><td>\n<table><td>Orange</td><td>Apple</td><tr><td>Bread</td><td>Pie</td></tr><tr><td>Butter</td><td>Ice cream</td></tr></table></td></tr></table></p>"
+        |}'.gsub('        ', '')).should == "<p><table cellspacing=\"0\" border=\"1\"><tr><th style=\"width:50%\">You type</th><th style=\"width:50%\">You get</th></tr><tr><td>\n<pre>\n{|\n|Orange\n|Apple\n|-\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}\n</pre></td><td>\n<table><tr>\n<td>Orange</td><td>Apple</td></tr>\n<tr><td>Bread</td><td>Pie</td></tr><tr><td>Butter</td><td>Ice cream</td></tr></table></td></tr></table></p>"
     end
 
     it "should not pass HTML tags through when using <nowiki>" do

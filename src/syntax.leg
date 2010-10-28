@@ -436,7 +436,7 @@ image_caption = '|' < ( !close_image . )+ > {
 }
 
 # Tables
-table = table_open eol* table_caption? ( table_row | table_headers | table_cell )* eol* table_close
+table = table_open eol* table_caption? ( table_row | table_headers | pseudo_row )* eol* table_close
 table_specials = ( [|+}!] | '-' )
 table_delims =  ( ( '|' table_specials ) | ( &{start_of_line} '!' ) | ( &{start_of_line} '|') )
 table_open = '{|' space* < ( !table_delims !eol . )* > { 
@@ -452,6 +452,7 @@ table_open = '{|' space* < ( !table_delims !eol . )* > {
 table_caption = '|+' space* { bprintf("<caption>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</caption>"); }
 
 # -- row
+pseudo_row = { bprintf("<tr>\n"); } table_cell+ { bprintf("</tr>\n"); }
 table_row = row_open ( simple_row | complex_row )
 row_open = '|-' space* { tr_found = 1; bprintf("<tr");  }
 simple_row = [ \t]* eol { bprintf(">"); } ( table_headers | table_cell )* { bprintf("</tr>"); }
