@@ -452,24 +452,11 @@ table_open = '{|' space* < ( !table_delims !eol . )* > {
 table_caption = '|+' space* { bprintf("<caption>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</caption>"); }
 
 # -- row
-pseudo_row = { bprintf("<tr>\n"); } table_cell+ { bprintf("</tr>\n"); }
+pseudo_row = { bprintf("<tr>\n"); } table_cell+ { bprintf("</tr>\n"); /* Rows with no |- declaration first */ }
 table_row = row_open ( simple_row | complex_row )
 row_open = '|-' space* { tr_found = 1; bprintf("<tr");  }
 simple_row = [ \t]* eol { bprintf(">"); } ( table_headers | table_cell )* { bprintf("</tr>"); }
 complex_row = < ( !eol . )* > eol { bprintf(" %s>", yytext); } ( table_headers | table_cell )* { bprintf("</tr>"); }
-
-# -- headers
-table_headers = {
-  if(!tr_found) { bprintf("<tr>"); } 
-} ( complex_header | simple_header )+ {
-  if(!tr_found) { bprintf("</tr>"); } 
-}
-complex_header = &{start_of_line} '!' space* { bprintf("<th"); } (
- < ( !( space* '|') . )* > space* { bprintf(" %s>", yytext); } '|' space* ( !table_delims !eol wikitext )* ( &table_delims | eol )
- ) { bprintf("</th>"); }
-simple_header = &{start_of_line} '!' space* { bprintf("<th>"); }
-  ( !eol !table_delims wikitext )+ ( eol | &table_delims ) 
-  { bprintf("</th>"); }
 
 # -- cells
 table_cell = ( sol_cell | inline_cell )
@@ -518,6 +505,21 @@ inline_cell_simple = inline_cell_open space* { bprintf(">"); } ( !table_delims w
 
 table_close = '|}' { brtrimws(output_buffer); bprintf("</table>"); }
 
+# -- headers
+table_headers = {
+  if(!tr_found) { bprintf("<tr>"); } 
+} ( complex_header | simple_header )+ {
+  if(!tr_found) { bprintf("</tr>"); } 
+}
+complex_header = &{start_of_line} '!' { 
+  init_tag_vars(); 
+  bcatcstr(tag_name, "th"); 
+  bprintf("<th"); 
+} ( cell_attribute_list space* '|' space* ( !table_delims !eol wikitext )* ( &table_delims | eol )) { bprintf("</th>"); }
+simple_header = &{start_of_line} '!' space* { bprintf("<th>"); }
+  ( !eol !table_delims wikitext )+ ( eol | &table_delims ) 
+  { bprintf("</th>"); }
+
 # Templates
 template = template_open space* template_name template_content? template_close
 template_open = '{{' { list_append_new(&template_list); }
@@ -532,7 +534,7 @@ template_content = '|' space* < ( !template_close . )+ > {
 template_close = '}}' {
   start_of_line = 0;
   if(template_list.tail->level == 0) {
-    // Cover cases where the teamplate has no arguments
+    // Cover cases where the template has no arguments
     template_list.tail->level = hash("");
   }
   if(PRESERVE_TEMPLATES) {
