@@ -163,7 +163,7 @@ static const struct hashed_tag tags_hash[512] = {
   [413] { "dt",         { "id", "name" }, 2 },
   [413] { "sup",        { "id", "name" }, 2 },
   [413] { "td",         { "id", "name", "align", "colspan", "style", "width" }, 6 },
-  [417] { "th",         { "id", "name", "align", "colspan", "style", "width" }, 6 },
+  [417] { "th",         { "id", "name", "align", "colspan", "scope", "style", "width" }, 7 },
   [427] { "tr",         { "id", "name", "border", "style" }, 4 },
   [429] { "tt",         { "id", "name" }, 2 },
   [439] { "big",        { "id", "name" }, 2 },
