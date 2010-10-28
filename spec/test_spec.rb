@@ -237,7 +237,7 @@ describe "Wikitext parser" do
     it "should support a base URL to be supplied on the command line or via the API" do
       parse("[[link]]", "/foofoo").should include("/foofoo/link")
     end
-    # TODO: interwiki links.
+    # TODO: interwiki links. Or not.
 
     # blended links
     it "should be able to make blended links" do
@@ -341,11 +341,11 @@ describe "Wikitext parser" do
     describe "thumbnail" do
       # TODO: if a filename is given as the value to 'thumb=', use that without the width, and height.
       it "should scale the image down" do
-        parse("[[File:image.png|thumb]]").should include('width="220" height="30" class="thumbimage"')
+        parse("[[File:image.png|thumb]]").should include('class="thumbimage"')
       end
 
       it "should scale the image down" do
-        parse("[[File:image.png|thumbnail]]").should include('width="220" height="30" class="thumbimage"')
+        parse("[[File:image.png|thumbnail]]").should include('class="thumbimage"')
       end
     end
 
