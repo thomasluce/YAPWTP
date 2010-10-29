@@ -384,9 +384,9 @@ image = open_image { btrunc(image_variables, 0); } file_indicator arguments? ima
       bprintf("<a href=\"%s\" class=\"image\">", bdata(image_link_url));
     else
       if(image_attributes & IMAGE_HAS_CAPTION)
-        bprintf("<a href=\"File:%s\" class=\"image\" title=\"%s\">", bdata(image_url), bdata(image_caption));
+        bprintf("<a href=\"/File:%s\" class=\"image\" title=\"%s\">", bdata(image_url), bdata(image_caption));
       else
-        bprintf("<a href=\"File:%s\" class=\"image\">", bdata(image_url));
+        bprintf("<a href=\"/File:%s\" class=\"image\">", bdata(image_url));
   }
 
   if(image_attributes & IMAGE_THUMB) {
@@ -416,7 +416,7 @@ float = < ( 'left' | 'right' | 'center' ) > {
   bformata(image_variables, " class=\"float%s\"", yytext);
 } | 'none'
 image_link = 'link=' < ( !'|' !close_image . )* > {
-  if(strcmp(yytext, "") == 0) {
+  if(yyleng == 0) {
     image_attributes |= IMAGE_NOLINK;
   } else {
     image_attributes |= IMAGE_CUSTOMLINK;

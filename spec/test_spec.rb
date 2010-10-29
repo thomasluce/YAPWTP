@@ -300,7 +300,7 @@ describe "Wikitext parser" do
 
     describe "caption" do
       it "should be able to give a default image a title on the link" do
-        parse("[[File:image.png|caption HO!]]").should == '<p><a href="File:image.png" class="image" title="caption HO!"><img src="image.png" /></a></p>'
+        parse("[[File:image.png|caption HO!]]").should == '<p><a href="/File:image.png" class="image" title="caption HO!"><img src="image.png" /></a></p>'
       end
 
       it "should be able to put the caption in a visible location if framed or thumbed" do
@@ -310,7 +310,7 @@ describe "Wikitext parser" do
 
     # TODO: size attribute
     it "should be able to make an image" do
-      parse("[[File:image.png]]").should == '<p><a href="File:image.png" class="image"><img src="image.png" /></a></p>'
+      parse("[[File:image.png]]").should == '<p><a href="/File:image.png" class="image"><img src="image.png" /></a></p>'
     end
 
     it "should be able to put a border around an unframed image" do
@@ -318,7 +318,7 @@ describe "Wikitext parser" do
     end
 
     it "should be able to use the alternate, 'Image:' indicator" do
-      parse("[[Image:image.png]]").should == '<p><a href="File:image.png" class="image"><img src="image.png" /></a></p>'
+      parse("[[Image:image.png]]").should == '<p><a href="/File:image.png" class="image"><img src="image.png" /></a></p>'
     end
 
     it "should be able to apply alt-text to an image" do
