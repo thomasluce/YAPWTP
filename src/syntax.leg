@@ -489,7 +489,6 @@ sol_cell = ( sol_cell_complex | sol_cell_simple )
 sol_cell_open = &{start_of_line} '|' !table_specials { 
   init_tag_vars(); 
   bcatcstr(tag_name, "td");
-  // TODO bare cells can end up with no tr when they don't have one explicitly in the wikitext
   bprintf("<td"); 
 }
 sol_cell_complex = sol_cell_open cell_attribute_list space* '|' !'|' space* ( !table_delims wikitext )* cell_close 
@@ -517,7 +516,12 @@ complex_header = &{start_of_line} '!' {
   init_tag_vars(); 
   bcatcstr(tag_name, "th"); 
   bprintf("<th"); 
-} ( cell_attribute_list space* '|' space* ( !table_delims !eol wikitext )* ( &table_delims | eol )) { bprintf("</th>"); }
+} ( cell_attribute_list* space* '|' {
+  // Simpler to check the last output character than to hack up the LEG rules
+  if(bdata(output_buffer)[output_buffer->slen - 1] != '>') {
+    bprintf(">"); 
+  }
+} space* ( !table_delims !eol wikitext )* ( &table_delims | eol )) { bprintf("</th>"); }
 simple_header = &{start_of_line} '!' space* { bprintf("<th>"); }
   ( !eol !table_delims wikitext )+ ( eol | &table_delims ) 
   { bprintf("</th>"); }

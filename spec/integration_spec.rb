@@ -33,7 +33,7 @@ describe "Integration tests" do
   fixtures = Dir.new(File.join(File.dirname(__FILE__), 'fixtures')).entries - ['results','.','..']
   fixtures.each do |f|
     it "should be able to parse #{f}" do
-	  pending
+      pending if f !~ /tables/ 
       wikitext = get_wikitext f
       result = parse wikitext
       compare = get_result f
