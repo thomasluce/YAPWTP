@@ -357,12 +357,21 @@ describe "Wikitext parser" do
   end
 
   describe "tables -- oh boy..." do
-    # TODO: The only part left for 100% tables support is attributes on captions.
     it "should be able to make a caption for the table" do
       parse("{|
         |+ caption
         |-
         |}".gsub(/^ */, '')).should == "<p><table><caption>caption</caption><tr></tr></table></p>"
+    end
+
+    it "should support attributes on captions" do
+      parse('{|
+          |+ align="bottom" style="color:#e76700;" |''Food complements''
+          |-
+          |Orange
+          |Apple
+          |}
+          '.gsub(/^ */,'')).should == "<p><table><caption align=\"bottom\" style=\"color:#e76700;\">Food complements</caption><tr><td>Orange</td><td>Apple</td></tr></table>\n</p>"
     end
 
     describe "rows" do
