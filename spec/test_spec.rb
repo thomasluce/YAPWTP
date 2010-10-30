@@ -334,9 +334,9 @@ describe "Wikitext parser" do
       parse("[[File:image.png|left]]").should include('class="floatleft"')
     end
 
-	it "should be able to set an image base URL" do
+    it "should be able to set an image base URL" do
       parse("[[File:image.png]]", "/", "/images/" ).should include("src=\"/images/image.png\"")
-	end
+    end
 
     describe "thumbnail" do
       # TODO: if a filename is given as the value to 'thumb=', use that without the width, and height.
@@ -410,13 +410,19 @@ describe "Wikitext parser" do
           |}
           ".gsub(/^ */, '')).should_not include("{|")
       end
-	end
+
+      it "should allow images inside table cells" do
+        parse("{|
+          |[[Image:SomeImage.png]]
+          |}".gsub(/^ */,'')).should == "<p><table><tr>\n<td><a href=\"/File:SomeImage.png\" class=\"image\"><img src=\"SomeImage.png\" /></a></td></tr></table></p>"
+      end
+    end
 
     it "should handle ugly input text" do
       parse("{|
         |-
-        |cell1||cell2   || cell3
-        |}".gsub(/^ */,'')).should == "<p><table><tr><td>cell1</td><td>cell2</td><td>cell3</td></tr></table></p>"
+        |cell1||cell2   || align=\"right\"| cell3
+        |}".gsub(/^ */,'')).should == "<p><table><tr><td>cell1</td><td>cell2</td><td align=\"right\">cell3</td></tr></table></p>"
     end
 
 
@@ -521,7 +527,7 @@ describe "Wikitext parser" do
                   |}'.gsub(/^ */, '')).should include("<td align=\"right\">Apple</td>")
         end
   
-  	    it "should allow attributes on cells that are inlined" do
+        it "should allow attributes on cells that are inlined" do
           parse('{| border="1"
                   | Orange || Apple     || align="right" | 12,333.00
                   |-
@@ -529,7 +535,7 @@ describe "Wikitext parser" do
                   |-
                   | Butter || Ice cream || align="right" | 1.00
                   |}'.gsub(/^ */,'')).scan("<td align=\"right\">").size.should == 3;
-  	    end
+        end
       end
     end
   end
