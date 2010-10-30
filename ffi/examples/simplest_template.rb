@@ -9,8 +9,6 @@ base_path = File.expand_path(File.join(File.dirname(__FILE__), ".."))
 require "#{base_path}/yapwtp"
 
 parser = WikiParser.new
-templates = nil
-wikitext = nil
 
 # Open the requested file, parse, capture text and templates
 wikitext = parser.html_from_file("#{base_path}/../spec/fixtures/cnn.com")
@@ -22,4 +20,5 @@ templates.each do |template|
     wikitext.gsub! /#{template[:replace_tag]}/, parser.html_from_file(template_file)
   end
 end
+
 puts wikitext
