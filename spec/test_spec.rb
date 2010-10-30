@@ -440,6 +440,15 @@ describe "Wikitext parser" do
 !style="width:50%"|You get
 |-
 |}').should == "<p><table cellspacing=\"0\" border=\"1\"><tr><th style=\"width:50%\">You type</th><th style=\"width:50%\">You get</th></tr><tr></tr></table></p>"
+
+      parse('{|style="border-collapse: separate; border-spacing: 0; border-width: 1px; border-style: solid; border-color: #000; padding: 0"
+          |-
+          !style="border-style: solid; border-width: 0 1px 1px 0"| Orange
+          !style="border-style: solid; border-width: 0 0 1px 0"| Apple
+          |-
+          |style="border-style: solid; border-width: 0 1px 0 0"| Bread
+          |style="border-style: solid; border-width: 0"| Pie
+          |}'.gsub(/^ */,'')).should == "<p><table style=\"border-collapse: separate; border-spacing: 0; border-width: 1px; border-style: solid; border-color: #000; padding: 0\"><tr><th style=\"border-style: solid; border-width: 0 1px 1px 0\">Orange</th><th style=\"border-style: solid; border-width: 0 0 1px 0\">Apple</th></tr><tr><td style=\"border-style: solid; border-width: 0 1px 0 0\">Bread</td><td style=\"border-style: solid; border-width: 0\">Pie</td></tr></table></p>"
     end
 
     it "should support attributes on row definitions" do
