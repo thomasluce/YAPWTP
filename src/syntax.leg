@@ -450,8 +450,21 @@ table_open = '{|' space* {
     bprintf(">"); 
   }
 }  
+
 # -- caption
-table_caption = '|+' space* { bprintf("<caption>"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</caption>"); }
+table_caption = '|+' space* { 
+  init_tag_vars();
+  bcatcstr(tag_name, "caption");
+  bprintf("<caption"); 
+} ( cell_attribute_list space* '|' )* { 
+  // Simpler to check the last output character than to hack up the LEG rules
+  if(bdata(output_buffer)[output_buffer->slen - 1] != '>') {
+    bprintf(">"); 
+  }
+} ( !table_delims wikitext )* &table_delims { 
+  brtrimws(output_buffer); 
+  bprintf("</caption>"); 
+}
 
 # -- row
 pseudo_row = { bprintf("<tr>\n"); } table_cell+ { bprintf("</tr>\n"); /* Rows with no |- declaration first */ }
