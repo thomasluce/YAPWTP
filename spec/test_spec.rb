@@ -476,10 +476,10 @@ describe "Wikitext parser" do
     describe "headers" do
       it "should be able to make simple headers" do
         text = parse("{|
-|+Caption
-! heading 1
-! heading 2
-|}")
+                |+Caption
+                ! heading 1
+                ! heading 2
+                |}".gsub(/^ */, ''))
         text.should include("<th>heading 1</th><th>heading 2</th>");
         text.should_not include("{|");
       end
