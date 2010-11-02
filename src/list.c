@@ -57,7 +57,7 @@ int list_iterate(struct node *item, int (*listfunc)(struct node *)) {
 }
 
 void list_free(struct list *list) {
-  if(list == NULL) {
+  if(list == NULL || list->head == NULL) {
     return;
   }
   list_iterate(list->head->next, node_free);

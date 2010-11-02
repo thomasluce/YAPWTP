@@ -690,6 +690,7 @@ void init(void) {
 }
 
 void cleanup(void) {
+  // These are already NULL safe
   bdestroy(tag_content);
   bdestroy(image_variables);
   bdestroy(image_url);
@@ -705,15 +706,16 @@ void cleanup(void) {
   bdestroy(tag_attribute);
   bdestroy(tag_attributes_validated);
 
+  // Safe because we statically allocated the list structures
   list_free(&toc_list);
   list_free(&tag_attributes_list);
   list_free(&template_list);
 
   // Clean up after leg...
-  free(yybuf);
-  free(yytext);
-  free(yythunks);
-  free(yyvals);
+  if(yybuf) free(yybuf);
+  if(yytext) free(yytext);
+  if(yythunks) free(yythunks);
+  if(yyvals) free(yyvals);
   yybuflen = 0;
 }
 

@@ -72,7 +72,7 @@ class WikiParser
   end
 
   def self.release(ptr)
-    cleanup
+    cleanup if @dirty
   end
 
   private
@@ -138,9 +138,10 @@ class WikiParser
 
   def templates
     return @templates if @templates
+
     @templates = []
     each_template { |t| @templates << t }
-    return @templates
+    @templates
   end
 
   def base_url= url
