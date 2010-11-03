@@ -9,6 +9,7 @@
 #include <inttypes.h>
 #include "bstrlib.h"
 #include "list.h"
+#include "stack.h"
 #include "content.h"
 #include "yapwtp.h"
 #include "io.h"
@@ -77,6 +78,7 @@ bstring input_buffer = NULL;
 long input_buffer_pos = 0;
 bstring base_url = NULL;
 bstring image_base_url = NULL;
+stack open_html_tags;
 
 // Render the ToC from a list, output to buffer
 void assemble_toc(struct node *item, bstring toc_buffer) {
@@ -191,8 +193,8 @@ void append_to_tag_content(char *fmt, ...) {
   bvformata(ret, tag_content, fmt, fmt);
 }
 
-// Initialize variables used in html tag processing
-void init_tag_vars(void) {
+// Initialize variables used in html tag processing and tracks dangerous tags
+void current_html_tag(char *tag) {
   btrunc(tag_name, 0);
   btrunc(tag_attribute, 0);
   btrunc(tag_attributes_validated, 0);
@@ -200,6 +202,7 @@ void init_tag_vars(void) {
     list_free(&tag_attributes_list);
     list_init(&tag_attributes_list);
   }
+  bcatcstr(tag_name, tag);
 }
 
 %}
@@ -441,8 +444,7 @@ table = table_open eol* table_caption? ( table_row | table_headers | pseudo_row 
 table_specials = ( [|+}!] | '-' )
 table_delims =  ( ( '|' table_specials ) | ( &{start_of_line} '!' ) | ( &{start_of_line} '|') )
 table_open = '{|' space* { 
-  init_tag_vars();
-  bcatcstr(tag_name, "table");
+  current_html_tag("table");
   tr_found = 0; 
   bprintf("<table");
 } cell_attribute_list* { 
@@ -454,8 +456,7 @@ table_open = '{|' space* {
 
 # -- caption
 table_caption = '|+' space* { 
-  init_tag_vars();
-  bcatcstr(tag_name, "caption");
+  current_html_tag("caption");
   bprintf("<caption"); 
 } ( cell_attribute_list space* '|' )* { 
   // Simpler to check the last output character than to hack up the LEG rules
@@ -501,8 +502,7 @@ cell_close = &table_delims {
 # -- start of line cell
 sol_cell = ( sol_cell_complex | sol_cell_simple )
 sol_cell_open = &{start_of_line} '|' !table_specials { 
-  init_tag_vars(); 
-  bcatcstr(tag_name, "td");
+  current_html_tag("td");
   bprintf("<td"); 
 }
 sol_cell_complex = sol_cell_open cell_attribute_list space* '|' !'|' space* ( !table_delims wikitext )* cell_close 
@@ -511,8 +511,7 @@ sol_cell_simple  = sol_cell_open space* { bprintf(">"); } ( !table_delims wikite
 # -- inline cell
 inline_cell = ( inline_cell_complex | inline_cell_simple ) 
 inline_cell_open = '||' { 
-  init_tag_vars();
-  bcatcstr(tag_name, "td");
+  current_html_tag("td");
   bprintf("<td"); 
 }
 inline_cell_complex = inline_cell_open cell_attribute_list space* '|' !'|' space* ( !table_delims wikitext )* cell_close
@@ -527,8 +526,7 @@ table_headers = {
   if(!tr_found) { bprintf("</tr>"); } 
 }
 complex_header = &{start_of_line} '!' { 
-  init_tag_vars(); 
-  bcatcstr(tag_name, "th"); 
+  current_html_tag("th"); 
   bprintf("<th"); 
 } ( cell_attribute_list* space* '|' {
   // Simpler to check the last output character than to hack up the LEG rules
@@ -571,8 +569,8 @@ toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-throu
 
 # HTML markup
 html = tag_open tag tag_attributes_list? tag_close
-tag_open = '<' { init_tag_vars(); }
-tag = < '/'? ( !tag_close !space . )+ > { bcatcstr(tag_name, yytext); }
+tag_open = '<' 
+tag = < '/'? ( !tag_close !space . )+ > { current_html_tag(yytext); }
 tag_attributes_list = ( space ( tag_attribute | tag_junk ) )+
 tag_attribute = tag_attribute_name '=' tag_attribute_value
 tag_attribute_name = < ( !'=' . )+ > {
@@ -670,6 +668,8 @@ void init(void) {
   tag_content = bfromcstr("");
   balloc(tag_content, tag_content_size);
 
+  stack_init(&open_html_tags);
+
   image_variables = bfromcstr("");
   image_url = bfromcstr("");
   image_link_url = bfromcstr("");
@@ -711,6 +711,8 @@ void cleanup(void) {
   list_free(&toc_list);
   list_free(&tag_attributes_list);
   list_free(&template_list);
+
+  stack_free(&open_html_tags);
 
   // Clean up after leg...
   if(yybuf) free(yybuf);
