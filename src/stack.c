@@ -9,7 +9,8 @@ void stack_init(stack *s) {
 }
 
 void stack_free(stack *s) {
-  if(!s || !s->stack) return;
+  if(!s) return;
+  if(!s->stack) return;
 
   free(s->stack);
 }
