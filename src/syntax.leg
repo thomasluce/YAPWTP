@@ -207,7 +207,7 @@ void init_tag_vars(void) {
 # High-level
 page =  pre_block | wikitext_line | wikitext
 wikitext_line = paragraph | horizontal_line
-wikitext = nowiki | html | table_of_contents | template | heading | list | formatting | image | link | table | anything_else | eol { append_to_tag_content("%c", '\n'); }
+wikitext = nowiki | html | table_of_contents | template_variable | template | heading | list | formatting | image | link | table | anything_else | eol { append_to_tag_content("%c", '\n'); }
 
 # Generally useful rules
 eol = '\r'? '\n' { start_of_line = 1; }
@@ -562,6 +562,7 @@ template_close = '}}' {
     bprintf("__%s_%"PRIu64"__", bdata(template_list.tail->name), hash(bdata(template_list.tail->content)));
   }
 }
+template_variable = < '{{{' ( ! '}}}' !eol !eof . )* '}}}' > { bprintf("%s", yytext); }
 
 # Table of Contents
 table_of_contents = ( notoc | toc | forcetoc )
