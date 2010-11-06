@@ -203,6 +203,7 @@ void current_html_tag(char *tag) {
     list_init(&tag_attributes_list);
   }
   bcatcstr(tag_name, tag);
+  push(&open_html_tags, tag);
 }
 
 %}
@@ -728,4 +729,3 @@ void parse() {
   bprintf("</p>");
   handle_toc();
 }
-
