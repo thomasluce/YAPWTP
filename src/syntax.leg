@@ -197,8 +197,8 @@ void init_tag_vars(void) {
   btrunc(tag_attribute, 0);
   btrunc(tag_attributes_validated, 0);
   if(tag_attributes_list.size > 0) {
-    list_free(&tag_attributes_list);
-    list_init(&tag_attributes_list);
+    kw_list_free(&tag_attributes_list);
+    kw_list_init(&tag_attributes_list);
   }
 }
 
@@ -235,7 +235,7 @@ heading = heading_marker {
     close_tag(tag);
     bprintf("\n");
 
-    struct node *current = list_append_new(&toc_list);
+    struct node *current = kw_list_append_new(&toc_list);
 
     tmp = bstrcpy(tag_content);
     strip_html_markup(tmp);
@@ -477,7 +477,7 @@ complex_row = < ( !eol . )* > eol { bprintf(" %s>", yytext); } ( table_headers |
 # -- cells
 table_cell = ( sol_cell | inline_cell )
 cell_attribute_list = ( ( cell_attribute | cell_junk ) space* )+ {
-  list_iterate(tag_attributes_list.head->next, validate_tag_attributes);
+  kw_list_iterate(tag_attributes_list.head->next, validate_tag_attributes);
   bprintf("%s>", bdata(tag_attributes_validated));
 }
 cell_attribute = cell_attribute_name '=' cell_attribute_value
@@ -486,7 +486,7 @@ cell_attribute_name = < ( !eol !table_delims !'=' . )+ > {
   bcatcstr(tag_attribute, yytext);
 }
 cell_attribute_value = '"' < ( !table_delims !['"] . )+ > '"' {
-  struct node *node = list_append_new(&tag_attributes_list);
+  struct node *node = kw_list_append_new(&tag_attributes_list);
   bconcat(node->name, tag_attribute);
   bcatcstr(node->content, yytext);
   btrimws(node->name);
@@ -542,7 +542,7 @@ simple_header = &{start_of_line} '!' space* { bprintf("<th>"); }
 
 # Templates
 template = template_open space* template_name template_content? template_close
-template_open = '{{' { list_append_new(&template_list); }
+template_open = '{{' { kw_list_append_new(&template_list); }
 template_name = < ( !template_close !'|' . )* > {
   bcatcstr(template_list.tail->name, yytext);
   brtrimws(template_list.tail->name);
@@ -581,7 +581,7 @@ tag_attribute_name = < ( !'=' . )+ > {
   bcatcstr(tag_attribute, yytext);
 }
 tag_attribute_value = '"' < ( !tag_close !['"] . )+ > '"' {
-  struct node *node = list_append_new(&tag_attributes_list);
+  struct node *node = kw_list_append_new(&tag_attributes_list);
   bconcat(node->name, tag_attribute);
   bcatcstr(node->content, yytext);
   btrimws(node->name);
@@ -589,7 +589,7 @@ tag_attribute_value = '"' < ( !tag_close !['"] . )+ > '"' {
 }
 tag_junk = < ( !tag_close . )+ >
 tag_close = ( space* '/'? '>' ) {
-  list_iterate(tag_attributes_list.head->next, validate_tag_attributes);
+  kw_list_iterate(tag_attributes_list.head->next, validate_tag_attributes);
 
   btolower(tag_name);
   if(valid_html_tag(bdata(tag_name), tag_name->slen)) {
@@ -665,9 +665,9 @@ void init(void) {
   current_numbered_list_level = 0;
   current_definition_list_level = 0;
 
-  list_init(&toc_list);
-  list_init(&tag_attributes_list);
-  list_init(&template_list);
+  kw_list_init(&toc_list);
+  kw_list_init(&tag_attributes_list);
+  kw_list_init(&template_list);
   tag_content = bfromcstr("");
   balloc(tag_content, tag_content_size);
 
@@ -709,9 +709,9 @@ void cleanup(void) {
   bdestroy(tag_attributes_validated);
 
   // Safe because we statically allocated the list structures
-  list_free(&toc_list);
-  list_free(&tag_attributes_list);
-  list_free(&template_list);
+  kw_list_free(&toc_list);
+  kw_list_free(&tag_attributes_list);
+  kw_list_free(&template_list);
 
   // Clean up after leg...
   if(yybuf) free(yybuf);
