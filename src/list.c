@@ -62,7 +62,7 @@ void list_free(struct list *list) {
     return;
   }
   list_iterate(list->head->next, node_free);
-  node_free(list->head);
+  if(list->head) node_free(list->head);
 }
 
 int node_print(struct node *item) {
