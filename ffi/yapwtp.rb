@@ -60,6 +60,10 @@ class WikiParser
   extend YAPWTP
 
   def initialize
+    setup
+  end
+
+  def setup
     init
     @dirty = false
     @output = nil
@@ -68,11 +72,7 @@ class WikiParser
 
   def reset
     cleanup
-    initialize
-  end
-
-  def self.release(ptr)
-    cleanup if @dirty
+    setup
   end
 
   private
@@ -83,15 +83,13 @@ class WikiParser
     template = Node.new(t)
     name = BString.bstr2cstr(template[:name], 20)
     content = BString.bstr2cstr(template[:content], 20)
-    # Ruby needs to own these
-    n = String.new(name) 
-    c = String.new(content) 
-    BString.bcstrfree(name)
-    BString.bcstrfree(content)
-    return { :name => n, 
-             :content => c, 
+    # We don't need to free our strings created with bstr2cstr, because FFI
+    # seems to recognize them as char*'s and frees them when they fall out of
+    # scope.
+    return { :name => name,
+             :content => content, 
              :hash => template[:level] + 0,
-             :replace_tag => "__#{n}_#{template[:level] + 0}__"
+             :replace_tag => "__#{name}_#{template[:level] + 0}__"
            }
   end
 
@@ -129,7 +127,7 @@ class WikiParser
 
   def each_template
     return nil if !@dirty
-    
+
     reset_template_iter
     while template = next_template
       yield template
