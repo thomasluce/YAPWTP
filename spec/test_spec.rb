@@ -544,6 +544,10 @@ describe "Wikitext parser" do
     it "should replace all template content with __name_hash__" do
       parse('{{template}}').should == '<p>__template_5381__</p>'
     end
+
+	it "should ignore templates inside <noinclude tags>" do
+      parse("<noinclude>{{template}}</noinclude>").should include("{{template}}")
+	end
   end
 
   describe "table of contents" do

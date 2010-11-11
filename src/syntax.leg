@@ -70,6 +70,7 @@ unsigned int tag_content_size = 2 * MBYTE;
 // Templates
 struct list template_list;
 struct node *template_list_iter = NULL;
+int template_noinclude = 0;
 
 // General
 bstring output_buffer = NULL;
@@ -207,7 +208,7 @@ void init_tag_vars(void) {
 # High-level
 page =  pre_block | wikitext_line | wikitext
 wikitext_line = paragraph | horizontal_line
-wikitext = nowiki | html | table_of_contents | template_variable | template | heading | list | formatting | image | link | table | anything_else | eol { append_to_tag_content("%c", '\n'); }
+wikitext = nowiki | noinclude | html | table_of_contents | template_variable | template | heading | list | formatting | image | link | table | anything_else | eol { append_to_tag_content("%c", '\n'); }
 
 # Generally useful rules
 eol = '\r'? '\n' { start_of_line = 1; }
@@ -541,7 +542,7 @@ simple_header = &{start_of_line} '!' space* { bprintf("<th>"); }
   { bprintf("</th>"); }
 
 # Templates
-template = template_open space* template_name template_content? template_close
+template = &{!template_noinclude} template_open space* template_name template_content? template_close
 template_open = '{{' { kw_list_append_new(&template_list); }
 template_name = < ( !template_close !'|' . )* > {
   bcatcstr(template_list.tail->name, yytext);
@@ -563,6 +564,9 @@ template_close = '}}' {
   }
 }
 template_variable = < '{{{' ( ! '}}}' !eol !eof . )* '}}}' > { bprintf("%s", yytext); }
+noinclude = noinclude_open | noinclude_close
+noinclude_open = ( '<noinclude>' | '<NOINCLUDE>' ) { template_noinclude = 1; }
+noinclude_close = ( '</noinclude>' | '</NOINCLUDE>' ) { template_noinclude = 0; }
 
 # Table of Contents
 table_of_contents = ( notoc | toc | forcetoc )
