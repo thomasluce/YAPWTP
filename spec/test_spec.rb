@@ -603,6 +603,10 @@ describe "Wikitext parser" do
     it "should filter complex attributes, ignoring anything following a badly formed one" do
       parse("<div id=\"myid\" foofoo=\"sss\" NAME=\"Asdf\" onclick=\"javascript:alert('vulnerable'); return 0; name=\"asdf\"/>text</div>").should == "<p><div id=\"myid\" name=\"Asdf\">text</div></p>"
     end
+
+	it "should allow html h* tags" do
+      parse("<h1>sadf</h1><h2 style=\"color: red\">asdf</h2>").should == "<p><h1>sadf</h1><h2 style=\"color: red\">asdf</h2></p>"      
+	end
   end
 
 

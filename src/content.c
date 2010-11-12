@@ -170,6 +170,12 @@ static const struct hashed_tag tags_hash[512] = {
   [439] { "em",         { "id", "name" }, 2 },
   [442] { "del",        { "id", "name" }, 2 },
   [454] { "ul",         { "id", "name" }, 2 },
+  [478] { "h1",         { "id", "name", "style" }, 3 },
+  [479] { "h2",         { "id", "name", "style" }, 3 },
+  [480] { "h3",         { "id", "name", "style" }, 3 },
+  [481] { "h4",         { "id", "name", "style" }, 3 },
+  [482] { "h5",         { "id", "name", "style" }, 3 },
+  [483] { "h6",         { "id", "name", "style" }, 3 }
 };
 
 // Validate whether or not a specific HTML tag is allowed.
