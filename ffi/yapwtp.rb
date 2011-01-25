@@ -12,7 +12,7 @@ end
 
 module BString
   extend FFI::Library
-  ffi_lib File.join(File.dirname(__FILE__), '..', 'libyapwtp.so')
+  ffi_lib File.join(File.dirname(__FILE__), '..', 'libkiwi.so')
   # char * bstr2cstr (const_bstring s, char z)
   attach_function :bstr2cstr, [:pointer, :char], :string
   # int bcstrfree (char * s)
@@ -21,7 +21,7 @@ end
 
 module YAPWTP
   extend FFI::Library
-  ffi_lib File.join(File.dirname(__FILE__), '..', 'libyapwtp.so')
+  ffi_lib File.join(File.dirname(__FILE__), '..', 'libkiwi.so')
   # void init(void)
   attach_function :init, [], :void
   # void cleanup(void)
