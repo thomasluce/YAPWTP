@@ -11,6 +11,7 @@
 #include "content.h"
 #include "yapwtp.h"
 #include "io.h"
+#include "parse.h"
 
 #define YY_noDEBUG 1
 #define YY_INPUT(buf, result, max_size) handle_input(buf, &result, max_size)
@@ -29,12 +30,13 @@ eof = !.
 space = [\t ]
 
 # Headings
-heading = heading_marker { RUN_ACTION(heading_action_1); } space* heading_text heading_marker space* ( eol | eof ) { heading_action_2(); }
+heading = heading_marker                                  { RUN_ACTION(heading_action_1); }
+  space* heading_text heading_marker space* ( eol | eof ) { RUN_ACTION(heading_action_2); }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* >
-heading_marker = < '=' '='+ > { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
+heading_marker = < '=' '='+ >                             { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
 
 # Paragraph
-paragraph = wikitext eol eol { bprintf("</p>\n<p>"); }
+paragraph = wikitext eol eol            { bprintf("</p>\n<p>"); }
 horizontal_line = "----" ( eol | eof )  { bprintf("<hr/>\n"); }
 
 # Lists
@@ -42,156 +44,174 @@ list = &{ start_of_line } ( bullet_list | numbered_list | definition_list )
 list_text = ( !eol ( < [*#:] > { bprintf("%s", yytext); } | wikitext ) )*
 
 # Bullet list
-bullet_list = { bprintf("<ul>"); } bullet_list_entry+ { RUN_ACTION(bullet_list_action_1); }
+bullet_list =                                              { bprintf("<ul>"); }
+  bullet_list_entry+                                       { RUN_ACTION(bullet_list_action_1); }
 bullet_list_entry = bullet space*  list_text ( eol | eof ) { bprintf("</li>"); }
-bullet = < '*'+ > { RUN_ACTION(bullet_action_1); start_of_line = 0; }
+bullet = < '*'+ >                                          { RUN_ACTION(bullet_action_1); start_of_line = 0; }
 
 # Definition list (Indentation)
-definition_list = { bprintf("<dl>"); } definition_list_entry+ { RUN_ACTION(definition_list_action_1); }
+definition_list =        { bprintf("<dl>"); }
+  definition_list_entry+ { RUN_ACTION(definition_list_action_1); }
 definition_list_entry = definition space*  list_text ( eol | eof ) 
-definition = < ':'+ > { RUN_ACTION(definition_action_1); start_of_line = 0; }
+definition = < ':'+ >    { RUN_ACTION(definition_action_1); start_of_line = 0; }
 
 # Numbered list
-numbered_list = { bprintf("<ol>"); } numbered_list_entry+ { RUN_ACTION(numbered_list_action_1); }
+numbered_list =                                      { bprintf("<ol>"); }
+  numbered_list_entry+                               { RUN_ACTION(numbered_list_action_1); }
 numbered_list_entry = numbered space* list_text eol? { bprintf("</li>"); }
-numbered = < '#'+ > { RUN_ACTION(numbered_action_1); start_of_line = 0; }
+numbered = < '#'+ >                                  { RUN_ACTION(numbered_action_1); start_of_line = 0; }
 
 # Formatting
 formatting = bold_italic | bold | italic
-bold_italic = "'''''" { append_to_tag_content("<b><i>"); }( !"'''''" wikitext )* "'''''" { append_to_tag_content("</i></b>"); }
-bold = "'''" { append_to_tag_content("<b>"); }( !"'''" wikitext )* "'''" { append_to_tag_content("</b>"); }
-italic = "''" { append_to_tag_content("<i>"); }( !"''" wikitext )* "''" { append_to_tag_content("</i>"); }
+bold_italic = "'''''"            { append_to_tag_content("<b><i>"); }
+  ( !"'''''" wikitext )* "'''''" { append_to_tag_content("</i></b>"); }
+bold = "'''"                     { append_to_tag_content("<b>"); }
+  ( !"'''" wikitext )* "'''"     { append_to_tag_content("</b>"); }
+italic = "''"                    { append_to_tag_content("<i>"); }
+  ( !"''" wikitext )* "''"       { append_to_tag_content("</i>"); }
 
 # pre-formatted blocks
-pre_block = &{ start_of_line } { bprintf("<pre>"); } pre_line+ { bprintf("</pre>"); }
-pre_line = ' ' < ( !eol . )* ( eol | eof ) > { bprintf("%s", yytext); }
-nowiki = nowiki_open < ( !nowiki_close . )* > { RUN_ACTION(nowiki_action_1); start_of_line = 0; } nowiki_close
+pre_block = &{ start_of_line }                          { bprintf("<pre>"); }
+  pre_line+                                             { bprintf("</pre>"); }
+pre_line = ' ' < ( !eol . )* ( eol | eof ) >            { bprintf("%s", yytext); }
+nowiki = nowiki_open < ( !nowiki_close . )* >           { RUN_ACTION(nowiki_action_1); start_of_line = 0; }
+  nowiki_close
 nowiki_open = nowiki_open_tag | html_pre_open | html_code_open
 nowiki_close = nowiki_close_tag | html_pre_close | html_code_close
 nowiki_open_tag = '<nowiki>' 
 nowiki_close_tag = '</nowiki>' 
-html_pre_open = ( '<pre' ( !'>' . )* '>' | '<PRE>' ) { append_to_tag_content("<pre>"); }
-html_pre_close = ( '</pre>' | '</PRE>' ) { append_to_tag_content("</pre>"); }
+html_pre_open = ( '<pre' ( !'>' . )* '>' | '<PRE>' )    { append_to_tag_content("<pre>"); }
+html_pre_close = ( '</pre>' | '</PRE>' )                { append_to_tag_content("</pre>"); }
 html_code_open = ( '<code' ( !'>' . )* '>' | '<CODE>' ) { append_to_tag_content("<code>"); }
-html_code_close = ( '</code>' | '</CODE>' ) { append_to_tag_content("</code>"); }
+html_code_close = ( '</code>' | '</CODE>' )             { append_to_tag_content("</code>"); }
 
 # Links
-link = ( local_link | external_link ) { start_of_line = 0; }
+link = ( local_link | external_link )                                     { start_of_line = 0; }
 local_link = link_open ':'? namespace? link_path rename? link_close blend { RUN_ACTION(local_link_action_1); }
-namespace = < ( !':' !link_close . )* > ':' { bformata(link_path, "%s:", yytext); }
-link_path = < ( !link_close !'|' . )* > { bcatcstr(link_path, yytext); bcatcstr(link_text, yytext); }
-rename = '|' < ( !link_close . )* > { btrunc(link_text, 0); bcatcstr(link_text, yytext); }
-blend = < ( !space !( '=' '='+ ) ![<'[{] !eol !eof . )* > { bcatcstr(link_text, yytext); }
+namespace = < ( !':' !link_close . )* > ':'                               { bformata(link_path, "%s:", yytext); }
+link_path = < ( !link_close !'|' . )* >                                   { bcatcstr(link_path, yytext); bcatcstr(link_text, yytext); }
+rename = '|' < ( !link_close . )* >                                       { btrunc(link_text, 0); bcatcstr(link_text, yytext); }
+blend = < ( !space !( '=' '='+ ) ![<'[{] !eol !eof . )* >                 { bcatcstr(link_text, yytext); }
 
 external_link = named_link | unnamed_link | url
-named_link = open_named_link link_url { append_to_tag_content("\">");} ' '+ link_name + space* close_named_link
-open_named_link = '[' !'javascript:' { append_to_tag_content("<a href=\""); } 
-close_named_link = ']' { append_to_tag_content("</a>"); }
+named_link = open_named_link link_url         { append_to_tag_content("\">");}
+  ' '+ link_name + space* close_named_link
+open_named_link = '[' !'javascript:'          { append_to_tag_content("<a href=\""); } 
+close_named_link = ']'                        { append_to_tag_content("</a>"); }
 
 link_url = < ( !' ' !']' . )+ >  { append_to_tag_content(yytext); }
-link_name = < ( !']' . )+ > { append_to_tag_content(yytext); }
+link_name = < ( !']' . )+ >      { append_to_tag_content(yytext); }
 
 unnamed_link = '[' !'javascript:' < ( !']' . )* > ']' { append_to_tag_content("<a href=\"%s\">%s</a>", yytext, yytext);}
-url = protocol '://' < ( !eol !' ' . )* > { append_to_tag_content("<a href=\"%s://%s\">%s://%s</a>", protocol, yytext, protocol, yytext); }
-protocol =  < ( 'http' | 'https' | 'ftp' ) > { strcpy(protocol, yytext); } 
+url = protocol '://' < ( !eol !' ' . )* >             { append_to_tag_content("<a href=\"%s://%s\">%s://%s</a>", protocol, yytext, protocol, yytext); }
+protocol =  < ( 'http' | 'https' | 'ftp' ) >          { strcpy(protocol, yytext); } 
 link_open = '[['
 link_close = ']]'
 
 # Images
 image = open_image { btrunc(image_variables, 0); } file_indicator arguments? image_caption? close_image { RUN_ACTION(image_action_1); }
+
 open_image = '[[' space*
+
 close_image = space* ']]'
-file_indicator = ( 'File:' | 'Image:' ) < ( !'|' !close_image . )* > { bassignformat(image_url, "%s", yytext); }
+file_indicator = ( 'File:' | 'Image:' ) < ( !'|' !close_image . )* >                             { bassignformat(image_url, "%s", yytext); }
 arguments = '|' ( special_image_variables | generic_variable value ) arguments?
 special_image_variables = image_type | float | image_link | image_border
 image_type = frame | thumb
-frame = 'frame' { image_attributes |= IMAGE_FRAME; }
-thumb = ( 'thumbnail' | 'thumb' ) { image_attributes |= IMAGE_THUMB; }
-float = < ( 'left' | 'right' | 'center' ) > { bformata(image_variables, " class=\"float%s\"", yytext); } | 'none'
-image_link = 'link=' < ( !'|' !close_image . )* > { RUN_ACTION(image_link_action_1); }
-image_border = 'border' { image_attributes |= IMAGE_BORDER; }
-generic_variable = < ( !'|' !'=' !close_image . )* > { bformata(image_variables, "%s", yytext); }
-value = '=' < ( !'|' !close_image . )* > { bformata(image_variables, "=\"%s\"", yytext); }
-image_caption = '|' < ( !close_image . )+ > { RUN_ACTION(image_caption_action_1); }
+frame = 'frame'                                                                                  { image_attributes |= IMAGE_FRAME; }
+thumb = ( 'thumbnail' | 'thumb' )                                                                { image_attributes |= IMAGE_THUMB; }
+float = < ( 'left' | 'right' | 'center' ) >                                                      { bformata(image_variables, " class=\"float%s\"", yytext); }
+  | 'none'
+image_link = 'link=' < ( !'|' !close_image . )* >                                                { RUN_ACTION(image_link_action_1); }
+image_border = 'border'                                                                          { image_attributes |= IMAGE_BORDER; }
+generic_variable = < ( !'|' !'=' !close_image . )* >                                             { bformata(image_variables, "%s", yytext); }
+value = '=' < ( !'|' !close_image . )* >                                                         { bformata(image_variables, "=\"%s\"", yytext); }
+image_caption = '|' < ( !close_image . )+ >                                                      { RUN_ACTION(image_caption_action_1); }
 
 # Tables
 table = table_open eol* table_caption? ( table_row | table_headers | pseudo_row )* eol* table_close
 table_specials = ( [|+}!] | '-' )
 table_delims =  ( ( '|' table_specials ) | ( &{start_of_line} '!' ) | ( &{start_of_line} '|') )
-table_open = '{|' space* { RUN_ACTION(table_open_action_1); } cell_attribute_list* { table_open_action_2(yyleng, yytext); }  
+table_open = '{|' space*    { RUN_ACTION(table_open_action_1); }
+  cell_attribute_list*      { table_open_action_2(yyleng, yytext); }  
 
 # -- caption
-table_caption = '|+' space* { RUN_ACTION(table_caption_action_1); }
-  ( cell_attribute_list space* '|' )* { RUN_ACTION(table_caption_action_2); }
+table_caption = '|+' space*                 { RUN_ACTION(table_caption_action_1); }
+  ( cell_attribute_list space* '|' )*       { RUN_ACTION(table_caption_action_2); }
   ( !table_delims wikitext )* &table_delims { RUN_ACTION(table_caption_action_3); }
 
 # -- row
-pseudo_row = { bprintf("<tr>\n"); } table_cell+ { bprintf("</tr>\n"); /* Rows with no |- declaration first */ }
+pseudo_row =                      { bprintf("<tr>\n"); }
+  table_cell+                     { bprintf("</tr>\n"); /* Rows with no |- declaration first */ }
 table_row = row_open ( simple_row | complex_row )
-row_open = '|-' space* { tr_found = 1; bprintf("<tr");  }
-simple_row = [ \t]* eol { bprintf(">"); } ( table_headers | table_cell )* { bprintf("</tr>"); }
-complex_row = < ( !eol . )* > eol { bprintf(" %s>", yytext); } ( table_headers | table_cell )* { bprintf("</tr>"); }
+row_open = '|-' space*            { tr_found = 1; bprintf("<tr");  }
+simple_row = [ \t]* eol           { bprintf(">"); }
+  ( table_headers | table_cell )* { bprintf("</tr>"); }
+complex_row = < ( !eol . )* > eol { bprintf(" %s>", yytext); }
+  ( table_headers | table_cell )* { bprintf("</tr>"); }
 
 # -- cells
 table_cell = ( sol_cell | inline_cell )
 cell_attribute_list = ( ( cell_attribute | cell_junk ) space* )+ { RUN_ACTION(cell_attribute_list_action_1); }
 cell_attribute = cell_attribute_name '=' cell_attribute_value
-cell_attribute_name = < ( !eol !table_delims !'=' . )+ > { RUN_ACTION(cell_attribute_name_action_1); }
-cell_attribute_value = '"' < ( !table_delims !['"] . )+ > '"' { RUN_ACTION(cell_attribute_value_action_1); }
+cell_attribute_name = < ( !eol !table_delims !'=' . )+ >         { RUN_ACTION(cell_attribute_name_action_1); }
+cell_attribute_value = '"' < ( !table_delims !['"] . )+ > '"'    { RUN_ACTION(cell_attribute_value_action_1); }
 cell_junk = < ( !( &table_delims ) !eol !'|' . )+ >
-cell_close = &table_delims { RUN_ACTION(cell_close_action_1); }
+cell_close = &table_delims                                       { RUN_ACTION(cell_close_action_1); }
 
 # -- start of line cell
 sol_cell = ( sol_cell_complex | sol_cell_simple )
-sol_cell_open = &{start_of_line} '|' !table_specials { RUN_ACTION(sol_cell_open_action_1); }
+sol_cell_open = &{start_of_line} '|' !table_specials             { RUN_ACTION(sol_cell_open_action_1); }
 sol_cell_complex = sol_cell_open cell_attribute_list space* '|' !'|' space* ( !table_delims wikitext )* cell_close 
-sol_cell_simple  = sol_cell_open space* { bprintf(">"); } ( !table_delims wikitext )* cell_close
+sol_cell_simple  = sol_cell_open space*                          { bprintf(">"); }
+  ( !table_delims wikitext )* cell_close
 
 # -- inline cell
 inline_cell = ( inline_cell_complex | inline_cell_simple ) 
-inline_cell_open = '||' { RUN_ACTION(inline_cell_open_action_1); }
+inline_cell_open = '||'                                     { RUN_ACTION(inline_cell_open_action_1); }
 inline_cell_complex = inline_cell_open cell_attribute_list space* '|' !'|' space* ( !table_delims wikitext )* cell_close
-inline_cell_simple = inline_cell_open space* { bprintf(">"); } ( !table_delims wikitext )* &table_delims { brtrimws(output_buffer); bprintf("</td>"); }
+inline_cell_simple = inline_cell_open space*                { bprintf(">"); }
+  ( !table_delims wikitext )* &table_delims                 { brtrimws(output_buffer); bprintf("</td>"); }
 
 table_close = '|}' { brtrimws(output_buffer); bprintf("</table>"); }
 
 # -- headers
-table_headers = { if(!tr_found) bprintf("<tr>"); } ( complex_header | simple_header )+ { if(!tr_found)  bprintf("</tr>"); }
-complex_header = &{start_of_line} '!' { RUN_ACTION(complex_header_action_1); }
-  ( cell_attribute_list* space* '|' { RUN_ACTION(complex_header_action_2); }
+table_headers =                                                    { if(!tr_found) bprintf("<tr>"); }
+  ( complex_header | simple_header )+                              { if(!tr_found) bprintf("</tr>"); }
+complex_header = &{start_of_line} '!'                              { RUN_ACTION(complex_header_action_1); }
+  ( cell_attribute_list* space* '|'                                { RUN_ACTION(complex_header_action_2); }
   space* ( !table_delims !eol wikitext )* ( &table_delims | eol )) { bprintf("</th>"); }
 
-simple_header = &{start_of_line} '!' space* { bprintf("<th>"); }
-  ( !eol !table_delims wikitext )+ ( eol | &table_delims ) 
-  { bprintf("</th>"); }
+simple_header = &{start_of_line} '!' space*                        { bprintf("<th>"); }
+  ( !eol !table_delims wikitext )+ ( eol | &table_delims )         { bprintf("</th>");}
 
 # Templates
 template = &{!template_noinclude} template_open space* template_name template_content? template_close
-template_open = '{{' { kw_list_append_new(&template_list); }
-template_name = < ( !template_close !'|' . )* > { RUN_ACTION(template_name_action_1); }
-template_content = '|' space* < ( !template_close . )+ > { RUN_ACTION(template_content_action_1); }
-template_close = '}}' { RUN_ACTION(template_close_action_1); start_of_line = 0; }
+template_open = '{{'                                         { kw_list_append_new(&template_list); }
+template_name = < ( !template_close !'|' . )* >              { RUN_ACTION(template_name_action_1); }
+template_content = '|' space* < ( !template_close . )+ >     { RUN_ACTION(template_content_action_1); }
+template_close = '}}'                                        { RUN_ACTION(template_close_action_1); start_of_line = 0; }
 template_variable = < '{{{' ( ! '}}}' !eol !eof . )* '}}}' > { bprintf("%s", yytext); }
 noinclude = noinclude_open | noinclude_close
-noinclude_open = ( '<noinclude>' | '<NOINCLUDE>' ) { template_noinclude = 1; }
-noinclude_close = ( '</noinclude>' | '</NOINCLUDE>' ) { template_noinclude = 0; }
+noinclude_open = ( '<noinclude>' | '<NOINCLUDE>' )           { template_noinclude = 1; }
+noinclude_close = ( '</noinclude>' | '</NOINCLUDE>' )        { template_noinclude = 0; }
 
 # Table of Contents
 table_of_contents = ( notoc | toc | forcetoc )
-notoc = '__NOTOC__' { toc_attributes |= TOC_NOTOC; }
+notoc = '__NOTOC__'       { toc_attributes |= TOC_NOTOC; }
 forcetoc = '__FORCETOC__' { toc_attributes |= TOC_FORCETOC; }
-toc = '__TOC__' { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-through for later replacement }
+toc = '__TOC__'           { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // pass-through for later replacement }
 
 # HTML markup
 html = tag_open tag tag_attributes_list? tag_close
-tag_open = '<' { init_tag_vars(); }
-tag = < '/'? ( !tag_close !space . )+ > { bcatcstr(tag_name, yytext); }
+tag_open = '<'                                                { init_tag_vars(); }
+tag = < '/'? ( !tag_close !space . )+ >                       { bcatcstr(tag_name, yytext); }
 tag_attributes_list = ( space ( tag_attribute | tag_junk ) )+
 tag_attribute = tag_attribute_name '=' tag_attribute_value
-tag_attribute_name = < ( !'=' . )+ > { RUN_ACTION(tag_attribute_name_action_1); }
-tag_attribute_value = '"' < ( !tag_close !['"] . )+ > '"' { RUN_ACTION(tag_attribute_value_action_1); }
+tag_attribute_name = < ( !'=' . )+ >                          { RUN_ACTION(tag_attribute_name_action_1); }
+tag_attribute_value = '"' < ( !tag_close !['"] . )+ > '"'     { RUN_ACTION(tag_attribute_value_action_1); }
 tag_junk = < ( !tag_close . )+ >
-tag_close = ( space* '/'? '>' ) { RUN_ACTION(tag_close_action_1); start_of_line = 0; }
+tag_close = ( space* '/'? '>' )                               { RUN_ACTION(tag_close_action_1); start_of_line = 0; }
 
 # Other stuff
 anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
