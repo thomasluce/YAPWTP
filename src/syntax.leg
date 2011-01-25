@@ -1,11 +1,4 @@
 %{
-#include <stdio.h>
-#include <signal.h>
-#include <time.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <ctype.h>
-#include <stdint.h>
 #include "bstrlib.h"
 #include "list.h"
 #include "content.h"
