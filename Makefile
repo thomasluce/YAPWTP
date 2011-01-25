@@ -14,9 +14,9 @@ syntax : .FORCE
 	$(CC) $(CFLAGS) -c src/io.c
 	$(CC) $(CFLAGS) -c src/parse.c
 ifeq ($(OS), Darwin)
-	$(CC) $(CFLAGS) -dynamiclib -shared -o libyapwtp.so syntax.leg.o bstrlib.o list.o content.o io.o parse.o
+	$(CC) $(CFLAGS) -dynamiclib -shared -o libkiwi.so syntax.leg.o bstrlib.o list.o content.o io.o parse.o
 else
-	$(CC) $(CFLAGS) -shared -o libyapwtp.so syntax.leg.o bstrlib.o list.o content.o io.o parse.o
+	$(CC) $(CFLAGS) -shared -o libkiwi.so syntax.leg.o bstrlib.o list.o content.o io.o parse.o
 endif
 	$(CC) $(CFLAGS) -c src/main.c
 	$(CC) $(CFLAGS) -o bin/parser main.o syntax.leg.o bstrlib.o list.o content.o io.o parse.o

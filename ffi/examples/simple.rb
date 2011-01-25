@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 base_path = File.expand_path(File.join(File.dirname(__FILE__), ".."))
-require "#{base_path}/yapwtp"
+require "#{base_path}/kiwi"
 
 parser = WikiParser.new
 
