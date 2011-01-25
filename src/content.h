@@ -12,6 +12,13 @@
 
 extern bstring tag_name;
 
+void assemble_toc(struct node *item, bstring toc_buffer);
+void insert_reloc_toc(bstring toc_buffer);
+void handle_toc(void);
+void open_tag(char *tag, char *args);
+void close_tag(char *tag);
+void append_to_tag_content(char *fmt, ...);
+void init_tag_vars(void);
 void repeat_append(bstring buffer, char chr, int count);
 void remove_parentheticals(bstring str);
 void strip_tags(bstring str);

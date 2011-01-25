@@ -12,28 +12,67 @@
 #define KBYTE 1024
 #define MBYTE KBYTE * 1024
 
-extern int current_header_level;
-extern int current_bullet_list_level;
-extern int current_numbered_list_level;
+#define PRESERVE_TEMPLATES 1
 
-extern int start_of_line;
-extern char protocol[5];
+#define IMAGE_FRAME 1
+#define IMAGE_THUMB ( 1 << 1 )
+#define IMAGE_NOLINK ( 1 << 2 )
+#define IMAGE_CUSTOMLINK ( 1 << 3 )
+#define IMAGE_HAS_CAPTION ( 1 << 4 )
+#define IMAGE_BORDER ( 1 << 5 )
 
-extern int image_attributes;
-extern bstring image_url;
-extern bstring image_variables;
+#define TOC_NOTOC ( 1 << 1 )
+#define TOC_FORCETOC ( 1 << 2 )
+#define TOC_RELOC ( 1 << 3 )
 
-extern int toc_attributes;
+int current_header_level;
+int current_bullet_list_level;
+int current_numbered_list_level;
+int current_definition_list_level;
 
-extern int in_tag;
-extern bstring tag_content;
-extern unsigned int tag_content_size;
+int start_of_line;
+char protocol[5];
 
-extern bstring output_buffer;
-extern bstring input_buffer;
-extern long input_buffer_pos;
+// Images
+int image_attributes;
+bstring image_url;
+bstring image_variables;
+bstring image_link_url;
+bstring image_caption;
 
-extern struct list toc_list;
+// Links
+bstring link_path;
+bstring link_text;
+
+// HTML tags
+bstring tag_name;
+bstring tag_attribute;
+bstring tag_attributes_validated;
+struct list tag_attributes_list;
+
+// Tables
+int tr_found;
+
+// ToC
+int toc_attributes;
+struct list toc_list;
+
+// Wikitext
+int in_tag;
+bstring tag_content;
+unsigned int tag_content_size;
+
+// Templates
+struct list template_list;
+struct node *template_list_iter;
+int template_noinclude;
+
+// General
+bstring output_buffer;
+bstring input_buffer;
+long input_buffer_pos;
+bstring base_url;
+bstring image_base_url;
 
 void init(void);
 void cleanup(void);

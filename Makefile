@@ -1,7 +1,7 @@
 EXAMPLES = syntax
 OS=$(shell uname)
 
-CFLAGS = -fPIC -g3 -Wall -std=gnu99
+CFLAGS = -fPIC -O3 -g3 -Wall -std=gnu99
 all : $(EXAMPLES)
 
 syntax : .FORCE

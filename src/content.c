@@ -2,8 +2,133 @@
 #include "stdbool.h"
 #include "list.h"
 #include "content.h"
+#include "yapwtp.h"
+#include "io.h"
+#include <stdio.h>
 
-extern bstring tag_attributes_validated;
+// Render the ToC from a list, output to buffer
+void assemble_toc(struct node *item, bstring toc_buffer) {
+  if(!item) {
+    printf("Bad list passed to assemble_toc\n");
+    return;
+  }
+
+  struct node *next;
+  int previous_level = item->level;
+  int total_layers = 0;
+  int i;
+  bformata(toc_buffer, "%s", "<div id=\"toc\" class=\"toc\">\n<div id=\"toctitle\">Contents</div>\n<ol>\n");
+  while(item != NULL) {
+    next = item->next;
+
+    // Layer the list deeper as necessary
+    if(item->level > previous_level) {
+      repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
+      for(i = previous_level; i < item->level; i++) {
+        bformata(toc_buffer, "%s", "<ol>\n");
+        total_layers++;
+      }
+    } else if(item->level < previous_level) {
+      for(i = previous_level; i > item->level; i--) {
+        repeat_append(toc_buffer, ' ', (total_layers) * 2);
+        bformata(toc_buffer, "%s", "</ol></li>\n");
+        total_layers--;
+      }
+    }
+
+    // Add the item
+    if(item->name && item->content) {
+      repeat_append(toc_buffer, ' ', (total_layers + 1) * 2);
+      bformata(toc_buffer, "  <li><a href=\"#%s\">%s</a>", bdata(item->name), bdata(item->content));
+      if(next && next->level > item->level) {
+        bcatcstr(toc_buffer, "\n");
+      } else {
+        bcatcstr(toc_buffer, "</li>\n");
+      }
+    }
+    previous_level = item->level;
+    item = next;
+  }
+
+  // Clean up lists left open
+  while(total_layers > 0) {
+    bformata(toc_buffer, "%s", "</ol>\n");
+    total_layers--;
+  }
+  bformata(toc_buffer, "%s", "</ol>\n</div>\n");
+}
+
+// Insert the ToC into the output buffer in place of the __TOC__ tag
+void insert_reloc_toc(bstring toc_buffer) {
+  bstring find = bfromcstr("__TOC__");
+  if(bfindreplace(output_buffer, find, toc_buffer, 0) == BSTR_ERR) {
+    printf("Error inserting toc_buffer into output_buffer\n");
+  }
+  bdestroy(find);
+}
+
+// Main ToC routine
+void handle_toc(void) {
+  if(toc_attributes & TOC_NOTOC) {
+    return;
+  }
+
+  if((toc_list.size > 3) || (toc_attributes & TOC_FORCETOC)) {
+    bstring toc_buffer = bfromcstr("");
+    assemble_toc(toc_list.head->next, toc_buffer);
+
+    if(toc_attributes & TOC_RELOC) {
+      insert_reloc_toc(toc_buffer);
+      bdestroy(toc_buffer);
+      return;
+    }
+
+    if(binsert(output_buffer, 0, toc_buffer, ' ') != BSTR_OK) {
+      printf("Error prepending toc_buffer to output_buffer\n");
+    }
+    bdestroy(toc_buffer);
+  }
+}
+
+void open_tag(char *tag, char *args) {
+  if(args) {
+    bprintf("<%s %s>", tag, args);
+  } else {
+    bprintf("<%s>", tag);
+  }
+
+  in_tag = 1;
+  if(tag_content) {
+    btrunc(tag_content,0 );
+  }
+}
+
+void close_tag(char *tag) {
+  bprintf("</%s>", tag);
+  in_tag = 0;
+}
+
+void append_to_tag_content(char *fmt, ...) {
+  int ret;
+
+  if(!in_tag) {
+    bvformata(ret, output_buffer, fmt, fmt);
+    return;
+  }
+
+  bvformata(ret, tag_content, fmt, fmt);
+}
+
+// Initialize variables used in html tag processing
+void init_tag_vars(void) {
+  btrunc(tag_name, 0);
+  btrunc(tag_attribute, 0);
+  btrunc(tag_attributes_validated, 0);
+  if(tag_attributes_list.size > 0) {
+    kw_list_free(&tag_attributes_list);
+    kw_list_init(&tag_attributes_list);
+  }
+}
 
 // Append a character to a buffer a repeat number of times
 void repeat_append(bstring buffer, char chr, int count) {
@@ -218,7 +343,7 @@ int validate_tag_attributes(struct node *item) {
   //printf("--%s--%s: %s--\n", bdata(tag_name), bdata(item->name), bdata(item->content));
 
   // The purpose of this is just to make GCC shut up about non-null arguments to strcmp
-  char *item_name;
+  char *item_name = NULL;
   if(item && item->name) item_name = bdata(item->name);
 
   int i;
