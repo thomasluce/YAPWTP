@@ -13,13 +13,14 @@ syntax : .FORCE
 	$(CC) $(CFLAGS) -c src/content.c
 	$(CC) $(CFLAGS) -c src/io.c
 	$(CC) $(CFLAGS) -c src/parse.c
+	$(CC) $(CFLAGS) -c src/stack.c
 ifeq ($(OS), Darwin)
-	$(CC) $(CFLAGS) -dynamiclib -shared -o libkiwi.so syntax.leg.o bstrlib.o list.o content.o io.o parse.o
+	$(CC) $(CFLAGS) -dynamiclib -shared -o libkiwi.so syntax.leg.o bstrlib.o list.o stack.o content.o io.o parse.o
 else
-	$(CC) $(CFLAGS) -shared -o libkiwi.so syntax.leg.o bstrlib.o list.o content.o io.o parse.o
+	$(CC) $(CFLAGS) -shared -o libkiwi.so syntax.leg.o bstrlib.o list.o stack.o content.o io.o parse.o
 endif
 	$(CC) $(CFLAGS) -c src/main.c
-	$(CC) $(CFLAGS) -o bin/parser main.o syntax.leg.o bstrlib.o list.o content.o io.o parse.o
+	$(CC) $(CFLAGS) -o bin/parser main.o syntax.leg.o bstrlib.o list.o stack.o content.o io.o parse.o
 
 testlist: .FORCE
 	$(CC) $(CFLAGS) -c src/bstrlib.c
@@ -35,7 +36,8 @@ memtest: .FORCE
 	$(CC) $(CFLAGS) -c src/io.c
 	$(CC) $(CFLAGS) -c src/parse.c
 	$(CC) $(CFLAGS) -c src/memtest.c
-	$(CC) $(CFLAGS) -o bin/memtest memtest.o syntax.leg.o bstrlib.o list.o content.o io.o parse.o
+	$(CC) $(CFLAGS) -c src/stack.c
+	$(CC) $(CFLAGS) -o bin/memtest memtest.o syntax.leg.o bstrlib.o list.o stack.o content.o io.o parse.o
 
 
 clean : .FORCE

@@ -5,6 +5,7 @@
 #include "kiwi.h"
 #include "io.h"
 #include "parse.h"
+#include "stack.h"
 
 #define YY_noDEBUG 1
 #define YY_INPUT(buf, result, max_size) handle_input(buf, &result, max_size)
@@ -197,14 +198,15 @@ toc = '__TOC__'           { toc_attributes |= TOC_RELOC; bprintf("__TOC__"); // 
 
 # HTML markup
 html = tag_open tag tag_attributes_list? tag_close
-tag_open = '<'                                                { init_tag_vars(); }
-tag = < '/'? ( !tag_close !space . )+ >                       { bcatcstr(tag_name, yytext); }
+tag_open = '<'                                                      { init_tag_vars(); }
+tag = < '/'? ( !tag_close_nocap !space . )+ >                       { RUN_ACTION(tag_action_1); }
 tag_attributes_list = ( space ( tag_attribute | tag_junk ) )+
 tag_attribute = tag_attribute_name '=' tag_attribute_value
-tag_attribute_name = < ( !'=' . )+ >                          { RUN_ACTION(tag_attribute_name_action_1); }
-tag_attribute_value = '"' < ( !tag_close !['"] . )+ > '"'     { RUN_ACTION(tag_attribute_value_action_1); }
-tag_junk = < ( !tag_close . )+ >
-tag_close = ( space* '/'? '>' )                               { RUN_ACTION(tag_close_action_1); start_of_line = 0; }
+tag_attribute_name = < ( !'=' . )+ >                                { RUN_ACTION(tag_attribute_name_action_1); }
+tag_attribute_value = '"' < ( !tag_close_nocap !['"] . )+ > '"'     { RUN_ACTION(tag_attribute_value_action_1); }
+tag_junk = < ( !tag_close_nocap . )+ >
+tag_close = space* < '/'? > '>'                                     { RUN_ACTION(tag_close_action_1); start_of_line = 0; }
+tag_close_nocap = space* '/'? '>'
 
 # Other stuff
 anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
@@ -252,6 +254,7 @@ void init(void) {
   tag_name = bfromcstr("");
   tag_attribute = bfromcstr("");
   tag_attributes_validated = bfromcstr("");
+  stack_init(&tag_stack);
 }
 
 void cleanup(void) {
@@ -271,6 +274,8 @@ void cleanup(void) {
   bdestroy(tag_attribute);
   bdestroy(tag_attributes_validated);
 
+  stack_free(&tag_stack);
+
   // Safe because we statically allocated the list structures
   kw_list_free(&toc_list);
   kw_list_free(&tag_attributes_list);
@@ -281,5 +286,6 @@ void cleanup(void) {
   if(yytext) free(yytext);
   if(yythunks) free(yythunks);
   if(yyvals) free(yyvals);
+
   yybuflen = 0;
 }

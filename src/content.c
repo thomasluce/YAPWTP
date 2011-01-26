@@ -132,15 +132,7 @@ void init_tag_vars(void) {
 
 // Append a character to a buffer a repeat number of times
 void repeat_append(bstring buffer, char chr, int count) {
-  int i;
-  bstring tmp = bfromcstr("");
-  balloc(tmp, count);
-  for(i = 0; i <= count; i++) {
-      tmp->data[i] = chr;
-    tmp->slen++;
-  }
-  bconcat(buffer, tmp);
-  bdestroy(tmp);
+  binsertch(buffer, blength(buffer), count + 1, chr);
 }
 
 void remove_parentheticals(bstring str) {
@@ -252,6 +244,7 @@ struct hashed_tag {
   char *key;             // The hash key
   char *attributes[10];  // An array of allowed attributes
   int size;              // The number of allowed attributes for this key
+  bool self_closing;     // Is the tag an inherently self-closing tag?
 };
 
 // This data structure is a pre-hashed table of allowed HTML tags
@@ -259,48 +252,48 @@ struct hashed_tag {
 // validating attributes on wikitext equivalents of some of these tags
 // (e.g. tables).  The hashing algorithm is Dan Bernstein's % 512.
 static const struct hashed_tag tags_hash[512] = {
-  [7]   { "b",          { "id", "name" }, 2 },
-  [14]  { "i",          { "id", "name" }, 2 },
-  [21]  { "p",          { "id", "name" }, 2 },
-  [24]  { "s",          { "id", "name" }, 2 },
-  [31]  { "hr",         { "id", "name" }, 2 },
-  [47]  { "ins",        { "id", "name" }, 2 },
-  [60]  { "abbr",       { "id", "name" }, 2 },
-  [72]  { "div",        { "id", "name" }, 2 },
-  [94]  { "small",      { "id", "name" }, 2 },
-  [108] { "pre",        { "id", "name" }, 2 },
-  [119] { "span",       { "id", "name" }, 2 },
-  [128] { "code",       { "id", "name" }, 2 },
-  [134] { "center",     { "id", "name" }, 2 },
-  [141] { "table",      { "id", "name", "cellspacing", "cellpadding", "border", "style", "width" }, 7 },
-  [154] { "li",         { "id", "name" }, 2 },
-  [158] { "blockquote", { "id", "name" }, 2 },
-  [211] { "caption",    { "id", "name", "align", "style" }, 4 },
-  [252] { "font",       { "id", "name" }, 2 },
-  [256] { "ol",         { "id", "name" }, 2 },
-  [266] { "cite",       { "id", "name" }, 2 },
-  [345] { "br",         { "id", "name" }, 2 },
-  [386] { "strong",     { "id", "name" }, 2 },
-  [397] { "dd",         { "id", "name" }, 2 },
-  [399] { "sub",        { "id", "name" }, 2 },
-  [405] { "dl",         { "id", "name" }, 2 },
-  [407] { "strike",     { "id", "name" }, 2 },
-  [413] { "dt",         { "id", "name" }, 2 },
-  [413] { "sup",        { "id", "name" }, 2 },
-  [413] { "td",         { "id", "name", "align", "colspan", "style", "width" }, 6 },
-  [417] { "th",         { "id", "name", "align", "colspan", "scope", "style", "width" }, 7 },
-  [427] { "tr",         { "id", "name", "border", "style" }, 4 },
-  [429] { "tt",         { "id", "name" }, 2 },
-  [439] { "big",        { "id", "name" }, 2 },
-  [439] { "em",         { "id", "name" }, 2 },
-  [442] { "del",        { "id", "name" }, 2 },
-  [454] { "ul",         { "id", "name" }, 2 },
-  [478] { "h1",         { "id", "name", "style" }, 3 },
-  [479] { "h2",         { "id", "name", "style" }, 3 },
-  [480] { "h3",         { "id", "name", "style" }, 3 },
-  [481] { "h4",         { "id", "name", "style" }, 3 },
-  [482] { "h5",         { "id", "name", "style" }, 3 },
-  [483] { "h6",         { "id", "name", "style" }, 3 }
+  [7]   { "b",          { "id", "name" }, 2, false },
+  [14]  { "i",          { "id", "name" }, 2, false },
+  [21]  { "p",          { "id", "name" }, 2, false },
+  [24]  { "s",          { "id", "name" }, 2, false },
+  [31]  { "hr",         { "id", "name" }, 2, true },
+  [47]  { "ins",        { "id", "name" }, 2, false },
+  [60]  { "abbr",       { "id", "name" }, 2, false },
+  [72]  { "div",        { "id", "name" }, 2, true },
+  [94]  { "small",      { "id", "name" }, 2, false },
+  [108] { "pre",        { "id", "name" }, 2, false },
+  [119] { "span",       { "id", "name" }, 2, true },
+  [128] { "code",       { "id", "name" }, 2, false },
+  [134] { "center",     { "id", "name" }, 2, false },
+  [141] { "table",      { "id", "name", "cellspacing", "cellpadding", "border", "style", "width" }, 7, false },
+  [154] { "li",         { "id", "name" }, 2, false },
+  [158] { "blockquote", { "id", "name" }, 2, false },
+  [211] { "caption",    { "id", "name", "align", "style" }, 4, false },
+  [252] { "font",       { "id", "name" }, 2, false },
+  [256] { "ol",         { "id", "name" }, 2, false },
+  [266] { "cite",       { "id", "name" }, 2, false },
+  [345] { "br",         { "id", "name" }, 2, true },
+  [386] { "strong",     { "id", "name" }, 2, false },
+  [397] { "dd",         { "id", "name" }, 2, false },
+  [399] { "sub",        { "id", "name" }, 2, false },
+  [405] { "dl",         { "id", "name" }, 2, false },
+  [407] { "strike",     { "id", "name" }, 2, false },
+  [413] { "dt",         { "id", "name" }, 2, false },
+  [413] { "sup",        { "id", "name" }, 2, false },
+  [413] { "td",         { "id", "name", "align", "colspan", "style", "width" }, 6, false },
+  [417] { "th",         { "id", "name", "align", "colspan", "scope", "style", "width" }, 7, false },
+  [427] { "tr",         { "id", "name", "border", "style" }, 4, false },
+  [429] { "tt",         { "id", "name" }, 2, false },
+  [439] { "big",        { "id", "name" }, 2, false },
+  [439] { "em",         { "id", "name" }, 2, false },
+  [442] { "del",        { "id", "name" }, 2, false },
+  [454] { "ul",         { "id", "name" }, 2, false },
+  [478] { "h1",         { "id", "name", "style" }, 3, false },
+  [479] { "h2",         { "id", "name", "style" }, 3, false },
+  [480] { "h3",         { "id", "name", "style" }, 3, false },
+  [481] { "h4",         { "id", "name", "style" }, 3, false },
+  [482] { "h5",         { "id", "name", "style" }, 3, false },
+  [483] { "h6",         { "id", "name", "style" }, 3, false }
 };
 
 // Validate whether or not a specific HTML tag is allowed.
@@ -325,6 +318,16 @@ bool valid_html_tag(char *html_tag, size_t orig_len) {
   } 
 
   return false;
+}
+
+bool tag_self_closing(char *tag) {
+  int hashed_key = hash(tag) % 512;
+  int len = strlen(tag);
+
+  return tags_hash[hashed_key].key && 
+    !strncmp(tag, tags_hash[hashed_key].key, len) && 
+    tags_hash[hashed_key].self_closing;
+
 }
 
 // Validate whether a particular attribute is allowed on a tag. 
@@ -358,4 +361,26 @@ int validate_tag_attributes(struct node *item) {
   }
 
   return 1;
+}
+
+bool close_needed_tags() {
+  bstring last_tag = (bstring)peek(&tag_stack, 0);
+  if(!last_tag || bstrcmp(last_tag, tag_name) != 0) {
+    //Walk down stack
+    bstring this_tag;
+    while((this_tag = (bstring)pop(&tag_stack)) != NULL) {
+      bstring tmp = bmidstr(tag_name, 1, blength(tag_name));
+      if(bstrcmp(this_tag, tmp) == 0) {
+        bdestroy(tmp);
+        break;
+      } else {
+        bprintf("</%s>", bdata(this_tag));
+        bdestroy(this_tag);
+      }
+      bdestroy(tmp);
+    }
+    if(tag_name && blength(tag_name) != 0) bprintf("<%s>", bdata(tag_name)); 
+    return true;
+  }
+  return false;
 }

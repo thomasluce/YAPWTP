@@ -607,6 +607,20 @@ describe "Wikitext parser" do
 	it "should allow html h* tags" do
       parse("<h1>sadf</h1><h2 style=\"color: red\">asdf</h2>").should == "<p><h1>sadf</h1><h2 style=\"color: red\">asdf</h2></p>"      
 	end
+
+	describe "poorly nested tags" do
+	  it "should auto-close tags that are not closed when their parent tag gets closed" do
+	    parse("<div><b>testing</div>").should include "<div><b>testing</b></div>"
+	  end
+
+	  it "should auto-close all tags at the end of a document" do
+	    parse("<div><i><b>some data").should include "<div><i><b>some data</b></i></div>"
+	  end
+
+	  it "should handle crazy-stacked similar tags" do
+	    parse("<div><b><b><b>something</b></b></div>").should include "<div><b><b><b>something</b></b></b></div>"
+	  end
+	end
   end
 
 

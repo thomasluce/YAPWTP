@@ -5,6 +5,7 @@
 #include "io.h"
 #include <inttypes.h>
 #include "parse.h"
+#include "stack.h"
 
 int yyparse(void);
 
@@ -40,12 +41,12 @@ void reset_template_iter() {
 
 struct node *get_next_template(void) {
   if(!template_list_iter) {
-	template_list_iter = template_list.head;
+    template_list_iter = template_list.head;
   }
 
   if(template_list_iter->next) {
-	template_list_iter = template_list_iter->next;
-	return template_list_iter;
+    template_list_iter = template_list_iter->next;
+    return template_list_iter;
   }
 
   return NULL;
@@ -326,16 +327,31 @@ KIWI_ACTION(tag_close_action_1) {
 
   btolower(tag_name);
   if(valid_html_tag(bdata(tag_name), tag_name->slen)) {
-    bprintf("<%s%s>", bdata(tag_name), bdata(tag_attributes_validated));
+    if(tag_self_closing(bdata(tag_name)) && yytext && yytext[yyleng-1] == '/') {
+      bprintf("<%s%s>", bdata(tag_name), bdata(tag_attributes_validated));
+    } else {
+      if(bdata(tag_name)[0] == '/') {
+        if(close_needed_tags()) return;
+      } else {
+        push(&tag_stack, (void *)bstrcpy(tag_name));
+      }
+      bprintf("<%s%s>", bdata(tag_name), bdata(tag_attributes_validated));
+    }
   } else {
     strip_tags(tag_name);
     bprintf("&lt;%s&gt;", bdata(tag_name));
   }
 }
 
+KIWI_ACTION(tag_action_1) {
+  bcatcstr(tag_name, yytext); 
+}
+
 void parse() {
   bprintf("<p>");
   while(yyparse()) {}
+  bassigncstr(tag_name, "");
+  close_needed_tags();
   bprintf("</p>");
   handle_toc();
 }

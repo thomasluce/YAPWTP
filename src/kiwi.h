@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include "bstrlib.h"
 #include "list.h"
+#include "stack.h"
 
 #define KBYTE 1024
 #define MBYTE KBYTE * 1024
@@ -49,6 +50,7 @@ bstring tag_name;
 bstring tag_attribute;
 bstring tag_attributes_validated;
 struct list tag_attributes_list;
+stack tag_stack;
 
 // Tables
 int tr_found;

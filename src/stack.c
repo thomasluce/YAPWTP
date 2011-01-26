@@ -47,3 +47,16 @@ void *pop(stack *s) {
 
   return s->stack[--s->pos];
 }
+
+void *peek(stack *s, int back) {
+  if(!s) {
+    fprintf(stderr, "Bad stack passed to peek()\n");
+	return NULL;
+  }
+  int pos = s->pos - back - 1;
+  if(pos < 0) {
+	return NULL;
+  }
+
+  return s->stack[pos];
+}

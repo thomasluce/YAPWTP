@@ -14,4 +14,5 @@ void stack_free(stack *s);
 void *stack_grow(stack *s);
 int push(stack *s, void *item);
 void *pop(stack *s);
+void *peek(stack *s, int back);
 #endif

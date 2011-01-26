@@ -34,5 +34,6 @@ KIWI_ACTION(template_close_action_1);
 KIWI_ACTION(tag_attribute_name_action_1);
 KIWI_ACTION(tag_attribute_value_action_1);
 KIWI_ACTION(tag_close_action_1);
+KIWI_ACTION(tag_action_1);
 
 #endif
