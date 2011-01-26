@@ -10,8 +10,6 @@ intended to be speed and memory footprint.
 At the moment a 100 line wikitext file with fairly complex markup
 can be parsed in 5-6ms on a one year old Apple MacBook Pro.
 
-The parser now supports the vast majority of MediaWiki's markup.
-
 See it Live
 -----------
 
