@@ -6,7 +6,7 @@
 # --------------------------------------------------------------------------------
 
 base_path = File.expand_path(File.join(File.dirname(__FILE__), ".."))
-require "#{base_path}/kiwi"
+require "#{base_path}/yapwtp"
 
 parser = WikiParser.new
 
