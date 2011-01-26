@@ -333,7 +333,7 @@ KIWI_ACTION(tag_close_action_1) {
       if(bdata(tag_name)[0] == '/') {
         if(close_needed_tags()) return;
       } else {
-        push(&tag_stack, (void *)bstrcpy(tag_name));
+        kw_push(&tag_stack, (void *)bstrcpy(tag_name));
       }
       bprintf("<%s%s>", bdata(tag_name), bdata(tag_attributes_validated));
     }

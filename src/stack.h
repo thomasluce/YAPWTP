@@ -9,10 +9,10 @@ typedef struct stack {
   void **stack; // The stack array
 } stack;
 
-void stack_init(stack *s);
-void stack_free(stack *s);
-void *stack_grow(stack *s);
-int push(stack *s, void *item);
-void *pop(stack *s);
-void *peek(stack *s, int back);
+void kw_stack_init(stack *s);
+void kw_stack_free(stack *s);
+void *kw_stack_grow(stack *s);
+int  kw_push(stack *s, void *item);
+void *kw_pop(stack *s);
+void *kw_peek(stack *s, int back);
 #endif

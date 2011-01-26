@@ -364,11 +364,11 @@ int validate_tag_attributes(struct node *item) {
 }
 
 bool close_needed_tags() {
-  bstring last_tag = (bstring)peek(&tag_stack, 0);
+  bstring last_tag = (bstring)kw_peek(&tag_stack, 0);
   if(!last_tag || bstrcmp(last_tag, tag_name) != 0) {
     //Walk down stack
     bstring this_tag;
-    while((this_tag = (bstring)pop(&tag_stack)) != NULL) {
+    while((this_tag = (bstring)kw_pop(&tag_stack)) != NULL) {
       bstring tmp = bmidstr(tag_name, 1, blength(tag_name));
       if(bstrcmp(this_tag, tmp) == 0) {
         bdestroy(tmp);

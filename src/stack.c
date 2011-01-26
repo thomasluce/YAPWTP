@@ -2,33 +2,33 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void stack_init(stack *s) {
+void kw_stack_init(stack *s) {
   s->stack = malloc(STACK_DEFAULT_SIZE * sizeof(void*));
   s->pos = 0;
   s->mlen = STACK_DEFAULT_SIZE;
 }
 
-void stack_free(stack *s) {
+void kw_stack_free(stack *s) {
   if(!s) return;
   if(!s->stack) return;
 
   free(s->stack);
 }
 
-void *stack_grow(stack *s) {
+void *kw_stack_grow(stack *s) {
   void *junk;   // So we don't whack s->stack on failure
   s->mlen *= 2; // Double it
   junk = realloc(s->stack, sizeof(void *) * s->mlen);
   return junk;
 }
 
-int push(stack *s, void *item) {
+int kw_push(stack *s, void *item) {
   if(!s) {
-    fprintf(stderr, "Bad stack passed to push()\n");
+    fprintf(stderr, "Bad stack passed to kw_kw_kw_pop()\n");
 	return -1;
   }
   if(!item) return -1;
-  if(s->pos >= s->mlen && !stack_grow(s)) {
+  if(s->pos >= s->mlen && !kw_stack_grow(s)) {
     fprintf(stderr, "Realloc failed\n"); 
     return -1;
   }
@@ -37,9 +37,9 @@ int push(stack *s, void *item) {
   return ++s->pos;
 }
 
-void *pop(stack *s) {
+void *kw_pop(stack *s) {
   if(!s) {
-    fprintf(stderr, "Bad stack passed to pop()\n");
+    fprintf(stderr, "Bad stack passed to kw_pop()\n");
 	return NULL;
   }
   if(s->pos > s->mlen) return NULL;
@@ -48,9 +48,9 @@ void *pop(stack *s) {
   return s->stack[--s->pos];
 }
 
-void *peek(stack *s, int back) {
+void *kw_peek(stack *s, int back) {
   if(!s) {
-    fprintf(stderr, "Bad stack passed to peek()\n");
+    fprintf(stderr, "Bad stack passed to kw_peek()\n");
 	return NULL;
   }
   int pos = s->pos - back - 1;

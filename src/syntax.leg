@@ -254,7 +254,7 @@ void init(void) {
   tag_name = bfromcstr("");
   tag_attribute = bfromcstr("");
   tag_attributes_validated = bfromcstr("");
-  stack_init(&tag_stack);
+  kw_stack_init(&tag_stack);
 }
 
 void cleanup(void) {
@@ -274,7 +274,7 @@ void cleanup(void) {
   bdestroy(tag_attribute);
   bdestroy(tag_attributes_validated);
 
-  stack_free(&tag_stack);
+  kw_stack_free(&tag_stack);
 
   // Safe because we statically allocated the list structures
   kw_list_free(&toc_list);
