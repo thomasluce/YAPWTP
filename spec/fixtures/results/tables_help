@@ -1,0 +1,402 @@
+<div id="toc" class="toc">
+<div id="toctitle">Contents</div>
+<ol>
+     <li><a href="#Wiki_table_markup_summary">Wiki table markup summary</a>
+   <ol>
+       <li><a href="#Table_headers">Table headers</a></li>
+       <li><a href="#Caption">Caption</a></li>
+   </ol></li>
+     <li><a href="#XHTML_attributes">XHTML attributes</a>
+   <ol>
+       <li><a href="#Attributes_on_tables">Attributes on tables</a></li>
+       <li><a href="#Attributes_on_cells">Attributes on cells</a></li>
+       <li><a href="#Attributes_on_rows">Attributes on rows</a>
+     <ol>
+         <li><a href="#Simple_one%2dpixel_table_border">Simple one-pixel table border</a></li>
+     </ol></li>
+       <li><a href="#HTML_colspan_and_rowspan">HTML colspan and rowspan</a></li>
+       <li><a href="#With_HTML_attributes_and_CSS_styles">With HTML attributes and CSS styles</a></li>
+       <li><a href="#Accessibility_of_table_header_cells">Accessibility of table header cells</a></li>
+   </ol></li>
+     <li><a href="#Caveats">Caveats</a>
+   <ol>
+       <li><a href="#Negative_numbers">Negative numbers</a></li>
+       <li><a href="#CSS_vs_Attributes">CSS vs Attributes</a></li>
+       <li><a href="#Common_attributes_for_columns,_column_groups_and_row_groups">Common attributes for columns, column groups and row groups</a></li>
+</ol>
+</ol>
+</div>
+<p>__PD Help Page_5381__
+<b>Tables</b> may be authored in wiki pages using either XHTML table elements directly, or using wikicode formatting to define the table. XHTML table elements and their use are well described on various web pages and will not be discussed here. The benefit of wikicode is that the table is constructed of character symbols which tend to make it easier to perceive the table structure in the article editing view compared to XHTML table elements.
+<pre>
+</pre>As a general rule, it is best to avoid using a table unless you need one. Table markup often complicates page editing.</p>
+<p>
+  <h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Wiki_table_markup_summary">Wiki table markup summary</span></h2>
+  <a name="Wiki_table_markup_summary"></a>
+<table cellpadding="5" cellspacing="0" border="1" width="60%"><tr>
+<td>
+ {|</td><td><b>table start</b></td></tr>
+<tr><td>
+ |+</td><td>table <b>caption,</b> <i>optional;</i> only between <b>table start</b> and first <b>table row</b></td></tr><tr><td>
+ |-</td><td><b>table row,</b> <i>optional on first row</i> -- wiki engine assumes the first row</td></tr><tr><td>
+ !</td><td><b>table header</b> cell, <i>optional.</i> Consecutive <b>table header</b> cells may be added on same line separated by double marks (<code>!!</code>) or start on new lines, each with its own single mark (<code>!</code>).</td></tr><tr><td>
+ |</td><td><b>table data</b> cell, <i>required!</i> Consecutive <b>table data</b> cells may be added on same line separated by double marks (<code>||</code>) or start on new lines, each with its own single mark (<code>|</code>).</td></tr><tr><td>
+ |}</td><td><b>table end</b></td></tr></table>
+<ul><li>The above marks must <b>start on a new line</b> except the double <code>||</code> and <code>!!</code> for optionally adding consecutive cells to a line. However, blank spaces at the beginning of a line are ignored.</li><li><b>XHTML attributes.</b> Each mark, except table end, optionally accepts one or more XHTML attributes. Attributes must be on the same line as the mark. Separate attributes from each other with a single space. </li><ul><li>Cells and caption (<code>|</code> or <code>||</code>, <code>!</code> or <code>!!</code>, and <code>|+</code>) hold content. So separate any attributes from content with a single pipe (<code>|</code>). Cell content may follow on same line or on following lines.</li><li>Table and row marks (<code>{|</code> and <code>|-</code>) do not directly hold content. Do <i>not</i> add pipe (<code>|</code>) after their optional attributes. If you erroneously add a pipe after attributes for the table mark or row mark the parser will delete it <i>and</i> your final attribute if it was touching the erroneous pipe!</li></ul><li><b>Content</b> may (a) follow its cell mark on the same line after any optional XHTML attributes or (b) on lines below the cell mark. Content that uses wiki markup that itself needs to start on a new line, such as lists, headings, or nested tables, must be on its own new line.</li><li><b>Escaping</b> to insert a pipe (<code>|</code>) character into a table use the  markup
+
+==Basics==
+The following table lacks borders and good spacing but shows the simplest wiki markup table structure.
+
+{| cellspacing="0" border="1"
+!style="width:50%"|You type
+!style="width:50%"|You get
+|-
+|
+
+{|
+|Orange
+|Apple
+|-
+|Bread
+|Pie
+|-
+|Butter
+|Ice cream 
+|}
+</pre></li></ul>|
+<table><tr>
+<td>Orange</td><td>Apple</td></tr>
+<tr><td>Bread</td><td>Pie</td></tr><tr><td>Butter</td><td>Ice cream</td></tr></table>
+|}</p>
+<p>The cells in the same row can be listed on one line separated by <code>||</code> (two pipe symbols). If the text in the cell contains a line break, use <code></code> instead.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{|
+|Orange||Apple||more
+|-
+|Bread||Pie||more
+|-
+|Butter||Icecream||andmore
+|}
+</pre></td><td>
+<table><tr>
+<td>Orange</td><td>Apple</td><td>more</td></tr>
+<tr><td>Bread</td><td>Pie</td><td>more</td></tr><tr><td>Butter</td><td>Ice<br />cream</td><td>and<br />more</td></tr></table></td></tr></table></p>
+<p>Extra spaces within cells in the wiki markup, as in the wiki markup below, do not affect the actual table rendering.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{|
+|  Orange    ||   Apple   ||   more
+|-
+|   Bread    ||   Pie     ||   more
+|-
+|   Butter   || Ice cream ||  and more
+|}
+</pre></td><td>
+<table><tr>
+<td>Orange</td><td>Apple</td><td>more</td></tr>
+<tr><td>Bread</td><td>Pie</td><td>more</td></tr><tr><td>Butter</td><td>Ice cream</td><td>and more</td></tr></table></td></tr></table></p>
+<p>You can have longer text or more complex wiki syntax inside table cells, too:</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{|
+|Lorem ipsum dolor sit amet, 
+consetetur sadipscing elitr, 
+sed diam nonumy eirmod tempor invidunt
+ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. 
+
+At vero eos et accusam et justo duo dolores
+et ea rebum. Stet clita kasd gubergren,
+no sea takimata sanctus est Lorem ipsum
+dolor sit amet. 
+|
+* Lorem ipsum dolor sit amet
+* consetetur sadipscing elitr
+* sed diam nonumy eirmod tempor invidunt
+|}
+</pre></td><td>
+<table><tr>
+<td>Lorem ipsum dolor sit amet, 
+consetetur sadipscing elitr, 
+sed diam nonumy eirmod tempor invidunt
+ut labore et dolore magna aliquyam erat, 
+sed diam voluptua. 
+
+At vero eos et accusam et justo duo dolores
+et ea rebum. Stet clita kasd gubergren,
+no sea takimata sanctus est Lorem ipsum
+dolor sit amet.</td><td>
+<ul><li>Lorem ipsum dolor sit amet</li><li>consetetur sadipscing elitr</li><li>sed diam nonumy eirmod tempor invidunt</li></ul></td></tr></table></td></tr></table></p>
+<p>
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Table_headers">Table headers</span></h3>
+  <a name="Table_headers"></a>
+Table headers can be created by using "<code>!</code>" (exclamation mark) instead of "<code>|</code>" (pipe symbol). Headers usually show up bold and centered by default.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{|
+! Item
+! Amount
+! Cost
+|-
+|Orange
+|10
+|7.00
+|-
+|Bread
+|4
+|3.00
+|-
+|Butter
+|1
+|5.00
+|-
+!Total
+|
+|15.00
+|}
+</pre></td><td>
+<table><tr><th>Item</th><th>Amount</th><th>Cost</th></tr><tr><td>Orange</td><td>10</td><td>7.00</td></tr><tr><td>Bread</td><td>4</td><td>3.00</td></tr><tr><td>Butter</td><td>1</td><td>5.00</td></tr><tr><th>Total</th><td></td><td>15.00</td></tr></table></td></tr></table></p>
+<p>
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Caption">Caption</span></h3>
+  <a name="Caption"></a>
+A <b>table caption</b> can be added to the top of any table as follows.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{|
+|+Food complements
+|-
+|Orange
+|Apple
+|-
+|Bread
+|Pie
+|-
+|Butter
+|Ice cream 
+|}
+</pre></td><td>
+<table><caption>Food complements</caption><tr><td>Orange</td><td>Apple</td></tr><tr><td>Bread</td><td>Pie</td></tr><tr><td>Butter</td><td>Ice cream</td></tr></table></td></tr></table></p>
+<p>
+  <h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="XHTML_attributes">XHTML attributes</span></h2>
+  <a name="XHTML_attributes"></a>
+You can add XHTML attributes to tables. For the authoritative source on these, see <a href="http://www.w3.org/TR/REC-html40/struct/tables.html">the W3C's HTML 4.01 Specification page on tables</a>.</p>
+<p>
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Attributes_on_tables">Attributes on tables</span></h3>
+  <a name="Attributes_on_tables"></a>
+Placing attributes after the table start tag (<code>{|</code>) applies attributes to the entire table.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{| border="1"
+|Orange
+|Apple
+|12,333.00
+|-
+|Bread
+|Pie
+|500.00
+|-
+|Butter
+|Ice cream
+|1.00
+|}
+</pre></td><td>
+<table border="1"><tr>
+<td>Orange</td><td>Apple</td><td>12,333.00</td></tr>
+<tr><td>Bread</td><td>Pie</td><td>500.00</td></tr><tr><td>Butter</td><td>Ice cream</td><td>1.00</td></tr></table></td></tr></table></p>
+<p>
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Attributes_on_cells">Attributes on cells</span></h3>
+  <a name="Attributes_on_cells"></a>
+You can put attributes on individual <b>cells</b>. For example, numbers may look better aligned right.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{| border="1"
+|Orange
+|Apple
+|align="right" | 12,333.00
+|-
+|Bread
+|Pie
+|align="right" | 500.00
+|-
+|Butter
+|Ice cream
+|align="right" | 1.00
+|}
+</pre></td><td>
+<table border="1"><tr>
+<td>Orange</td><td>Apple</td><td align="right">12,333.00</td></tr>
+<tr><td>Bread</td><td>Pie</td><td align="right">500.00</td></tr><tr><td>Butter</td><td>Ice cream</td><td align="right">1.00</td></tr></table></td></tr></table></p>
+<p>You can also use <b>cell</b> attributes when you are listing multiple <b>cells</b> on a single line. Note that the <b>cells</b> are separated by <code>||</code>, and within each <b>cell</b> the attribute(s) and value are separated by <code>|</code>.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{| border="1"
+| Orange || Apple     || align="right" | 12,333.00
+|-
+| Bread  || Pie       || align="right" | 500.00
+|-
+| Butter || Ice cream || align="right" | 1.00
+|}
+</pre></td><td>
+<table border="1"><tr>
+<td>Orange</td><td>Apple</td><td align="right">12,333.00</td></tr>
+<tr><td>Bread</td><td>Pie</td><td align="right">500.00</td></tr><tr><td>Butter</td><td>Ice cream</td><td align="right">1.00</td></tr></table></td></tr></table></p>
+<p>
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Attributes_on_rows">Attributes on rows</span></h3>
+  <a name="Attributes_on_rows"></a>
+You can put attributes on individual <b>rows</b>, too.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{| border="1"
+|Orange
+|Apple
+|align="right"|12,333.00
+|-
+|Bread
+|Pie
+|align="right"|500.00
+|- style="font-style:italic; color:green;"
+|Butter
+|Ice cream
+|align="right"|1.00
+|}
+</pre></td><td>
+<table border="1"><tr>
+<td>Orange</td><td>Apple</td><td align="right">12,333.00</td></tr>
+<tr><td>Bread</td><td>Pie</td><td align="right">500.00</td></tr><tr style="font-style:italic; color:green;"><td>Butter</td><td>Ice cream</td><td align="right">1.00</td></tr></table></td></tr></table></p>
+<p>
+  <h4><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Simple_one%2dpixel_table_border">Simple one-pixel table border</span></h4>
+  <a name="Simple_one%2dpixel_table_border"></a>
+The default table formatting uses the "border-collapse: separate" model, which adds table cell spacing (which also separates the table outer border from its content cells). Even with a zero cellspacing, the borders of consecutive cells (and of the overall table container) will add up, so to get a one-pixel separation between cells, you need to selectively remove one or more of the four borders of cells.</p>
+<p>Such tables may be formatted more simply, using the "border-collapse: collapse" CSS property; in this table formatting model, the cellspacing attribute (or the CSS "border-spacing:" property) and the table's "padding:" CSS property is ignored and only the larger border of adjacent inner cells (or the table border for outer cells) will be used.</p>
+<p>An example of the above for one-pixel table border, using each model (without need for external extensions):</p>
+<p><table border="1" cellspacing="0" cellpadding="2"><tr><th>You type</th><th width="150">You get</th></tr><tr><td>
+<pre>
+{|style="border-collapse: separate; border-spacing: 0; border-width: 1px; border-style: solid; border-color: #000; padding: 0"
+|-
+!style="border-style: solid; border-width: 0 1px 1px 0"| Orange
+!style="border-style: solid; border-width: 0 0 1px 0"| Apple
+|-
+|style="border-style: solid; border-width: 0 1px 0 0"| Bread
+|style="border-style: solid; border-width: 0"| Pie
+|}
+</pre></td><td>
+<table style="margin: 0; border-collapse: separate; border-spacing: 0; border-width: 1px; border-style: solid; border-color: #000; padding: 0"><tr><th style="border-style: solid; border-width: 0 1px 1px 0">Orange</th><th style="border-style: solid; border-width: 0 0 1px 0">Apple</th></tr><tr><td style="border-style: solid; border-width: 0 1px 0 0">Bread</td><td style="border-style: solid; border-width: 0">Pie</td></tr></table></td></tr><tr><td>
+<pre>
+{|style="border-collapse: collapse; border-width: 1px; border-style: solid; border-color: #000"
+|-
+!style="border-style: solid; border-width: 1px"| Orange
+!style="border-style: solid; border-width: 1px"| Apple
+|-
+|style="border-style: solid; border-width: 1px"| Bread
+|style="border-style: solid; border-width: 1px"| Pie
+|}
+</pre></td><td>
+<table style="border-collapse: collapse; border-width: 1px; border-style: solid; border-color: #000"><tr><th style="border-style: solid; border-width: 1px">Orange</th><th style="border-style: solid; border-width: 1px">Apple</th></tr><tr><td style="border-style: solid; border-width: 1px">Bread</td><td style="border-style: solid; border-width: 1px">Pie</td></tr></table></td></tr></table></p>
+<p>Notes :
+<ul><li>When using the "border-width:" CSS shortcut property, the order of the four space-separated specified values is: top, right, bottom, left. When there are fewer than 4 values, the value for left takes its default from the value for right, the value for bottom takes its default from the value for top, and the value for right takes its default from the value for top.</li><li>The HTML attributes (such as "width=", "border=", "cellspacing=", "cellpadding=") do not need any length unit (the pixel unit is assumed). The CSS style properties (which override the HTML attributes) require an explicit length unit (if the value is not 0) such as "px" for the pixel.</li></ul>
+
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="HTML_colspan_and_rowspan">HTML colspan and rowspan</span></h3>
+  <a name="HTML_colspan_and_rowspan"></a>
+
+You can use HTML <b>colspan</b> and <b>rowspan</b> attributes on cells for advanced layout.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{| border="1"
+!colspan="6"|Shopping List
+|-
+|rowspan="2"|Bread & Butter
+|Pie
+|Buns
+|Danish
+|colspan="2"|Croissant
+|-
+|Cheese
+|colspan="2"|Ice cream
+|Butter
+|Yoghurt
+|}
+</pre></td><td>
+<table border="1"><tr><th colspan="6">Shopping List</th></tr><tr><td>Bread & Butter</td><td>Pie</td><td>Buns</td><td>Danish</td><td colspan="2">Croissant</td></tr><tr><td>Cheese</td><td colspan="2">Ice cream</td><td>Butter</td><td>Yoghurt</td></tr></table></td></tr></table></p>
+<p>
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="With_HTML_attributes_and_CSS_styles">With HTML attributes and CSS styles</span></h3>
+  <a name="With_HTML_attributes_and_CSS_styles"></a>
+<a href="/Manual:CSS">CSS</a> style attributes can be added with or without other HTML attributes.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{| style="color:green; background-color:#ffffcc;" cellpadding="10" cellspacing="0" border="1"
+|Orange
+|Apple
+|-
+|Bread
+|Pie
+|-
+|Butter
+|Ice cream 
+|}
+</pre></td><td>
+<table style="color:green; background-color:#ffffcc;" cellpadding="10" cellspacing="0" border="1"><tr>
+<td>Orange</td><td>Apple</td></tr>
+<tr><td>Bread</td><td>Pie</td></tr><tr><td>Butter</td><td>Ice cream</td></tr></table></td></tr></table></p>
+<p><b>Attributes</b> can be added to the caption and headers as follows.</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{| border="1" cellpadding="20" cellspacing="0"
+|+ align="bottom" style="color:#e76700;" |''Food complements''
+|-
+|Orange
+|Apple
+|-
+|Bread
+|Pie
+|-
+|Butter
+|Ice cream 
+|}
+</pre></td><td>
+<table border="1" cellpadding="20" cellspacing="0"><caption align="bottom" style="color:#e76700;"><i>Food complements</i></caption><tr><td>Orange</td><td>Apple</td></tr><tr><td>Bread</td><td>Pie</td></tr><tr><td>Butter</td><td>Ice cream</td></tr></table></td></tr></table></p>
+<p>
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Accessibility_of_table_header_cells">Accessibility of table header cells</span></h3>
+  <a name="Accessibility_of_table_header_cells"></a>
+Table header cells do not explicitly specify which table data cells they apply to (those on their right on the same row, or those below them on the same column). When the table is rendered in a visual 2D environment, this is usually easy to infer.</p>
+<p>However when tables are rendered on non-visual medias, you can help the browser to determine which table header cell applies to the description of any selected cell (in order to repeat its content in some accessibility helper) using a scope="row" or scope="col" attribute on table header cells. In most cases with simple tables, you'll use scope="col" on all header cells of the first row, and scope="row" on the first cell of the following rows:</p>
+<p><table cellspacing="0" border="1"><tr><th style="width:50%">You type</th><th style="width:50%">You get</th></tr><tr><td>
+<pre>
+{| border="1" cellspacing="0" cellpadding="2"
+|-
+!scope="col"| Item
+!scope="col"| Quantity
+!scope="col"| Price
+|-
+!scope="row"| Bread
+| 0.3 kg
+| $0.65
+|-
+!scope="row"| Butter
+| 0.125 kg
+| $1.25
+|-
+!scope="row" colspan="2"| Total
+| $1.90
+|}
+</pre></td><td>
+<table border="1" cellspacing="0" cellpadding="2"><tr><th scope="col">Item</th><th scope="col">Quantity</th><th scope="col">Price</th></tr><tr><th scope="row">Bread</th><td>0.3 kg</td><td>$0.65</td></tr><tr><th scope="row">Butter</th><td>0.125 kg</td><td>$1.25</td></tr><tr><th scope="row" colspan="2">Total</th><td>$1.90</td></tr></table></td></tr></table></p>
+<p>
+  <h2><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Caveats">Caveats</span></h2>
+  <a name="Caveats"></a>
+
+
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Negative_numbers">Negative numbers</span></h3>
+  <a name="Negative_numbers"></a>
+If you start a cell on a new line with a negative number with a minus sign (or a parameter that evaluates to a negative number), your table can get broken, because the characters <code>|-</code> will be parsed as the wiki markup for table row, not table cell. To avoid this, insert a space before the value (<code>| -6</code>) or use in-line cell markup (<code>|| -6</code>).</p>
+<p>
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="CSS_vs_Attributes">CSS vs Attributes</span></h3>
+  <a name="CSS_vs_Attributes"></a>
+Table borders specified through CSS rather than the border attribute will render incorrectly in a small subset of text browsers.</p>
+<p>
+  <h3><span class="editsection">[<a href="edit">edit</a>]</span><span class="mw-headline" id="Common_attributes_for_columns,_column_groups_and_row_groups">Common attributes for columns, column groups and row groups</span></h3>
+  <a name="Common_attributes_for_columns,_column_groups_and_row_groups"></a>
+The MediaWiki syntax for tables currently offers no support for specifying common attributes for columns (with the HTML element <code></code>), column groups (HTML element <code>...</code>) and row groups (HTML elements <code>...</code>, <code>... and ...</code>). Those standard HTML elements are not accepted even in their HTML or XHTML syntax.</p>
+<p>All the rows and cells (header or data) of the table are rendered within a single implicit row group (HTML element <code>...</code>) without any attributes or styles.</p>
+<p>__Languages_5381__
+<a href="/Category:Help">Tables</a></p>
