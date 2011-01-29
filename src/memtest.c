@@ -5,9 +5,9 @@
 
 int main() {
   int i;
-  for(i = 0; i < 2000; i++) {
+  for(i = 0; i < 100; i++) {
     init();
-    file_get_contents(input_buffer, "spec/fixtures/cnn.com");
+    file_get_contents(input_buffer, "spec/fixtures/tables_help");
     parse();
     printf("%d\n", i);
     cleanup();

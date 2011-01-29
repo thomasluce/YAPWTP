@@ -142,6 +142,10 @@ describe "Wikitext parser" do
       parse("Some text # foo # asf").scan("<ol>").size.should == 0
       parse("Some text * foo * asf").scan("<ul>").size.should == 0
     end
+
+	it "should protect against loose angle brackets" do
+      parse("< script >").should include("&lt; script &gt;")
+	end
   end
 
   describe "text formatting" do

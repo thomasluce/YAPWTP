@@ -16,7 +16,7 @@
 # High-level
 page =  pre_block | wikitext_line | wikitext
 wikitext_line = paragraph | horizontal_line
-wikitext = nowiki | noinclude | html | table_of_contents | template_variable | template | heading | list | formatting | image | link | table | anything_else | eol { append_to_tag_content("%c", '\n'); }
+wikitext = nowiki | noinclude | html | table_of_contents | template_variable | template | heading | list | formatting | image | link | table | angle_brackets | anything_else | eol { append_to_tag_content("%c", '\n'); }
 
 # Generally useful rules
 eol = '\r'? '\n' { start_of_line = 1; }
@@ -207,8 +207,13 @@ tag_attribute = tag_attribute_name '=' tag_attribute_value
 tag_attribute_name = < ( !'=' . )+ >                                           { RUN_ACTION(tag_attribute_name_action_1); }
 tag_attribute_value = '"' < ( !tag_close_nocap !['"] . )+ > '"'                { RUN_ACTION(tag_attribute_value_action_1); }
 tag_junk = < ( !tag_close_nocap . )+ >
-tag_close = space* < '/'? > '>'                                                { RUN_ACTION(tag_close_action_1); start_of_line = 0; }
+tag_close = < tag_close_nocap >                                                { RUN_ACTION(tag_close_action_1); start_of_line = 0; }
 tag_close_nocap = space* '/'? '>'
+
+# -- loose angle brackets
+angle_brackets = angle_left | angle_right
+angle_left = '<'                                                               { bprintf("&lt;"); start_of_line = 0; }
+angle_right = '>'                                                              { bprintf("&gt;"); start_of_line = 0; }
 
 # Other stuff
 anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
