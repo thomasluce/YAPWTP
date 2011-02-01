@@ -7,7 +7,7 @@ int main() {
   int i;
   for(i = 0; i < 100; i++) {
     init();
-    file_get_contents(input_buffer, "spec/fixtures/tables_help");
+    file_get_contents(input_buffer, "spec/fixtures/tables");
     parse();
     printf("%d\n", i);
     cleanup();

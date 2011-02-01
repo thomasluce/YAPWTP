@@ -216,7 +216,7 @@ angle_left = '<'                                                               {
 angle_right = '>'                                                              { bprintf("&gt;"); start_of_line = 0; }
 
 # Other stuff
-anything_else = < !eol . > { start_of_line = 0; append_to_tag_content(yytext); }
+anything_else = < !eol . >                                                     { start_of_line = 0; append_to_tag_content(yytext); }
 
 %%
 
