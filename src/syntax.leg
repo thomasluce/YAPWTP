@@ -25,7 +25,7 @@ space = [\t ]
 
 # Headings
 heading = heading_marker                                                       { RUN_ACTION(heading_action_1); }
-  space* heading_text heading_marker space* ( eol | eof )                      { RUN_ACTION(heading_action_2); }
+  space* heading_text heading_marker? space* ( eol | eof )                     { RUN_ACTION(heading_action_2); }
 heading_text = < ( !heading_marker ( formatting | link | anything_else ) )* >
 heading_marker = < '=' '='+ >                                                  { if(current_header_level == 0) current_header_level = (yyleng > 5) ? 5 : yyleng; }
 

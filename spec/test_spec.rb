@@ -66,6 +66,11 @@ describe "Wikitext parser" do
       result.should include('</h3>')
     end
 
+	it "should let you close a heading with no end tag (jus eol)" do
+      result = parse("=== heading").strip
+      result.should include('<h3>')
+	end
+
     it "should not output bogus h tags" do
       result = parse("========== heading ==").strip
       result.should_not include("<h10>")
