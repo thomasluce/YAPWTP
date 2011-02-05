@@ -477,6 +477,12 @@ describe "Wikitext parser" do
         |}'.gsub(/^ */, '')).should == '<p><table><tr style="color:red"><td>data</td></tr></table></p>'
     end
 
+	it "should not require table end tags" do
+      parse('{|
+        |- style="color:red"
+        | data'.gsub(/^ */, '')).should == '<p><table><tr style="color:red"><td>data</td></tr></table></p>'
+	end
+
     describe "headers" do
       it "should be able to make simple headers" do
         text = parse("{|

@@ -123,7 +123,7 @@ value = '=' < ( !'|' !close_image . )* >                                       {
 image_caption = '|' < ( !close_image . )+ >                                    { RUN_ACTION(image_caption_action_1); }
 
 # Tables
-table = table_open eol* table_caption? ( table_row | table_headers | pseudo_row )* eol* table_close
+table = table_open eol* table_caption? ( table_row | table_headers | pseudo_row )* eol* { brtrimws(output_buffer); bprintf("</table>"); } table_close?
 table_specials = ( [|+}!] | '-' )
 table_delims =  ( ( '|' table_specials ) | ( &{start_of_line} '!' ) | ( &{start_of_line} '|') )
 table_open = '{|' space*                                                       { RUN_ACTION(table_open_action_1); }
@@ -151,25 +151,25 @@ cell_attribute = cell_attribute_name '=' cell_attribute_value
 cell_attribute_name = < ( !eol !table_delims !'=' . )+ >                       { RUN_ACTION(cell_attribute_name_action_1); }
 cell_attribute_value = '"' < ( !table_delims !['"] . )+ > '"'                  { RUN_ACTION(cell_attribute_value_action_1); }
 cell_junk = < ( !( &table_delims ) !eol !'|' . )+ >
-cell_close = &table_delims                                                     { RUN_ACTION(cell_close_action_1); }
+cell_close = &table_delims
 
 # -- start of line cell
 sol_cell = ( sol_cell_complex | sol_cell_simple )
 sol_cell_open = &{start_of_line} '|' !table_specials                           { RUN_ACTION(sol_cell_open_action_1); }
-sol_cell_complex = sol_cell_open cell_attribute_list
-  space* '|' !'|' space* ( !table_delims wikitext )* cell_close 
-sol_cell_simple  = sol_cell_open space*                                        { bprintf(">"); }
-  ( !table_delims wikitext )* cell_close
+sol_cell_complex = ( sol_cell_open cell_attribute_list
+  space* '|' !'|' space* ( !table_delims wikitext )* cell_close? )             { RUN_ACTION(cell_close_action_1); }
+sol_cell_simple  = ( sol_cell_open space*                                      { bprintf(">"); }
+  ( !table_delims wikitext )* cell_close? )                                    { RUN_ACTION(cell_close_action_1); }
 
 # -- inline cell
 inline_cell = ( inline_cell_complex | inline_cell_simple ) 
 inline_cell_open = '||'                                                        { RUN_ACTION(inline_cell_open_action_1); }
-inline_cell_complex = inline_cell_open cell_attribute_list
-  space* '|' !'|' space* ( !table_delims wikitext )* cell_close
+inline_cell_complex = ( inline_cell_open cell_attribute_list
+  space* '|' !'|' space* ( !table_delims wikitext )* cell_close? )             { RUN_ACTION(cell_close_action_1); }
 inline_cell_simple = inline_cell_open space*                                   { bprintf(">"); }
   ( !table_delims wikitext )* &table_delims                                    { brtrimws(output_buffer); bprintf("</td>"); }
 
-table_close = '|}' { brtrimws(output_buffer); bprintf("</table>"); }
+table_close = '|}'
 
 # -- headers
 table_headers =                                                                { if(!tr_found) bprintf("<tr>"); }
