@@ -258,6 +258,10 @@ describe "Wikitext parser" do
       parse("[[Link]]{{template}}").should_not include("{{")
     end
 
+	it "should blend single apostrophes" do
+      parse("[[Ward]]'s wiki").should include("Ward's</a> wiki")
+	end
+
     describe "external links" do
       it "should be able to do external links" do
         parse("[http://www.google.com google]").should == '<p><a href="http://www.google.com">google</a></p>'
